@@ -25,4 +25,4 @@ This lays out the foundational architecture of the geoCore system, now we will d
 
 ## Architecture Overview
 
-![This is an image](/assets/images/geocore.png)
+![This is an image](../assets/images/geocore.png)
