@@ -107,6 +107,6 @@ The following is an example of the geoCore format:
         }]}
 ```
 
-# Extending the Format
+## Extending the Format
 
 This format can be easily expanded to include hundreds if not thousands of fields that you might want to include within your metadata, with only a simple code addition to allow it to be displayed or searched in the system.
