@@ -2,34 +2,17 @@
 layout: default
 title: Home
 nav_order: 1
-description: "Just the Docs is a responsive Jekyll theme with built-in search that is easily customizable and hosted on GitHub Pages."
+description: "Geocore is an open source cloud native geospatial catalog hosted on AWS"
 permalink: /
 ---
 
-# Focus on writing good documentation.
+# An Open Source, Cloud Native Geospatial Catalog.
 {: .fs-9 }
 
-Just the Docs gives your documentation a jumpstart with a responsive Jekyll theme that is easily customizable and hosted on GitHub Pages.
+The geocore geospatial library is a cloud-first solution for search, discovery, and dissemination of geospatial content. Building on the ideas of open source geospatial catalogs such as geonetwork and spatial temporal asset catalogs (STAC), we have combined the best practices and flexibility of these technologies for the cloud age. It is built using Amazon Web Services’s managed services as microservices to reduce overall cost of development and maintenance. The flexibility of this system lies in the geocore storage format. The geocore format is an extended [geoJSON](https://geojson.org/) that allows the user to not only provide geospatial information about the content, but all the required and optional metadata associated with the item.
 {: .fs-6 .fw-300 }
 
-[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://github.com/just-the-docs/just-the-docs){: .btn .fs-5 .mb-4 .mb-md-0 }
-
----
-
-{: .new }
-> **Pre-release version `0.4.0.rc2` is available!**
-> See [the CHANGELOG](https://github.com/just-the-docs/just-the-docs/blob/main/CHANGELOG.md) for a detailed breakdown.
-
-{: .warning }
-> Specifying `gem "just-the-docs"` in your `Gemfile` uses the latest ***release*** (`v0.3.3`), ignoring all pre-releases!
-> To use this pre-release, pin it:
-> ```ruby
-> gem "just-the-docs", "0.4.0.rc2"
-> ```
-> and/or
-> ```yaml
-> remote_theme: just-the-docs/just-the-docs@v0.4.0.rc2
-> ```
+[Get started now](#getting-started){: .btn .btn-primary .fs-5 .mb-4 .mb-md-0 .mr-2 } [View it on GitHub](https://canadian-geospatial-platform.github.io/GeoCore/){: .btn .fs-5 .mb-4 .mb-md-0 }
 
 ## Getting started
 
