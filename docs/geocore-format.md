@@ -4,7 +4,7 @@ title: GeoCore Format
 nav_order: 2
 ---
 
-# Customization
+# GeoCore Format
 {: .no_toc }
 
 ## Table of contents
@@ -15,10 +15,11 @@ nav_order: 2
 
 ---
 
-# Understanding the geoCore format
+# Understanding the GeoCore format
 
 As the Federal Geospatial Platform deals with not only the Harmonized North American Profile (HNAP) of ISO 19115, but different metadata standards from the provinces and territories, a flexible metadata storage format was created. The geoCore format is a standardless format that is able to store various metadata fields. It is based on the geoJSON format where the properties field of the geoJSON file stores the metadata for each record.
 
+## Example of Format
 The following is an example of the geoCore format:
 
 ```
@@ -105,5 +106,7 @@ The following is an example of the geoCore format:
           }
         }]}
 ```
+
+# Extending the Format
 
 This format can be easily expanded to include hundreds if not thousands of fields that you might want to include within your metadata, with only a simple code addition to allow it to be displayed or searched in the system.
