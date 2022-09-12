@@ -1,10 +1,10 @@
 ---
 layout: default
-title: Thematic Based Approach
+title: Themes
 nav_order: 3
 ---
 
-# Thematic Based Approach
+# Themes
 {: .no_toc }
 
 ## Table of contents

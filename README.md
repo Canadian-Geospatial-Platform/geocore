@@ -1,85 +1,159 @@
-<p align="right">
-    <a href="https://badge.fury.io/rb/just-the-docs"><img src="https://badge.fury.io/rb/just-the-docs.svg" alt="Gem version"></a> <a href="https://github.com/just-the-docs/just-the-docs/actions/workflows/ci.yml"><img src="https://github.com/just-the-docs/just-the-docs/actions/workflows/ci.yml/badge.svg" alt="CI Build status"></a> <a href="https://app.netlify.com/sites/just-the-docs/deploys"><img src="https://api.netlify.com/api/v1/badges/9dc0386d-c2a4-4077-ad83-f02c33a6c0ca/deploy-status" alt="Netlify Status"></a>
-</p>
-<br><br>
-<p align="center">
-    <h1 align="center">Just the Docs</h1>
-    <p align="center">A modern, highly customizable, and responsive Jekyll theme for documentation with built-in search.<br>Easily hosted on GitHub Pages with few dependencies.</p>
-    <p align="center"><strong><a href="https://just-the-docs.github.io/just-the-docs/">See it in action!</a></strong></p>
-    <br><br><br>
-</p>
+# Understanding the geoCore format
 
-![jtd](https://user-images.githubusercontent.com/896475/47384541-89053c80-d6d5-11e8-98dc-dba16e192de9.gif)
+As the Federal Geospatial Platform deals with not only the Harmonized North American Profile (HNAP) of ISO 19115, but different metadata standards from the provinces and territories, a flexible metadata storage format was created. The geoCore format is a standardless format that is able to store various metadata fields. It is based on the geoJSON format where the properties field of the geoJSON file stores the metadata for each record.
 
-## Installation
+The following is an example of the geoCore format:
 
-### via GitHub Pages remote theme
-
-The quickiest way to use Just The Docs is to use GitHub pages [remote theme](https://blog.github.com/2017-11-29-use-any-theme-with-github-pages/) feature in your `_config.yml` file:
-
-```yaml
-remote_theme: just-the-docs/just-the-docs
 ```
-### via RubyGems:
-
-Alternatively you can install it as a Ruby Gem.
-
-Add this line to your Jekyll site's Gemfile:
-
-```ruby
-gem "just-the-docs"
+{
+  "type": "FeatureCollection",
+    "features": [
+      {
+        "type":"Feature",
+        "geometry": {
+          "type": "Polygon",
+          "coordinates": [[[ west, south ], [ east, south ], [ east, north ], [ west, north ], [ west, south]]]},
+        "properties": {
+          "id": id,
+          "title": {
+            "en": title_en,
+            "fr": title_fr
+            },
+          "description": {
+            "en": description_en,
+            "fr": description_fr
+          },
+          "keywords": {
+            "en": keyword_String_en,
+            "fr": keyword_String_fr
+          },
+          "topicCategory": topicCategory,
+          "date": {
+            "published": {
+              "text": date_text_publication,
+              "date": date_publication
+            },
+            "created": {
+              "text": date_text_creation,
+              "date": date_creation
+            }
+          },
+          "spatialRepresentation": spatialRepresentation,
+          "type": type,
+          "geometry": boundingbox,
+          "temporalExtent": {
+            "begin": temporalExtent_begin,
+            "end": temporalExtent_end
+          },
+          "refSys": refSys,
+          "refSys_version": refSys_version,
+          "status": status,
+          "maintenance": maintenance,
+          "metadataStandard": {
+            "en": metadataStandard_en,
+            "fr": metadataStandard_fr
+          },
+          "metadataStandardVersion": metadataStandardVersion,
+          "graphicOverview": goArray,
+          "distributionFormat_name": distributionFormat_name,
+          "distributionFormat_format": distributionFormat_format,
+          "useLimits": {
+            "en": useLimits_en,
+            "fr": useLimits_fr
+          },
+          "accessConstraints": accessConstraints,
+          "otherConstraints": {
+            "en": otherConstraints_en,
+            "fr": otherConstraints_fr
+          },
+          "dateStamp": dateStamp,
+          "dataSetURI": dataSetURI,
+          "locale": {
+            "language": locale_language,
+            "country": locale_country,
+            "encoding": locale_encoding
+          },
+          "language": language,
+          "characterSet": characterSet,
+          "environmentDescription": environmentDescription,
+          "supplementalInformation": {
+            "en": supplementalInformation_en,
+            "fr": supplementalInformation_fr
+          },
+          "contact": contacts_Array,
+          "credits": credits_Array,
+          "cited": cited_Array,
+          "distributor": dist_Array,
+          "options": options_Array
+          }
+        }]}
 ```
 
-And add this line to your Jekyll site's `_config.yml`:
+This format can be easily expanded to include hundreds if not thousands of fields that you might want to include within your metadata, with only a simple code addition to allow it to be displayed or searched in the system.
 
-```yaml
-theme: just-the-docs
-```
+## Thematic based approach
 
-And then execute:
+The ISO 19115 standard contains 19 topic categories covering a set of broad groupings that are sometimes difficult to understand. To help users understand and browse geospatial content, we've remapped these topic categories to 9 themes:
 
-    $ bundle
+| Theme | Topic Category Mapping |
+| --- | --- |
+| Administration | boundaries; planning_cadastre; location |
+| Economy | economy; farming |
+| Emergency | Created for [GEO.CA](https://geo.ca/emergency/index.html) |
+| Environment | biota; environment; elevation; inland_waters; oceans; climatologyMeteorologyAtmosphere |
+| Imagery | imageryBaseMapsEarthCover |
+| Infrastructure | structure; transport; utilitiesCommunication |
+| Legal | Created for [GEO.CA](https://geo.ca/emergency/index.html) |
+| Science | geoscientificInformation |
+| Society | health; society; intelligenceMilitary |
 
-Or install it yourself as:
 
-    $ gem install just-the-docs
 
-Alternatively, you can run it inside Docker while developing your site
+# Foundational Architecture
 
-    $ docker-compose up
+We store individual geoCore files for each item in an Amazon s3 bucket. To allow for faster search, we combine these individual files into a [parquet file](https://parquet.apache.org/). Once the parquet file is created and stored in another Amazon s3 bucket, we use [AWS Glue](https://aws.amazon.com/glue/) and [AWS Athena](https://aws.amazon.com/athena/). AWS Athena and AWS Glue work together to enable SQL queries against non-SQL data. This allows us to create sql like tables in athena using this parquet file. We can access AWS Athena with sql queries to search and discover our metadata records in the geocore data lake.
 
-## Usage
+To enable the scalability of the system, we use AWS Lambda functions to carry out the main tasks of the system. This allows us to scale the system to millions of concurrent activities without endangering the functionality of the system. We use AWS lambda primarily as microservices, where one lambda function does one function, and that one function really well. It can be accessed with AWS API Gateway using AWS Cloudfront and security to enable the best protection of the system.
 
-[View the documentation](https://just-the-docs.github.io/just-the-docs/) for usage information.
+This lays out the foundational architecture of the geoCore system, now we will describe the additional and optional functions that we have created in the system to power [GEO.CA](https://geo.ca/).
 
-## Contributing
+## Overview
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/just-the-docs/just-the-docs. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](http://contributor-covenant.org) code of conduct.
+![This is an image](/assets/geocore.png)
 
-### Submitting code changes:
 
-- Open a [Pull Request](https://github.com/just-the-docs/just-the-docs/pulls)
-- Ensure all CI tests pass
-- Await code review
-- Bump the version number in `just-the-docs.gemspec` and `package.json` according to [semantic versioning](https://semver.org/).
 
-### Design and development principles of this theme:
+# Additional features
 
-1. As few dependencies as possible
-2. No build script needed
-3. First class mobile experience
-4. Make the content shine
+## Contributions
 
-## Development
+In the process of replicating current functionality that is available with geonetwork, we have started to create a contribution API to allow users to contribute metadata to the system. This contribution workflow can occur in multiple ways:
 
-To set up your environment to develop this theme, run `bundle install`.
+  1. New Metadata - This is new metadata coming from the user with no system to system access requirements.
+  2. Update - If a user has already submitted metadata in some way, we can use the UUID to update that record.
+  3. Plugin - If the user would like to add plugin configuration for use with viewer technologies, we use the UUID to update the record to include things such as         symbology, graphing configuration, and others.etc.
+  4. GeoNetwork - If you have a geonetwork instance, like our legacy system, you are able to use the CSW endpoint to capture your metadata and transform it into the geoCore format and into the geoCore system. This is an easy migration path for organizations that would like to adopt a cloud native solution.
 
-A modern [devcontainer configuration](https://code.visualstudio.com/docs/remote/containers) for VSCode is included.
+## Authentication
 
-Your theme is set up just like a normal Jekyll site! To test your theme, run `bundle exec jekyll serve` and open your browser at `http://localhost:4000`. This starts a Jekyll server using your theme. Add pages, documents, data, etc. like normal to test your theme's contents. As you make modifications to your theme and to your content, your site will regenerate and you should see the changes in the browser after a refresh, just like normal.
+Authentication for the system will be used to build out our community and contribution systems for [GEO.CA](https://geo.ca/). It will use the Government of Canada authentication system, but will also have the ability to authenticate with AWS Cognito, giving your organization the ability to customize the login experience if you choose to use the geoCore application.
 
-When the theme is released, only the files in `_layouts`, `_includes`, and `_sass` tracked with Git will be released.
+## Featured, Foundational and thematic functionality
 
-## License
+As we were building geoCore for use with [GEO.CA](https://geo.ca/), we needed a way to highlight certain records for display on the website. For this we created several AWS DynamoDB tables to keep track of which metadata records - by way of the UUID - are associated with a certain display property.
 
-The theme is available as open source under the terms of the [MIT License](http://opensource.org/licenses/MIT).
+For example:
+
+  - Featured - Is used to highlight certain metadata records for display on the thematic pages of [GEO.CA](https://geo.ca/) such as [Administration](https://geo.ca/administration/index.html) and [Emergency](https://geo.ca/emergency/index.html).
+  - Foundational - We call the base information of Canada, that being the principal geospatial features such as roads, rails, and water as foundational layers. These are tagged using the DynamoDB table to be displayed on an unique [landing page](https://geo.ca/foundation-data/index.html).
+  - Themes - We use a dynamoDB table to catagorize metadata records into themes that are not natively supported by ISO 19115 metadata standard, such as legal and emergency. For a full list of ISO 19115 theme mapping to the themes found at [GEO.CA](https://geo.ca/), please [click here](https://geo.ca/).
+
+## Analytics
+
+One of the biggest concerns when publishing mass amounts of information is the question if it's being used. To monitor and report on this, we created the analytics extension that allows for the tracking of three main analytics:
+
+  1. Search - The analytics system records the searches that take place on the system. This allows us to gain valuable insights on what and when people are searching for specific geographic regions or keywords.
+  2. Access - When a user accesses a record, either by viewing the footprint or by viewing the metadata record for the item.
+  3. Use - When a use adds an item to a map, or clicks on one of the resources, we include that in our use analytics.
+
+For [GEO.CA](https://geo.ca/) we use the combined total of Access and Use analytics as a north star metric of overall access to open geopsatial content. This allows us to understand how access to Canada's geospatial information is growing through time, and we highly encourage the use of this metric for your organization as well.
