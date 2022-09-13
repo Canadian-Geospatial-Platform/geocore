@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Additional Features
+title: Additional Features / Caractéristiques supplémentaires
 nav_order: 5
 ---
 
