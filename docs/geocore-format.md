@@ -4,10 +4,10 @@ title: GeoCore Format / Format GeoCore
 nav_order: 2
 ---
 
-# GeoCore Format
+# GeoCore Format / Format GeoCore
 {: .no_toc }
 
-## Table of contents
+## Table of contents / Table des matières
 {: .no_toc .text-delta }
 
 1. TOC
@@ -110,15 +110,6 @@ The following is an example of the geoCore format:
 ## Extending the Format
 
 This format can be easily expanded to include hundreds if not thousands of fields that you might want to include within your metadata, with only a simple code addition to allow it to be displayed or searched in the system.
-
-# Format GeoCore
-{: .no_toc }
-
-## Table des matières
-{: .no_toc .text-delta }
-
-1. TOC
-{:toc}
 
 ---
 
