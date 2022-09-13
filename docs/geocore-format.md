@@ -7,7 +7,7 @@ nav_order: 2
 # GeoCore Format
 {: .no_toc }
 
-## Table of contents
+## Table of contents / Table des matières
 {: .no_toc .text-delta }
 
 1. TOC
