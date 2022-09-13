@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Themes
+title: Themes / Themes
 nav_order: 3
 ---
 

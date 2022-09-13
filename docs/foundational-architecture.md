@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Architecture
+title: Architecture / Architecture
 nav_order: 4
 ---
 
