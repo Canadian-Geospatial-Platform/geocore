@@ -1,6 +1,6 @@
 ---
 layout: default
-title: GeoCore Format
+title: GeoCore Format / Format GeoCore
 nav_order: 2
 ---
 
