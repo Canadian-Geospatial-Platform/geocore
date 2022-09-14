@@ -346,7 +346,7 @@ nav_order: 6
     Analytics results for the Top 10 Search Results in the last month / Résultats d&#x27;analyse pour les 10 premiers résultats de recherche du mois dernier
         <a href="#getanalytics1">getanalytics1</a>
     <h4 class="field-label">400</h4>
-    bad input parameters / mauvais paramètres d'entrée
+    bad input parameters / mauvais paramètres d'entrée / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -399,7 +399,7 @@ nav_order: 6
     Analytics results for record accessed last 30 days and all time / Résultats analytiques pour les enregistrements consultés au cours des 30 derniers jours et tout au long de l&#x27;année.
         <a href="#getanalytics10">getanalytics10</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -450,7 +450,7 @@ nav_order: 6
     Number of Datasets and Contributors in total, or in a theme. / Nombre d&#x27;ensembles de données et de contributeurs au total, ou dans un thème.
         <a href="#getanalytics11">getanalytics11</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -495,7 +495,7 @@ nav_order: 6
     Analytics results for the number of searches in the last month / Résultats d&#x27;analyse du nombre de recherches effectuées au cours du dernier mois
         <a href="#getanalytics2">getanalytics2</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -540,7 +540,7 @@ nav_order: 6
     Analytics results for the number of accesses in the last month / Résultats de l&#x27;analyse du nombre d&#x27;accès au cours du dernier mois
         <a href="#getanalytics3">getanalytics3</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -598,7 +598,7 @@ nav_order: 6
     Analytics results for the Top 10 accessed or used in the last month  / Résultats d&#x27;analyse pour le Top 10 des accès ou utilisations du mois dernier
         <a href="#getanalytics4">getanalytics4</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -656,7 +656,7 @@ nav_order: 6
     Analytics results for the Top 10 accessed or used all time / Résultats d&#x27;analyse pour le Top 10 des accès ou utilisations les plus fréquents
         <a href="#getanalytics5">getanalytics5</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -701,7 +701,7 @@ nav_order: 6
     Analytics results for the number of searches previous month / Résultats d&#x27;analyse pour le nombre de recherches du mois précédent
         <a href="#getanalytics6">getanalytics6</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -746,7 +746,7 @@ nav_order: 6
     Analytics results for the number of accesses previous month / Résultats d&#x27;analyse du nombre d&#x27;accès au mois précédent
         <a href="#getanalytics7">getanalytics7</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -806,7 +806,7 @@ nav_order: 6
     Analytics results for the Top 10 accessed or used in theme / Résultats d&#x27;analyse pour le Top 10 des accès ou utilisations dans le thème
         <a href="#getanalytics8">getanalytics8</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -878,7 +878,7 @@ nav_order: 6
     Analytics results for the Top 10 accessed or used by contributor / Résultats d&#x27;analyse pour le Top 10 des accès ou utilisations par contributeur
         <a href="#getanalytics9">getanalytics9</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -938,7 +938,7 @@ nav_order: 6
     The plugin configuration associated with an UUID / La configuration du plugin associée à un UUID
         <a href="#plugin_config">plugin_config</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1003,7 +1003,7 @@ nav_order: 6
     Add a geonetwork JSON file to the system / Ajouter un fichier JSON de géoréseau au système
         <a href="#geonetwork">geonetwork</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1236,7 +1236,7 @@ nav_order: 6
     Add Metadata to the System / Ajouter des métadonnées au système
         <a href="#new">new</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1467,7 +1467,7 @@ nav_order: 6
     The metadata ipdated information associated with an UUID / Les informations actualisées des métadonnées associées à un UUID
         <a href="#update">update</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1546,7 +1546,7 @@ nav_order: 6
     The metadata associated with foundational datasets / Les métadonnées associées aux ensembles de données fondamentales
         <a href="#featured">featured</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1624,7 +1624,7 @@ nav_order: 6
     The metadata associated with foundational datasets / Les métadonnées associées aux ensembles de données fondamentales
         <a href="#foundational">foundational</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1732,7 +1732,7 @@ nav_order: 6
     Query Results / Résultats des requêtes
         <a href="#search">search</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
@@ -1850,7 +1850,7 @@ nav_order: 6
     The metadata associated with the UUID / Les métadonnées associées à l&#x27;UUID
         <a href="#id">id</a>
     <h4 class="field-label">400</h4>
-    bad input parameters
+    bad input parameters / mauvais paramètres d'entrée
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
