@@ -1,17 +1,12 @@
 ---
 layout: default
-title: geoCore API / API geoCore
+title: geoCore API Documentation / Documentation de l'API géoCore
 nav_order: 6
 ---
 
-# geoCore API / API geoCore
-
----
-
-<!doctype html>
 <html>
   <head>
-    <title>geoCore API / API geoCore</title>
+    <title>geoCore API Documentation / Documentation de l'API géoCore</title>
     <style type="text/css">
       body {
       	font-family: Trebuchet MS, sans-serif;
@@ -188,22 +183,21 @@ nav_order: 6
     </style>
   </head>
   <body>
-  <h1>geoCore API / API geoCore</h1>
-    <div class="app-desc">geoCore API / API geoCore</div>
-    <div class="app-desc">More information: <a href="https://helloreverb.com">https://helloreverb.com</a></div>
-    <div class="app-desc">Contact Info: <a href="christopher.melnick-macdonald@canada.ca">christopher.melnick-macdonald@canada.ca</a></div>
-    <div class="app-desc">Version: 1.0.0</div>
-    <div class="app-desc">BasePath:/</div>
+  <h1>geoCore API Documentation / Documentation de l'API géoCore</h1>
+    <div class="app-desc">geoCore API Documentation / Documentation de l'API géoCore</div>
+    <div class="app-desc">Contact Info / Informations de contact: <a href="christopher.melnick-macdonald@canada.ca">christopher.melnick-macdonald@canada.ca</a></div>
+    <div class="app-desc">Version / Version: 1.4</div>
+    <div class="app-desc">BasePath / CheminBase:/</div>
     <div class="license-info">Apache 2.0</div>
     <div class="license-url">http://www.apache.org/licenses/LICENSE-2.0.html</div>
-  <h2>Access</h2>
+  <h2>Access / Accéder</h2>
 
-  <h2><a name="__Methods">Methods</a></h2>
-  [ Jump to <a href="#__Models">Models</a> ]
+  <h2><a name="__Methods">Methods / Méthodes</a></h2>
+  [ Jump to / Passer aux <a href="#__Models">Models / Modèles</a> ]
 
-  <h3>Table of Contents </h3>
+  <h3>Table of Contents / Table des matières</h3>
   <div class="method-summary"></div>
-  <h4><a href="#AnalyticsAnalytique">AnalyticsAnalytique</a></h4>
+  <h4><a href="#AnalyticsAnalytique">Analytics / Analytique</a></h4>
   <ul>
   <li><a href="#putAnalytics"><code><span class="http-method">post</span> /analytics</code></a></li>
   <li><a href="#viewAnalytics1"><code><span class="http-method">get</span> /analytics/1</code></a></li>
@@ -218,14 +212,14 @@ nav_order: 6
   <li><a href="#viewAnalytics8"><code><span class="http-method">get</span> /analytics/8</code></a></li>
   <li><a href="#viewAnalytics9"><code><span class="http-method">get</span> /analytics/9</code></a></li>
   </ul>
-  <h4><a href="#ContributeContribuer">ContributeContribuer</a></h4>
+  <h4><a href="#ContributeContribuer">Contribute / Contribuer</a></h4>
   <ul>
   <li><a href="#contribute"><code><span class="http-method">post</span> /contribute/plugin</code></a></li>
   <li><a href="#geonetwork"><code><span class="http-method">post</span> /contribute/geonetwork</code></a></li>
   <li><a href="#new"><code><span class="http-method">post</span> /contribute/new</code></a></li>
   <li><a href="#update"><code><span class="http-method">post</span> /contribute/update</code></a></li>
   </ul>
-  <h4><a href="#SearchRecherche">SearchRecherche</a></h4>
+  <h4><a href="#SearchRecherche">Search / Recherche</a></h4>
   <ul>
   <li><a href="#featured"><code><span class="http-method">get</span> /featured</code></a></li>
   <li><a href="#foundational"><code><span class="http-method">get</span> /foundational</code></a></li>
@@ -233,7 +227,7 @@ nav_order: 6
   <li><a href="#id"><code><span class="http-method">get</span> /id</code></a></li>
   </ul>
 
-  <h1><a name="AnalyticsAnalytique">AnalyticsAnalytique</a></h1>
+  <h1><a name="AnalyticsAnalytique">Analytics / Analytique</a></h1>
   <div class="method"><a name="putAnalytics"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -243,23 +237,23 @@ nav_order: 6
 
 
     <h3 class="field-label">Consumes</h3>
-    This API call consumes the following media types via the <span class="header">Content-Type</span> request header:
+    This API call consumes the following media types via the <span class="header">Content-Type</span> request header / Cet appel d'API consomme les types de médias suivants via l'en-tête de requête <span class="header">Content-Type</span> :
     <ul>
       <li><code>application/json</code></li>
     </ul>
 
-    <h3 class="field-label">Request body</h3>
+    <h3 class="field-label">Request body / Corps de la requête</h3>
     <div class="field-items">
       <div class="param">body <a href="#putanalytics_inner">putanalytics_inner</a> (optional)</div>
 
             <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Post analytics event </div>
                 </div>  <!-- field-items -->
 
-    <h3 class="field-label">Request headers</h3>
+    <h3 class="field-label">Request headers / En-têtes de requête</h3>
     <div class="field-items">
     </div>  <!-- field-items -->
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query parameters / Paramètres de requête</h3>
     <div class="field-items">
       <div class="param">search (optional)</div>
 
@@ -295,7 +289,7 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Responses</h3>
+    <h3 class="field-label">Responses / Réponses</h3>
     <h4 class="field-label">201</h4>
     item created
         <a href="#"></a>
