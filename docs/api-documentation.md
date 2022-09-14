@@ -244,7 +244,7 @@ nav_order: 6
 
     <h3 class="field-label">Request body / Corps de la requête</h3>
     <div class="field-items">
-      <div class="param">body <a href="#putanalytics_inner">putanalytics_inner</a> (optional)</div>
+      <div class="param">body <a href="#putanalytics_inner">putanalytics_inner</a> (optional/optionnel)</div>
 
             <div class="param-desc"><span class="param-type">Body Parameter</span> &mdash; Post analytics event </div>
                 </div>  <!-- field-items -->
@@ -253,35 +253,35 @@ nav_order: 6
     <div class="field-items">
     </div>  <!-- field-items -->
 
-    <h3 class="field-label">Query parameters / Paramètres de requête</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes / Paramètres de requête</h3>
     <div class="field-items">
-      <div class="param">search (optional)</div>
+      <div class="param">search (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record search term used / Enregistrement du terme de recherche utilisé </div>      <div class="param">theme (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record search term used / Enregistrement du terme de recherche utilisé </div>      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record theme filter used / Enregistrer le filtre thématique utilisé </div>      <div class="param">filter (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record theme filter used / Enregistrer le filtre thématique utilisé </div>      <div class="param">filter (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record type filter used / Filtre de type d&#x27;enregistrement utilisé </div>      <div class="param">geo (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record type filter used / Filtre de type d&#x27;enregistrement utilisé </div>      <div class="param">geo (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record geospatial bounding box used for search / Enregistrer la zone de délimitation géospatiale utilisée pour la recherche </div>      <div class="param">uuid (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record geospatial bounding box used for search / Enregistrer la zone de délimitation géospatiale utilisée pour la recherche </div>      <div class="param">uuid (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record the UUID of accessed resource data / Enregistrer l&#x27;UUID des données accédées </div>      <div class="param">resource (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record the UUID of accessed resource data / Enregistrer l&#x27;UUID des données accédées </div>      <div class="param">resource (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record the resouce of accessed data / Enregistrer la ressource des données consultées </div>      <div class="param">resource_type (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record the resouce of accessed data / Enregistrer la ressource des données consultées </div>      <div class="param">resource_type (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record the resource type of accessed data / Enregistrer le type de ressource des données consultées </div>      <div class="param">loc (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record the resource type of accessed data / Enregistrer le type de ressource des données consultées </div>      <div class="param">loc (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record location of analytics event / Enregistrer l&#x27;emplacement de l&#x27;événement analytique </div>      <div class="param">lang (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record location of analytics event / Enregistrer l&#x27;emplacement de l&#x27;événement analytique </div>      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record language of event / Enregistrer la langue de l&#x27;événement </div>      <div class="param">type (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record language of event / Enregistrer la langue de l&#x27;événement </div>      <div class="param">type (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record type of analytics / Enregistrer le type d&#x27;analyse </div>      <div class="param">org (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record type of analytics / Enregistrer le type d&#x27;analyse </div>      <div class="param">org (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record organisation of accessed data / Organisation de l&#x27;enregistrement des données consultées </div>      <div class="param">foundational (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record organisation of accessed data / Organisation de l&#x27;enregistrement des données consultées </div>      <div class="param">foundational (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record if dataset is foundational / Enregistrer si l&#x27;ensemble de données est fondamental </div>      <div class="param">type_filter (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record if dataset is foundational / Enregistrer si l&#x27;ensemble de données est fondamental </div>      <div class="param">type_filter (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Record if type filter was used / Enregistrer si le filtre de type a été utilisé </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record if type filter was used / Enregistrer si le filtre de type a été utilisé </div>    </div>  <!-- field-items -->
 
 
 
@@ -361,13 +361,13 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">uuid (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">uuid (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; UUID of the record / UUID de l&#x27;enregistrement </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; UUID of the record / UUID de l&#x27;enregistrement </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -414,11 +414,11 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">theme (optional)</div>
+      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Theme of data / Thème de la data </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme of data / Thème de la data </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -555,11 +555,11 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -613,11 +613,11 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -761,13 +761,13 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (required)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (required)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Theme of data / Thème de la data </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme of data / Thème de la data </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -821,13 +821,13 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">org (required)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">org (required)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Organizational owner of data / Propriétaire organisationnel des données </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Organizational owner of data / Propriétaire organisationnel des données </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -897,13 +897,13 @@ nav_order: 6
     <div class="field-items">
     </div>  <!-- field-items -->
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">uuid (optional)</div>
+      <div class="param">uuid (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The UUID of the metadata item where Plugin Configuration is being added / L&#x27;UUID de l&#x27;élément de métadonnées où la configuration du plug-in est ajoutée </div>      <div class="param">plugin_config (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The UUID of the metadata item where Plugin Configuration is being added / L&#x27;UUID de l&#x27;élément de métadonnées où la configuration du plug-in est ajoutée </div>      <div class="param">plugin_config (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The JSON Plugin Configuration for GeoView. This should include all languages required as per standard Plugin Configuration Schema. </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The JSON Plugin Configuration for GeoView. This should include all languages required as per standard Plugin Configuration Schema. </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -956,15 +956,15 @@ nav_order: 6
     <div class="field-items">
     </div>  <!-- field-items -->
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">uuid (optional)</div>
+      <div class="param">uuid (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The UUID of the metadata item from the geonetwork instance / L&#x27;UUID de l&#x27;élément de métadonnées de l&#x27;instance de géoréseau </div>      <div class="param">source_code (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The UUID of the metadata item from the geonetwork instance / L&#x27;UUID de l&#x27;élément de métadonnées de l&#x27;instance de géoréseau </div>      <div class="param">source_code (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The source code provided to you&#x27;re geonetwork instance by the geocore team. / Le code source fourni à votre instance geonetwork par l&#x27;équipe geocore. </div>      <div class="param">item (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The source code provided to you&#x27;re geonetwork instance by the geocore team. / Le code source fourni à votre instance geonetwork par l&#x27;équipe geocore. </div>      <div class="param">item (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The Geonetwork JSON File to be added to the system. / Le fichier Geonetwork JSON à ajouter au système </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The Geonetwork JSON File to be added to the system. / Le fichier Geonetwork JSON à ajouter au système </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1021,109 +1021,109 @@ nav_order: 6
     <div class="field-items">
     </div>  <!-- field-items -->
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">source_key (optional)</div>
+      <div class="param">source_key (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; If you are posting from an external system to geoCore, we will provide you a source key to include in new metadata events. We will use your source key and your system&#x27;s uuid as the uuid for geoCore. </div>      <div class="param">id (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; If you are posting from an external system to geoCore, we will provide you a source key to include in new metadata events. We will use your source key and your system&#x27;s uuid as the uuid for geoCore. </div>      <div class="param">id (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; If you are posting from an external system to geoCore, we will use your system&#x27;s source key along with your system&#x27;s uuid to create an unique uuid for geoCore. If you are posting to geoCore from your source system, we will provide you geoCore&#x27;s UUID in the response to a successful post request. </div>      <div class="param">coordinates (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; If you are posting from an external system to geoCore, we will use your system&#x27;s source key along with your system&#x27;s uuid to create an unique uuid for geoCore. If you are posting to geoCore from your source system, we will provide you geoCore&#x27;s UUID in the response to a successful post request. </div>      <div class="param">coordinates (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The coordinates of the item / Les coordonnées de l&#x27;article </div>      <div class="param">title_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The coordinates of the item / Les coordonnées de l&#x27;article </div>      <div class="param">title_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The title in english of the item / Le titre en anglais de l&#x27;article </div>      <div class="param">title_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The title in english of the item / Le titre en anglais de l&#x27;article </div>      <div class="param">title_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The title in french of the item / Le titre en français de l&#x27;article </div>      <div class="param">description_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The title in french of the item / Le titre en français de l&#x27;article </div>      <div class="param">description_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The description in english of the item / La description en anglais de l&#x27;article </div>      <div class="param">description_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The description in english of the item / La description en anglais de l&#x27;article </div>      <div class="param">description_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The description in french of the item / La description en français de l&#x27;article </div>      <div class="param">keywords_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The description in french of the item / La description en français de l&#x27;article </div>      <div class="param">keywords_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The keywords in english of the item / Les mots-clés en anglais de l&#x27;article </div>      <div class="param">keywords_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The keywords in english of the item / Les mots-clés en anglais de l&#x27;article </div>      <div class="param">keywords_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The keywords in french of the item / Les mots-clés en français de l&#x27;article </div>      <div class="param">topicCategory (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The keywords in french of the item / Les mots-clés en français de l&#x27;article </div>      <div class="param">topicCategory (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The Topic Category of the item / La catégorie de sujet de l&#x27;élément </div>      <div class="param">date_published_text (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The Topic Category of the item / La catégorie de sujet de l&#x27;élément </div>      <div class="param">date_published_text (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The published date text of the item / Le texte de la date de publication de l&#x27;élément </div>      <div class="param">date_published_date (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The published date text of the item / Le texte de la date de publication de l&#x27;élément </div>      <div class="param">date_published_date (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The published date date of the item / La date de publication de l&#x27;élément </div>      <div class="param">date_created_text (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The published date date of the item / La date de publication de l&#x27;élément </div>      <div class="param">date_created_text (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The created date text of the item / Le texte de la date de création de l&#x27;élément </div>      <div class="param">date_created_date (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The created date text of the item / Le texte de la date de création de l&#x27;élément </div>      <div class="param">date_created_date (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The created date date of the item / La date de création de l&#x27;élément </div>      <div class="param">spatialRepresentation (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The created date date of the item / La date de création de l&#x27;élément </div>      <div class="param">spatialRepresentation (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The spatial representation of the item / La représentation spatiale de l&#x27;article </div>      <div class="param">type (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The spatial representation of the item / La représentation spatiale de l&#x27;article </div>      <div class="param">type (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The type of the item / Le type de l&#x27;article </div>      <div class="param">geometry (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The type of the item / Le type de l&#x27;article </div>      <div class="param">geometry (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The geometry of the item / La géométrie de l&#x27;article </div>      <div class="param">temporalExtent_begin (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The geometry of the item / La géométrie de l&#x27;article </div>      <div class="param">temporalExtent_begin (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The beginning date of the temporal extent of the item / Date de début de l&#x27;étendue temporelle de l&#x27;élément </div>      <div class="param">temporalExtent_end (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The beginning date of the temporal extent of the item / Date de début de l&#x27;étendue temporelle de l&#x27;élément </div>      <div class="param">temporalExtent_end (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The end date of the temporal extent of the item / La date de fin de l&#x27;étendue temporelle de l&#x27;élément </div>      <div class="param">refSys (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The end date of the temporal extent of the item / La date de fin de l&#x27;étendue temporelle de l&#x27;élément </div>      <div class="param">refSys (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The reference system of the item / Le référentiel de l&#x27;article </div>      <div class="param">refSys_version (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The reference system of the item / Le référentiel de l&#x27;article </div>      <div class="param">refSys_version (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The reference system version of the item / La version du système de référence de l&#x27;article </div>      <div class="param">status (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The reference system version of the item / La version du système de référence de l&#x27;article </div>      <div class="param">status (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The status of the item / Le statut de l&#x27;article </div>      <div class="param">maintenance (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The status of the item / Le statut de l&#x27;article </div>      <div class="param">maintenance (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The maintenance of the item / L&#x27;entretien de l&#x27;article </div>      <div class="param">metadataStandard_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The maintenance of the item / L&#x27;entretien de l&#x27;article </div>      <div class="param">metadataStandard_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The metadata standard in english of the item / La norme de métadonnées en anglais de l&#x27;article </div>      <div class="param">metadataStandard_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The metadata standard in english of the item / La norme de métadonnées en anglais de l&#x27;article </div>      <div class="param">metadataStandard_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The metadata standard in french of the item / La norme de métadonnées en français de l&#x27;article </div>      <div class="param">metadataStandardVersion (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The metadata standard in french of the item / La norme de métadonnées en français de l&#x27;article </div>      <div class="param">metadataStandardVersion (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The metadata standard version of the item / La version standard des métadonnées de l&#x27;élément </div>      <div class="param">graphicOverview (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The metadata standard version of the item / La version standard des métadonnées de l&#x27;élément </div>      <div class="param">graphicOverview (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The graphic overviews of the item  / Les aperçus graphiques de l&#x27;article </div>      <div class="param">distributionFormat_name (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The graphic overviews of the item  / Les aperçus graphiques de l&#x27;article </div>      <div class="param">distributionFormat_name (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The distribution format name of the item / Le nom du format de distribution de l&#x27;élément </div>      <div class="param">distributionFormat_format (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The distribution format name of the item / Le nom du format de distribution de l&#x27;élément </div>      <div class="param">distributionFormat_format (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The distribution format format of the item / Le format de distribution de l&#x27;article </div>      <div class="param">useLimits_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The distribution format format of the item / Le format de distribution de l&#x27;article </div>      <div class="param">useLimits_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The use limits in english of the item / Les limites d&#x27;utilisation en anglais de l&#x27;article </div>      <div class="param">useLimits_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The use limits in english of the item / Les limites d&#x27;utilisation en anglais de l&#x27;article </div>      <div class="param">useLimits_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The use limits in french of the item / Les limites d&#x27;utilisation en français de l&#x27;article </div>      <div class="param">accessConstraints (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The use limits in french of the item / Les limites d&#x27;utilisation en français de l&#x27;article </div>      <div class="param">accessConstraints (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The access constraints of the item / Les contraintes d&#x27;accès de l&#x27;article </div>      <div class="param">otherConstraints_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The access constraints of the item / Les contraintes d&#x27;accès de l&#x27;article </div>      <div class="param">otherConstraints_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The other constraints in english of the item / Les autres contraintes en anglais de l&#x27;article </div>      <div class="param">otherConstraints_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The other constraints in english of the item / Les autres contraintes en anglais de l&#x27;article </div>      <div class="param">otherConstraints_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The other constraints in french of the item / Les autres contraintes en français de l&#x27;article </div>      <div class="param">dateStamp (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The other constraints in french of the item / Les autres contraintes en français de l&#x27;article </div>      <div class="param">dateStamp (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The date stamp of the item / Le cachet dateur de l&#x27;article </div>      <div class="param">dataSetURI (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The date stamp of the item / Le cachet dateur de l&#x27;article </div>      <div class="param">dataSetURI (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The data set uri of the item / L&#x27;URI de l&#x27;ensemble de données de l&#x27;élément </div>      <div class="param">locale_language (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The data set uri of the item / L&#x27;URI de l&#x27;ensemble de données de l&#x27;élément </div>      <div class="param">locale_language (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The locale language of the item / La langue locale de l&#x27;élément </div>      <div class="param">locale_country (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The locale language of the item / La langue locale de l&#x27;élément </div>      <div class="param">locale_country (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The locale country of the item / Le pays local de l&#x27;élément </div>      <div class="param">locale_encoding (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The locale country of the item / Le pays local de l&#x27;élément </div>      <div class="param">locale_encoding (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The locale encoding of the item / L&#x27;encodage local de l&#x27;élément </div>      <div class="param">language (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The locale encoding of the item / L&#x27;encodage local de l&#x27;élément </div>      <div class="param">language (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The language of the item / La langue de l&#x27;article </div>      <div class="param">characterSet (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The language of the item / La langue de l&#x27;article </div>      <div class="param">characterSet (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The characterSet of the item / Le jeu de caractères de l&#x27;élément </div>      <div class="param">environmentDescription (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The characterSet of the item / Le jeu de caractères de l&#x27;élément </div>      <div class="param">environmentDescription (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The environment description of the item / La description de l&#x27;environnement de l&#x27;élément </div>      <div class="param">supplementalInformation_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The environment description of the item / La description de l&#x27;environnement de l&#x27;élément </div>      <div class="param">supplementalInformation_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The supplemental information in english of the item / Les informations supplémentaires en anglais de l&#x27;article </div>      <div class="param">supplementalInformation_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The supplemental information in english of the item / Les informations supplémentaires en anglais de l&#x27;article </div>      <div class="param">supplementalInformation_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The supplemental information in french of the item / Les informations complémentaires en français de l&#x27;article </div>      <div class="param">contact (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The supplemental information in french of the item / Les informations complémentaires en français de l&#x27;article </div>      <div class="param">contact (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The contact array of the item / Le tableau de contact de l&#x27;élément </div>      <div class="param">credits (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The contact array of the item / Le tableau de contact de l&#x27;élément </div>      <div class="param">credits (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The credits array of the item / Le tableau des crédits de l&#x27;élément </div>      <div class="param">cited (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The credits array of the item / Le tableau des crédits de l&#x27;élément </div>      <div class="param">cited (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The cited array of the item / Le tableau cité de l&#x27;élément </div>      <div class="param">distributor (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The cited array of the item / Le tableau cité de l&#x27;élément </div>      <div class="param">distributor (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The distributor array of the item / Le tableau de distribution de l&#x27;article </div>      <div class="param">options (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The distributor array of the item / Le tableau de distribution de l&#x27;article </div>      <div class="param">options (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The options array of the item / Le tableau d&#x27;options de l&#x27;élément </div>      <div class="param">plugins (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The options array of the item / Le tableau d&#x27;options de l&#x27;élément </div>      <div class="param">plugins (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The plugins array of the item / Le tableau de plugins de l&#x27;élément </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The plugins array of the item / Le tableau de plugins de l&#x27;élément </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1254,107 +1254,107 @@ nav_order: 6
     <div class="field-items">
     </div>  <!-- field-items -->
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">uuid (optional)</div>
+      <div class="param">uuid (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The UUID of the metadata item where metadata is being updated / L&#x27;UUID de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">coordinates (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The UUID of the metadata item where metadata is being updated / L&#x27;UUID de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">coordinates (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The coordinates of the metadata item where metadata is being updated / Les coordonnées de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">title_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The coordinates of the metadata item where metadata is being updated / Les coordonnées de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">title_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The title in english of the metadata item where metadata is being updated / Le titre en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">title_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The title in english of the metadata item where metadata is being updated / Le titre en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">title_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The title in french of the metadata item where metadata is being updated / Le titre en français de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">description_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The title in french of the metadata item where metadata is being updated / Le titre en français de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">description_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The description in english of the metadata item where metadata is being updated / La description en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">description_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The description in english of the metadata item where metadata is being updated / La description en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">description_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The description in french of the metadata item where metadata is being updated / La description en français de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">keywords_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The description in french of the metadata item where metadata is being updated / La description en français de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">keywords_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The keywords in english of the metadata item where metadata is being updated / Les mots-clés en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">keywords_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The keywords in english of the metadata item where metadata is being updated / Les mots-clés en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">keywords_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The keywords in french of the metadata item where metadata is being updated / Les mots-clés en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">topicCategory (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The keywords in french of the metadata item where metadata is being updated / Les mots-clés en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">topicCategory (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The Topic Category of the metadata item where metadata is being updated / La catégorie de sujet de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_published_text (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The Topic Category of the metadata item where metadata is being updated / La catégorie de sujet de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_published_text (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The published date text of the metadata item where metadata is being updated / Le texte de la date de publication de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_published_date (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The published date text of the metadata item where metadata is being updated / Le texte de la date de publication de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_published_date (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The published date date of the metadata item where metadata is being updated / La date de publication date de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_created_text (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The published date date of the metadata item where metadata is being updated / La date de publication date de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_created_text (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The created date text of the metadata item where metadata is being updated / Le texte de la date de création de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_created_date (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The created date text of the metadata item where metadata is being updated / Le texte de la date de création de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">date_created_date (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The created date date of the metadata item where metadata is being updated / La date de création date de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">spatialRepresentation (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The created date date of the metadata item where metadata is being updated / La date de création date de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">spatialRepresentation (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The spatial representation of the metadata item where metadata is being updated / La représentation spatiale de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">type (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The spatial representation of the metadata item where metadata is being updated / La représentation spatiale de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">type (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The type of the metadata item where metadata is being updated / Le type de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">geometry (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The type of the metadata item where metadata is being updated / Le type de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">geometry (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The geometry of the metadata item where metadata is being updated / La géométrie de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">temporalExtent_begin (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The geometry of the metadata item where metadata is being updated / La géométrie de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">temporalExtent_begin (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The beginning date of the temporal extent of the metadata item where metadata is being updated / Date de début de l&#x27;étendue temporelle de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">temporalExtent_end (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The beginning date of the temporal extent of the metadata item where metadata is being updated / Date de début de l&#x27;étendue temporelle de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">temporalExtent_end (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The end date of the temporal extent of the metadata item where metadata is being updated / La date de fin de l&#x27;étendue temporelle de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">refSys (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The end date of the temporal extent of the metadata item where metadata is being updated / La date de fin de l&#x27;étendue temporelle de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">refSys (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The reference system of the metadata item where metadata is being updated / Le système de référence de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">refSys_version (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The reference system of the metadata item where metadata is being updated / Le système de référence de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">refSys_version (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The reference system version of the metadata item where metadata is being updated / La version du système de référence de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">status (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The reference system version of the metadata item where metadata is being updated / La version du système de référence de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">status (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The status of the metadata item where metadata is being updated / Le statut de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">maintenance (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The status of the metadata item where metadata is being updated / Le statut de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">maintenance (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The maintenance of the metadata item where metadata is being updated / La maintenance de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">metadataStandard_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The maintenance of the metadata item where metadata is being updated / La maintenance de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">metadataStandard_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The metadata standard in english of the metadata item where metadata is being updated / La norme de métadonnées en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">metadataStandard_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The metadata standard in english of the metadata item where metadata is being updated / La norme de métadonnées en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">metadataStandard_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The metadata standard in french of the metadata item where metadata is being updated / Le standard de métadonnées en français de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">metadataStandardVersion (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The metadata standard in french of the metadata item where metadata is being updated / Le standard de métadonnées en français de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">metadataStandardVersion (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The metadata standard version of the metadata item where metadata is being updated / La version standard des métadonnées de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">graphicOverview (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The metadata standard version of the metadata item where metadata is being updated / La version standard des métadonnées de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">graphicOverview (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The graphic overviews of the metadata item where metadata is being updated / Les aperçus graphiques de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">distributionFormat_name (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The graphic overviews of the metadata item where metadata is being updated / Les aperçus graphiques de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">distributionFormat_name (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The distribution format name of the metadata item where metadata is being updated / Le nom du format de distribution de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">distributionFormat_format (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The distribution format name of the metadata item where metadata is being updated / Le nom du format de distribution de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">distributionFormat_format (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The distribution format format of the metadata item where metadata is being updated / Le format de format de distribution de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">useLimits_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The distribution format format of the metadata item where metadata is being updated / Le format de format de distribution de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">useLimits_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The use limits in english of the metadata item where metadata is being updated / Les limites d&#x27;utilisation en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">useLimits_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The use limits in english of the metadata item where metadata is being updated / Les limites d&#x27;utilisation en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">useLimits_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The use limits in french of the metadata item where metadata is being updated / Les limites d&#x27;utilisation en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">accessConstraints (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The use limits in french of the metadata item where metadata is being updated / Les limites d&#x27;utilisation en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">accessConstraints (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The access constraints of the metadata item where metadata is being updated / Les contraintes d&#x27;accès de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">otherConstraints_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The access constraints of the metadata item where metadata is being updated / Les contraintes d&#x27;accès de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">otherConstraints_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The other constraints in english of the metadata item where metadata is being updated / Les autres contraintes en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">otherConstraints_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The other constraints in english of the metadata item where metadata is being updated / Les autres contraintes en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">otherConstraints_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The other constraints in french of the metadata item where metadata is being updated / Les autres contraintes en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">dateStamp (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The other constraints in french of the metadata item where metadata is being updated / Les autres contraintes en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">dateStamp (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The date stamp of the metadata item where metadata is being updated / L&#x27;horodatage de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">dataSetURI (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The date stamp of the metadata item where metadata is being updated / L&#x27;horodatage de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">dataSetURI (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The data set uri of the metadata item where metadata is being updated / L&#x27;URI de l&#x27;ensemble de données de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">locale_language (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The data set uri of the metadata item where metadata is being updated / L&#x27;URI de l&#x27;ensemble de données de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">locale_language (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The locale language of the metadata item where metadata is being updated / La langue locale de l&#x27;élément de métadonnées dans lequel les métadonnées sont mises à jour </div>      <div class="param">locale_country (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The locale language of the metadata item where metadata is being updated / La langue locale de l&#x27;élément de métadonnées dans lequel les métadonnées sont mises à jour </div>      <div class="param">locale_country (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The locale country of the metadata item where metadata is being updated / Le pays local de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">locale_encoding (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The locale country of the metadata item where metadata is being updated / Le pays local de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">locale_encoding (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The locale encoding of the metadata item where metadata is being updated / Le codage local de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">language (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The locale encoding of the metadata item where metadata is being updated / Le codage local de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">language (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The language of the metadata item where metadata is being updated / La langue de l&#x27;élément de métadonnées dans lequel les métadonnées sont mises à jour </div>      <div class="param">characterSet (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The language of the metadata item where metadata is being updated / La langue de l&#x27;élément de métadonnées dans lequel les métadonnées sont mises à jour </div>      <div class="param">characterSet (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The characterSet of the metadata item where metadata is being updated / Le jeu de caractères de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">environmentDescription (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The characterSet of the metadata item where metadata is being updated / Le jeu de caractères de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">environmentDescription (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The environment description of the metadata item where metadata is being updated / La description de l&#x27;environnement de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">supplementalInformation_en (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The environment description of the metadata item where metadata is being updated / La description de l&#x27;environnement de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">supplementalInformation_en (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The supplemental information in english of the metadata item where metadata is being updated / Les informations supplémentaires en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">supplementalInformation_fr (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The supplemental information in english of the metadata item where metadata is being updated / Les informations supplémentaires en anglais de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">supplementalInformation_fr (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The supplemental information in french of the metadata item where metadata is being updated / Les informations complémentaires en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">contact (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The supplemental information in french of the metadata item where metadata is being updated / Les informations complémentaires en français de la rubrique de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">contact (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The contact array of the metadata item where metadata is being updated / Le tableau de contacts de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">credits (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The contact array of the metadata item where metadata is being updated / Le tableau de contacts de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">credits (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The credits array of the metadata item where metadata is being updated / Le tableau des crédits de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">cited (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The credits array of the metadata item where metadata is being updated / Le tableau des crédits de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">cited (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The cited array of the metadata item where metadata is being updated / Le tableau cité de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">distributor (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The cited array of the metadata item where metadata is being updated / Le tableau cité de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">distributor (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The distributor array of the metadata item where metadata is being updated / Le tableau de distribution de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">options (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The distributor array of the metadata item where metadata is being updated / Le tableau de distribution de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">options (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The options array of the metadata item where metadata is being updated / Le tableau d&#x27;options de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">plugins (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The options array of the metadata item where metadata is being updated / Le tableau d&#x27;options de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">plugins (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; The plugins array of the metadata item where metadata is being updated / Le tableau de plugins de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The plugins array of the metadata item where metadata is being updated / Le tableau de plugins de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1483,13 +1483,13 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1561,13 +1561,13 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1639,35 +1639,35 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">keyword_only (optional)</div>
+      <div class="param">keyword_only (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; For keyword only searches, pass the value of true or false / Pour les recherches par mot-clé uniquement, passez la valeur true ou false. </div>      <div class="param">keyword (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; For keyword only searches, pass the value of true or false / Pour les recherches par mot-clé uniquement, passez la valeur true ou false. </div>      <div class="param">keyword (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Keyword used for querying / Mot clé utilisé pour l&#x27;interrogation </div>      <div class="param">lang (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Keyword used for querying / Mot clé utilisé pour l&#x27;interrogation </div>      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">min (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">min (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Minimum row number for returned results / Nombre minimal de lignes pour les résultats retournés </div>      <div class="param">max (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Minimum row number for returned results / Nombre minimal de lignes pour les résultats retournés </div>      <div class="param">max (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Maximum row number for returned results / Nombre maximal de lignes pour les résultats retournés </div>      <div class="param">theme (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Maximum row number for returned results / Nombre maximal de lignes pour les résultats retournés </div>      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>      <div class="param">org (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>      <div class="param">org (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Organisation filtering is now available based on the following value list. You can pass one or many values to the API by separating the values with a “|”. E.g. - “Canadian Space Agency|National Defence”.The following are the codes for organisations - Agriculture and Agri-Food Canada, Canadian Food Inspection Agency, Canadian Northern Economic Development Agency, Canadian Nuclear Safety Commission, Canadian Space Agency, Crown-Indigenous Relations and Northern Affairs Canada, Elections Canada, Employment and Social Development Canada, Environment and Climate Change Canada, Fisheries and Oceans Canada, Government of Alberta, Government of British Columbia, Government of Manitoba, Government and Municipalities of Quebec, Government of New Brunswick, Government of Newfoundland and Labrador, Government of Northwest territories, Government of Nova Scotia, Government of Nunavut, Government of Ontario, Government of Prince Edward Island, Government of Saskatchewan, Government of Yukon, Health Canada, Impact Assessment Agency of Canada, National Defence, National Research Council Canada, Natural Resources Canada, Parks Canada, Public Health Agency of Canada, Public Safety Canada, Statistics Canada, Transport Canada, Veterans Affairs / Le filtrage des organisations est désormais disponible sur la base de la liste de valeurs suivante. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en les séparant par un &amp;quot;|&amp;quot;. Voici les codes des organisations - Agence canadienne d&#x27;inspection des aliments, Agence Canadienne de Développement économique du Nord, Agence d&#x27;évaluation d&#x27;impact du Canada, Agence de la santé publique du Canada, Agence spatiale canadienne, Agriculture et Agroalimentaire Canada, Anciens combattants, Commission canadienne de sûreté nucléaire, Conseil national de recherches du Canada, Défense nationale, Élections Canada, Emploi et Développement social Canada, Environnement et Changement climatique Canada, Gouvernement de l&#x27;Alberta, Gouvernement de l&#x27;Île-du-Prince-Édouard, Gouvernement de l&#x27;Ontario, Gouvernement de la Colombie-Britannique, Gouvernement de la Nouvelle-Écosse, Gouvernement de la Saskatchewan, Gouvernement de Terre-Neuve et du Labrador, Gouvernement des Territoires du Nord-Ouest, Gouvernement du Manitoba, Gouvernement du Nouveau-Brunswick, Gouvernement du Nunavut, Gouvernement du Yukon, Gouvernement et municipalités du Québec, Parcs Canada, Pêches et Océans Canada, Relations Couronne-Autochtones et Affaires du Nord Canada, Ressources naturelles Canada, Santé Canada, Sécurité publique Canada, Statistique Canada, Transports Canada. </div>      <div class="param">type (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Organisation filtering is now available based on the following value list. You can pass one or many values to the API by separating the values with a “|”. E.g. - “Canadian Space Agency|National Defence”.The following are the codes for organisations - Agriculture and Agri-Food Canada, Canadian Food Inspection Agency, Canadian Northern Economic Development Agency, Canadian Nuclear Safety Commission, Canadian Space Agency, Crown-Indigenous Relations and Northern Affairs Canada, Elections Canada, Employment and Social Development Canada, Environment and Climate Change Canada, Fisheries and Oceans Canada, Government of Alberta, Government of British Columbia, Government of Manitoba, Government and Municipalities of Quebec, Government of New Brunswick, Government of Newfoundland and Labrador, Government of Northwest territories, Government of Nova Scotia, Government of Nunavut, Government of Ontario, Government of Prince Edward Island, Government of Saskatchewan, Government of Yukon, Health Canada, Impact Assessment Agency of Canada, National Defence, National Research Council Canada, Natural Resources Canada, Parks Canada, Public Health Agency of Canada, Public Safety Canada, Statistics Canada, Transport Canada, Veterans Affairs / Le filtrage des organisations est désormais disponible sur la base de la liste de valeurs suivante. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en les séparant par un &amp;quot;|&amp;quot;. Voici les codes des organisations - Agence canadienne d&#x27;inspection des aliments, Agence Canadienne de Développement économique du Nord, Agence d&#x27;évaluation d&#x27;impact du Canada, Agence de la santé publique du Canada, Agence spatiale canadienne, Agriculture et Agroalimentaire Canada, Anciens combattants, Commission canadienne de sûreté nucléaire, Conseil national de recherches du Canada, Défense nationale, Élections Canada, Emploi et Développement social Canada, Environnement et Changement climatique Canada, Gouvernement de l&#x27;Alberta, Gouvernement de l&#x27;Île-du-Prince-Édouard, Gouvernement de l&#x27;Ontario, Gouvernement de la Colombie-Britannique, Gouvernement de la Nouvelle-Écosse, Gouvernement de la Saskatchewan, Gouvernement de Terre-Neuve et du Labrador, Gouvernement des Territoires du Nord-Ouest, Gouvernement du Manitoba, Gouvernement du Nouveau-Brunswick, Gouvernement du Nunavut, Gouvernement du Yukon, Gouvernement et municipalités du Québec, Parcs Canada, Pêches et Océans Canada, Relations Couronne-Autochtones et Affaires du Nord Canada, Ressources naturelles Canada, Santé Canada, Sécurité publique Canada, Statistique Canada, Transports Canada. </div>      <div class="param">type (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Type filtering is based on the following value list. You can pass one or many values to the API by separating the values with a “|”. E.g. - “Dataset|Collection”. The following are the codes for type - Dataset, Collection, Application, API, Community, Service. / Le filtrage des types est basé sur la liste de valeurs suivante. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant les valeurs par un &amp;quot;|&amp;quot;. Par exemple, &amp;quot;Dataset|Collection&amp;quot;. Voici les codes pour le type - Ensemble de données, Collection, Application, API, Communauté, Service. </div>      <div class="param">foundational (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Type filtering is based on the following value list. You can pass one or many values to the API by separating the values with a “|”. E.g. - “Dataset|Collection”. The following are the codes for type - Dataset, Collection, Application, API, Community, Service. / Le filtrage des types est basé sur la liste de valeurs suivante. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant les valeurs par un &amp;quot;|&amp;quot;. Par exemple, &amp;quot;Dataset|Collection&amp;quot;. Voici les codes pour le type - Ensemble de données, Collection, Application, API, Communauté, Service. </div>      <div class="param">foundational (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; By passing “true” to the API only results for the query that have been tagged as a foundational layer will be returned. / En passant &amp;quot;true&amp;quot; à l&#x27;API, seuls les résultats de la requête qui ont été marqués comme couche de base seront retournés. </div>      <div class="param">north (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; By passing “true” to the API only results for the query that have been tagged as a foundational layer will be returned. / En passant &amp;quot;true&amp;quot; à l&#x27;API, seuls les résultats de la requête qui ont été marqués comme couche de base seront retournés. </div>      <div class="param">north (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Northern Bounding Box - Required if keyword_only is false / Boîte englobante du nord - Requis si keyword_only est false </div>      <div class="param">east (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Northern Bounding Box - Required if keyword_only is false / Boîte englobante du nord - Requis si keyword_only est false </div>      <div class="param">east (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Eastern Bounding Box - Required if keyword_only is false / Boîte de délimitation de l&#x27;Est - Requis si keyword_only est false </div>      <div class="param">south (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Eastern Bounding Box - Required if keyword_only is false / Boîte de délimitation de l&#x27;Est - Requis si keyword_only est false </div>      <div class="param">south (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Southern Bounding Box - Required if keyword_only is false  / Boîte de délimitation sud - Requis si keyword_only est false </div>      <div class="param">west (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Southern Bounding Box - Required if keyword_only is false  / Boîte de délimitation sud - Requis si keyword_only est false </div>      <div class="param">west (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Western Bounding Box - Required if keyword_only is false  / Boîte d&#x27;encerclement ouest - Requis si keyword_only est false </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Western Bounding Box - Required if keyword_only is false  / Boîte d&#x27;encerclement ouest - Requis si keyword_only est false </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1747,13 +1747,13 @@ nav_order: 6
 
 
 
-    <h3 class="field-label">Query parameters</h3>
+    <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
-      <div class="param">lang (optional)</div>
+      <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">id (optional)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">id (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; UUID of the metadata / L&#x27;UUID des métadonnées </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; UUID of the metadata / L&#x27;UUID des métadonnées </div>    </div>  <!-- field-items -->
 
 
     <h3 class="field-label">Return type</h3>
@@ -1903,9 +1903,9 @@ nav_order: 6
     <div class="field-items">
       <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
           <div class="param-desc"><span class="param-type">example: ACME Corporation</span></div>
-<div class="param">homePage (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: url</div>
+<div class="param">homePage (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: url</div>
           <div class="param-desc"><span class="param-type">example: https://www.acme-corp.com</span></div>
-<div class="param">phone (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">phone (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
           <div class="param-desc"><span class="param-type">example: 408-867-5309</span></div>
     </div>  <!-- field-items -->
   </div>
@@ -1925,20 +1925,20 @@ nav_order: 6
     <h3><a name="foundational_inner"><code>foundational_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">published (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">options (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">contact (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">created (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">spatialRepresentation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">temporalExtent (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">graphicOverview (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">language (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">id (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">coordinates (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">description (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">published (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">options (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">contact (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">created (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">spatialRepresentation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">temporalExtent (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">graphicOverview (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -1951,9 +1951,9 @@ nav_order: 6
     <h3><a name="geonetwork_inner"><code>geonetwork_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">uuid (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">source_code (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">item (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+      <div class="param">uuid (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">source_code (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">item (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -1972,8 +1972,8 @@ nav_order: 6
     <h3><a name="getanalytics10_inner"><code>getanalytics10_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">30 (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">all (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">30 (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">all (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -1986,16 +1986,16 @@ nav_order: 6
     <h3><a name="getanalytics11_inner"><code>getanalytics11_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">organizations (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">total (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">organizations (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
     <h3><a name="getanalytics1_inner"><code>getanalytics1_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">search (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">count (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">search (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">count (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2008,7 +2008,7 @@ nav_order: 6
     <h3><a name="getanalytics2_inner"><code>getanalytics2_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">searches (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">searches (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2021,7 +2021,7 @@ nav_order: 6
     <h3><a name="getanalytics3_inner"><code>getanalytics3_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">accesses (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">accesses (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2034,14 +2034,14 @@ nav_order: 6
     <h3><a name="getanalytics4_inner"><code>getanalytics4_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">accesses (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">publication_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">topicCategory (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">organisation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">accesses (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">id (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">coordinates (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">publication_date (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">topicCategory (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">organisation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2078,14 +2078,14 @@ nav_order: 6
     <h3><a name="getanalytics9_inner"><code>getanalytics9_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">accesses (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">publication_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">topicCategory (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">organisation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">accesses (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">id (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">coordinates (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">publication_date (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">topicCategory (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">organisation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2098,39 +2098,39 @@ nav_order: 6
     <h3><a name="id_inner"><code>id_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">published (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">options (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">contact (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">created (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">spatialRepresentation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">temporalExtent (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">graphicOverview (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">language (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">topicCategory (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">refSys (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">refSys_version (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">maintenance (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">metadataStandard (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">distributionFormat_name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">distributionFormat_format (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">useLimits (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">accessConstraints (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">otherConstraints (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">dateStamp (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">dataSetURI (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">locale (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">characterSet (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">environmentDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">supplementalInformation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">credits (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">distributor (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">id (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">coordinates (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">description (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">published (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">options (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">contact (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">created (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">spatialRepresentation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">temporalExtent (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">graphicOverview (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">topicCategory (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">refSys (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">refSys_version (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">maintenance (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">metadataStandard (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">distributionFormat_name (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">distributionFormat_format (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">useLimits (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">accessConstraints (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">otherConstraints (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dateStamp (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dataSetURI (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">locale (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">characterSet (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">environmentDescription (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">supplementalInformation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">credits (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">distributor (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2149,8 +2149,8 @@ nav_order: 6
     <h3><a name="plugin_config_inner"><code>plugin_config_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">uuid (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">plugin_config (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+      <div class="param">uuid (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">plugin_config (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2163,19 +2163,19 @@ nav_order: 6
     <h3><a name="putanalytics_inner"><code>putanalytics_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">search (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">theme (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">filter (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">geo (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">uuid (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">resource (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">resource_type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">loc (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">lang (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">org (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">foundational (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type_filter (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">search (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">theme (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">filter (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">geo (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">uuid (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">resource (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">resource_type (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">loc (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">lang (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">org (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">foundational (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type_filter (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2188,23 +2188,23 @@ nav_order: 6
     <h3><a name="search_inner"><code>search_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">row_num (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">id (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">description (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">published (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">options (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">contact (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">created (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">spatialRepresentation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type_filter (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">temporalExtent (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">graphicOverview (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">language (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+      <div class="param">row_num (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">id (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">coordinates (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">description (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">published (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">options (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">contact (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">created (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">spatialRepresentation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type_filter (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">temporalExtent (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">graphicOverview (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">total (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
@@ -2217,54 +2217,54 @@ nav_order: 6
     <h3><a name="update_inner"><code>update_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-      <div class="param">coordinates (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">title_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">description_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">description_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">keywords_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">topicCategory (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">date_published_text (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">date_published_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">date_created_text (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">date_created_date (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">spatialRepresentation (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">type (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">geometry (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">temporalExtent_begin (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">temporalExtent_end (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">refSys (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">refSys_version (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">status (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">maintenance (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">metadataStandard_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">metadataStandard_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">metadataStandardVersion (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">graphicOverview (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-<div class="param">distributionFormat_name (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">distributionFormat_format (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">useLimits_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">useLimits_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">accessConstraints (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">otherConstraints_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">otherConstraints_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">dateStamp (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">dataSetURI (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">locale_language (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">locale_country (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">locale_encoding (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">language (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">characterSet (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">environmentDescription (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">supplementalInformation_en (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">supplementalInformation_fr (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-<div class="param">contact (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-<div class="param">credits (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-<div class="param">cited (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-<div class="param">distributor (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-<div class="param">options (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-<div class="param">plugins (optional)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+      <div class="param">coordinates (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">title_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">description_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">description_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">keywords_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">topicCategory (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">date_published_text (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">date_published_date (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">date_created_text (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">date_created_date (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">spatialRepresentation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">type (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">geometry (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">temporalExtent_begin (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">temporalExtent_end (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">refSys (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">refSys_version (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">status (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">maintenance (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">metadataStandard_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">metadataStandard_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">metadataStandardVersion (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">graphicOverview (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+<div class="param">distributionFormat_name (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">distributionFormat_format (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">useLimits_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">useLimits_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">accessConstraints (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">otherConstraints_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">otherConstraints_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dateStamp (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">dataSetURI (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">locale_language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">locale_country (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">locale_encoding (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">characterSet (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">environmentDescription (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">supplementalInformation_en (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">supplementalInformation_fr (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">contact (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+<div class="param">credits (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+<div class="param">cited (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+<div class="param">distributor (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+<div class="param">options (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
+<div class="param">plugins (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   </body>
