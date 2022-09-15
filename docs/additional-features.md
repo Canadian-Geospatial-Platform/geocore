@@ -23,17 +23,25 @@ In the process of replicating current functionality that is available with geone
 
 This is new metadata coming from the user with no system to system access requirements.
 
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_new)
+
 ## Update
 
 If a user has already submitted metadata in some way, we can use the UUID to update that record.
+
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_update)
 
 ## Plugin
 
 If the user would like to add plugin configuration for use with viewer technologies, we use the UUID to update the record to include things such as         symbology, graphing configuration, and others.etc.
 
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_plugin)
+
 ## GeoNetwork
 
 If you have a geonetwork instance, like our legacy system, you are able to use the CSW endpoint to capture your metadata and transform it into the geoCore format and into the geoCore system. This is an easy migration path for organizations that would like to adopt a cloud native solution.
+
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_geonetwork)
 
 # Authentication
 
@@ -47,9 +55,13 @@ As we were building geoCore for use with [GEO.CA](https://geo.ca/), we needed a 
 
 Is used to highlight certain metadata records for display on the thematic pages of [GEO.CA](https://geo.ca/) such as [Administration](https://geo.ca/administration/index.html) and [Emergency](https://geo.ca/emergency/index.html).
 
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#featured_ref)
+
 ## Foundational
 
 We call the base information of Canada, that being the principal geospatial features such as roads, rails, and water as foundational layers. These are tagged using the DynamoDB table to be displayed on an unique [landing page](https://geo.ca/foundation-data/index.html).
+
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#foundational_ref)
 
 ## Themes
 
@@ -65,6 +77,8 @@ One of the biggest concerns when publishing mass amounts of information is the q
 
 For [GEO.CA](https://geo.ca/) we use the combined total of Access and Use analytics as a north star metric of overall access to open geospatial content. This allows us to understand how access to Canada's geospatial information is growing through time, and we highly encourage the use of this metric for your organization as well.
 
+[View API Reference](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#analytics_ref)
+
 ---
 
 # Contributions
@@ -75,17 +89,25 @@ Dans le processus de réplication des fonctionnalités actuelles disponibles ave
 
 Il s'agit de nouvelles métadonnées provenant de l'utilisateur sans exigences d'accès de système à système.
 
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_new)
+
 ## Mise à jour
 
 Si un utilisateur a déjà soumis des métadonnées d'une manière ou d'une autre, nous pouvons utiliser l'UUID pour mettre à jour cet enregistrement.
+
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_update)
 
 ## Brancher
 
 Si l'utilisateur souhaite ajouter une configuration de plug-in à utiliser avec les technologies de visualisation, nous utilisons l'UUID pour mettre à jour l'enregistrement afin d'inclure des éléments tels que la symbologie, la configuration graphique, etc.
 
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_plugin)
+
 ## GeoNetwork
 
 Si vous avez une instance de géoréseau, comme notre ancien système, vous pouvez utiliser le point de terminaison CSW pour capturer vos métadonnées et les transformer au format geoCore et dans le système geoCore. Il s'agit d'une voie de migration facile pour les organisations qui souhaitent adopter une solution cloud native.
+
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#contribute_geonetwork)
 
 # Authentification
 
@@ -99,9 +121,13 @@ Alors que nous développions geoCore pour une utilisation avec [GEO.CA](https://
 
 Est utilisé pour mettre en évidence certains enregistrements de métadonnées à afficher sur les pages thématiques de [GEO.CA](https://geo.ca/) telles que [Administration](https://geo.ca/administration/index.html) et [Urgence](https://geo.ca/emergency/index.html).
 
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#featured_ref)
+
 ## Fondamental
 
 Nous appelons l'information de base du Canada, c'est-à-dire les principales caractéristiques géospatiales telles que les routes, les voies ferrées et l'eau en tant que couches fondamentales. Celles-ci sont étiquetées à l'aide de la table DynamoDB pour être affichées sur une [page de destination] unique (https://geo.ca/foundation-data/index.html).
+
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#foundational_ref)
 
 ## Thèmes
 
@@ -116,3 +142,5 @@ L'une des plus grandes préoccupations lors de la publication de quantités mass
   3. Utilisation - Lorsqu'une utilisation ajoute un élément à une carte ou clique sur l'une des ressources, nous l'incluons dans nos analyses d'utilisation.
 
 Pour [GEO.CA](https://geo.ca/), nous utilisons le total combiné des analyses d'accès et d'utilisation comme métrique nord-étoile de l'accès global au contenu géospatial ouvert. Cela nous permet de comprendre comment l'accès à l'information géospatiale du Canada se développe au fil du temps, et nous encourageons fortement l'utilisation de cette mesure pour votre organisation également.
+
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/GeoCore/docs/api-documentation/#analytics_ref)
