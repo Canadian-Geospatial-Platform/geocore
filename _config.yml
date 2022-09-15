@@ -79,9 +79,6 @@ nav_sort: case_sensitive # Capital letters sorted before lowercase
 # External navigation links
 nav_external_links:
 
-  - title: API Reference Documentation / Documentation de référence de l'API
-    url: https://app.swaggerhub.com/apis/christopher.melnick-macdonald/geoCore/1.0.0#/
-
   - title: Build Document / Créer un document
     url: https://github.com/canadian-geospatial-platform/GeoCore/docs/Build Document geoCore geospatial library.docx
 
