@@ -228,7 +228,7 @@ nav_order: 6
   </ul>
 
   <h1><a name="AnalyticsAnalytique">Analytics / Analytique</a></h1>
-  <div class="method" name="analytics_ref"><a name="putAnalytics"></a>
+  <div class="method"><a name="putAnalytics"></a>
     <div class="method-summary">Post analytics event / Événement post-analytique to system / Enregistrer l'événement analytique dans le système (<span class="nickname">putAnalytics</span>)</div>
     <div class="method-notes">Adds an Analytical event to the system / Ajoute un événement analytique au système      Requires API Key / Nécessite une clé API</div>
 
@@ -858,8 +858,8 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <h1><a name="ContributeContribuer">Contribute / Contribuer</a></h1>
-  <div class="method"><a name="contribute"></a>
-    <div class="method-summary" name="contribute_plugin">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">contribute</span>)</div>
+  <div class="method"><a name="contribute"></a><a name="contribute_plugin"></a>
+    <div class="method-summary" >Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">contribute</span>)</div>
     <div class="method-notes">Contribute plugin configuration for a specific UUID to the system. Requires API Key. / Contribuer à la configuration du plug-in pour un UUID spécifique au système. Nécessite une clé API</div>
 
 
@@ -914,9 +914,9 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="geonetwork"></a>
+  <div class="method"><a name="geonetwork"></a><a name="contribute_geonetwork"></a>
 
-    <div class="method-summary"  name="contribute_geonetwork">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">geonetwork</span>)</div>
+    <div class="method-summary">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">geonetwork</span>)</div>
     <div class="method-notes">Contribute plugin configuration for a specific UUID to the system. Requires API Key. / Contribuer à la configuration du plug-in pour un UUID spécifique au système. Nécessite une clé API</div>
 
 
@@ -977,9 +977,9 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="new"></a>
+  <div class="method"><a name="new"></a><a name="contribute_new"></a>
 
-    <div class="method-summary" name="contribute_new">Add Metadata to the system / Ajouter des métadonnées dans le système (<span class="nickname">new</span>)</div>
+    <div class="method-summary">Add Metadata to the system / Ajouter des métadonnées dans le système (<span class="nickname">new</span>)</div>
     <div class="method-notes">Add Metadata to the system Requires API Key. / Ajouter des métadonnées au système nécessite une clé API.</div>
 
 
@@ -1208,9 +1208,9 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="update"></a>
+  <div class="method"><a name="update"></a><a name="contribute_update"></a>
 
-    <div class="method-summary"  name="contribute_update">Update Metadata in the system / Mettre à jour les métadonnées dans le système (<span class="nickname">update</span>)</div>
+    <div class="method-summary">Update Metadata in the system / Mettre à jour les métadonnées dans le système (<span class="nickname">update</span>)</div>
     <div class="method-notes">Update metadata for a specific UUID in the system Requires API Key. / Mettre à jour les métadonnées d'un UUID spécifique dans le système. Nécessite une clé API.</div>
 
 
@@ -1437,8 +1437,8 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="SearchRecherche">Search / Recherche</a></h1>
-  <div class="method" name="featured_ref"><a name="featured"></a>
+  <h1><a name="SearchRecherche">Search / Recherche</a></h1><a name="featured_ref"></a>
+  <div class="method"><a name="featured"></a>
 
     <div class="method-summary">Query Featured Datasets / Interroger les jeux de données en vedette (<span class="nickname">featured</span>)</div>
     <div class="method-notes">Query datasets that have been tagged as Featured / Interroger les ensembles de données qui ont été étiquetés comme &quot;Featured&quot;.</div>
@@ -1514,7 +1514,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <div class="method"><a name="foundational" name="foundational_ref"></a>
+  <div class="method"><a name="foundational_ref"></a>
 
     <div class="method-summary">Query Foundational Datasets / Interroger les ensembles de données de base (<span class="nickname">foundational</span>)</div>
     <div class="method-notes">Query datasets that have been tagged as Foundational / Interroger les ensembles de données qui ont été étiquetés comme fondateurs.</div>
