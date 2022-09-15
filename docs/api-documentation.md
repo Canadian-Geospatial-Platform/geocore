@@ -439,8 +439,8 @@ nav_order: 6
 }</code></pre>
 
     <h3 class="field-label">Produces / Produit</h3>
-    This API call Produces / Produit the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header. / Cet appel d'API produit les types de média suivants selon l'en-tête de requête <span class="header">Accept</span> ; le type de média sera transmis par l'en-tête de réponse <span class="header">Content-Type</span>.
     <ul>
       <li><code>application/json</code></li>
     </ul>
@@ -484,8 +484,8 @@ nav_order: 6
 }</code></pre>
 
     <h3 class="field-label">Produces / Produit</h3>
-    This API call Produces / Produit the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header. / Cet appel d'API produit les types de média suivants selon l'en-tête de requête <span class="header">Accept</span> ; le type de média sera transmis par l'en-tête de réponse <span class="header">Content-Type</span>.
     <ul>
       <li><code>application/json</code></li>
     </ul>
@@ -529,8 +529,8 @@ nav_order: 6
 }</code></pre>
 
     <h3 class="field-label">Produces / Produit</h3>
-    This API call Produces / Produit the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header. / Cet appel d'API produit les types de média suivants selon l'en-tête de requête <span class="header">Accept</span> ; le type de média sera transmis par l'en-tête de réponse <span class="header">Content-Type</span>.
     <ul>
       <li><code>application/json</code></li>
     </ul>
@@ -645,8 +645,8 @@ nav_order: 6
 }</code></pre>
 
     <h3 class="field-label">Produces / Produit</h3>
-    This API call Produces / Produit the following media types according to the <span class="header">Accept</span> request header;
-    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header. / Cet appel d'API produit les types de média suivants selon l'en-tête de requête <span class="header">Accept</span> ; le type de média sera transmis par l'en-tête de réponse <span class="header">Content-Type</span>.
     <ul>
       <li><code>application/json</code></li>
     </ul>
