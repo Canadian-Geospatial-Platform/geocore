@@ -299,9 +299,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics1"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/1</code></pre></div>
+
     <div class="method-summary">Top 10 Searches last month / Les 10 principales recherches du mois dernier (<span class="nickname">viewAnalytics1</span>)</div>
     <div class="method-notes">What are the top 10 searches in the last month? No parameters are required / Quelles sont les 10 principales recherches effectuées au cours du dernier mois ? Aucun paramètre n'est requis</div>
 
@@ -348,9 +346,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics10"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/10</code></pre></div>
+
     <div class="method-summary">Item Accessed last 30 days and all time / Article consulté au cours des 30 derniers jours et tout le temps (<span class="nickname">viewAnalytics10</span>)</div>
     <div class="method-notes">How many times has this record been accessed in the last month and all time? / Combien de fois cet enregistrement a-t-il été consulté au cours du dernier mois et en tout temps ?</div>
 
@@ -401,9 +397,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics11"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/11</code></pre></div>
+
     <div class="method-summary">Count of total number of datasets and organization / Compte du nombre total d'ensembles de données et d'organisation (<span class="nickname">viewAnalytics11</span>)</div>
     <div class="method-notes">Number of Datasets and Contributors in total, or in a theme. / Nombre d'ensembles de données et de contributeurs au total, ou dans un thème.</div>
 
@@ -452,9 +446,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics2"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/2</code></pre></div>
+
     <div class="method-summary">Number of Searches last month / Nombre de recherches effectuées le mois dernier (<span class="nickname">viewAnalytics2</span>)</div>
     <div class="method-notes">How many searches have been conducted in the last month? No parameters are required / Combien de recherches ont été effectuées au cours du dernier mois ? Aucun paramètre n'est requis</div>
 
@@ -497,9 +489,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics3"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/3</code></pre></div>
+
     <div class="method-summary">Number of Accesses last month / Nombre d'accès le mois dernier (<span class="nickname">viewAnalytics3</span>)</div>
     <div class="method-notes">How many times did geospatial content get accessed in the last month? No parameters are required / Combien de fois le contenu géospatial a-t-il été consulté au cours du dernier mois ? Aucun paramètre n'est requis</div>
 
@@ -542,9 +532,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics4"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/4</code></pre></div>
+
     <div class="method-summary">Top 10 Accessed last month / Top 10 des accès du mois dernier (<span class="nickname">viewAnalytics4</span>)</div>
     <div class="method-notes">What is the top 10 accessed / used content in the last month? No parameters are required / Quels sont les 10 contenus les plus consultés / utilisés au cours du dernier mois ? Aucun paramètre n'est requis</div>
 
@@ -600,9 +588,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics5"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/5</code></pre></div>
+
     <div class="method-summary">Top 10 Accessed all time / Les 10 meilleurs accès de tous les temps (<span class="nickname">viewAnalytics5</span>)</div>
     <div class="method-notes">What is the top 10 accessed / used content of all time? No parameters are required / Quel est le top 10 des contenus les plus consultés/utilisés de tous les temps ? Aucun paramètre n'est requis</div>
 
@@ -658,9 +644,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics6"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/6</code></pre></div>
+
     <div class="method-summary">Number of Searches previous month / Nombre de recherches le mois précédent (<span class="nickname">viewAnalytics6</span>)</div>
     <div class="method-notes">How many searches have been conducted in the previous month? No parameters are required / Combien de recherches ont été effectuées au cours du mois précédent ? Aucun paramètre n'est requis</div>
 
@@ -703,9 +687,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics7"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/7</code></pre></div>
+
     <div class="method-summary">Number of Accesses previous month / Nombre d'accès au mois précédent (<span class="nickname">viewAnalytics7</span>)</div>
     <div class="method-notes">How many times did geospatial content get accessed in the previous month? No parameters are required / Combien de fois le contenu géospatial a-t-il été consulté au cours du mois précédent ? Aucun paramètre n'est requis</div>
 
@@ -748,9 +730,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics8"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/8</code></pre></div>
+
     <div class="method-summary">Top 10 Accessed in theme all time / Les 10 meilleurs accès au thème de tous les temps (<span class="nickname">viewAnalytics8</span>)</div>
     <div class="method-notes">What is the top 10 accessed / used content in theme? / Quel est le contenu le plus consulté / utilisé dans le thème ?</div>
 
@@ -808,9 +788,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="viewAnalytics9"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /analytics/9</code></pre></div>
+
     <div class="method-summary">Top 10 Accessed by contributor all time / Top 10 des accès par contributeur de tous les temps (<span class="nickname">viewAnalytics9</span>)</div>
     <div class="method-notes">What is the top 10 accessed / used content by contributor? / Quels sont les 10 contenus les plus consultés/utilisés par les contributeurs ?</div>
 
@@ -881,9 +859,7 @@ nav_order: 6
   <hr/>
   <h1><a name="ContributeContribuer">Contribute / Contribuer</a></h1>
   <div class="method"><a name="contribute"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /contribute/plugin</code></pre></div>
+
     <div class="method-summary">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">contribute</span>)</div>
     <div class="method-notes">Contribute plugin configuration for a specific UUID to the system. Requires API Key. / Contribuer à la configuration du plug-in pour un UUID spécifique au système. Nécessite une clé API</div>
 
@@ -940,9 +916,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="geonetwork"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /contribute/geonetwork</code></pre></div>
+
     <div class="method-summary">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">geonetwork</span>)</div>
     <div class="method-notes">Contribute plugin configuration for a specific UUID to the system. Requires API Key. / Contribuer à la configuration du plug-in pour un UUID spécifique au système. Nécessite une clé API</div>
 
@@ -1005,9 +979,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="new"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /contribute/new</code></pre></div>
+
     <div class="method-summary">Add Metadata to the system / Ajouter des métadonnées dans le système (<span class="nickname">new</span>)</div>
     <div class="method-notes">Add Metadata to the system Requires API Key. / Ajouter des métadonnées au système nécessite une clé API.</div>
 
@@ -1238,9 +1210,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="update"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /contribute/update</code></pre></div>
+
     <div class="method-summary">Update Metadata in the system / Mettre à jour les métadonnées dans le système (<span class="nickname">update</span>)</div>
     <div class="method-notes">Update metadata for a specific UUID in the system Requires API Key. / Mettre à jour les métadonnées d'un UUID spécifique dans le système. Nécessite une clé API.</div>
 
@@ -1470,9 +1440,7 @@ nav_order: 6
   <hr/>
   <h1><a name="SearchRecherche">Search / Recherche</a></h1>
   <div class="method"><a name="featured"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /featured</code></pre></div>
+
     <div class="method-summary">Query Featured Datasets / Interroger les jeux de données en vedette (<span class="nickname">featured</span>)</div>
     <div class="method-notes">Query datasets that have been tagged as Featured / Interroger les ensembles de données qui ont été étiquetés comme &quot;Featured&quot;.</div>
 
@@ -1548,9 +1516,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="foundational"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /foundational</code></pre></div>
+
     <div class="method-summary">Query Foundational Datasets / Interroger les ensembles de données de base (<span class="nickname">foundational</span>)</div>
     <div class="method-notes">Query datasets that have been tagged as Foundational / Interroger les ensembles de données qui ont été étiquetés comme fondateurs.</div>
 
@@ -1626,9 +1592,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="geo"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /geo</code></pre></div>
+
     <div class="method-summary">Geospatial and Keyword Search / Recherche géospatiale et par mots-clés (<span class="nickname">geo</span>)</div>
     <div class="method-notes">The API will take the keyword parameter and query the metadata fields applicable for keyword search. If the geospatial search is selected, the results are then ran through a geospatial intersect query based on the bounding box created from the north, east, south, and west parameters. The results returned are all metadata records containing the keyword that intersect with the bounding box. The result is an array of JSON objects. The API is bilingual, and passing the parameter of lang of en or fr will return the appropriate results. To support pagination, the API will now accept a min and max number for number of rows to start at or end at. By default, the data is returned for the first 10 rows, if you would like to request the next ten results, set min to 11 and max to 21. You must provide a number for both min and max to be provided accurate results.Theme filtering is now available based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. In this version, the total count for the number of rows is available in the return as “total”. This was created to enable pagination.Organisation filtering is now available based on the following value list. You can pass one or many values to the API by separating the values with a “|”. E.g. - “Canadian Space Agency|National Defence”. Type filtering is now available based on the following value list. You can pass one or many values to the API by separating the values with a “|”. E.g. - “Dataset|Collection”. Foundational filtering is now available. By passing “true” to the API only results for the query that have been tagged as a foundational layer will be returned. / L'API prendra le paramètre du mot-clé et interrogera les champs de métadonnées applicables à la recherche par mot-clé. Si la recherche géospatiale est sélectionnée, les résultats sont ensuite soumis à une requête d'intersection géospatiale basée sur le rectangle de délimitation créé à partir des paramètres nord, est, sud et ouest. Les résultats renvoyés sont tous les enregistrements de métadonnées contenant le mot-clé qui se croisent avec le rectangle de délimitation. Le résultat est un tableau d'objets JSON. L'API est bilingue, et le fait de passer le paramètre de langue en ou fr renverra les résultats appropriés. Pour prendre en charge la pagination, l'API accepte désormais un nombre minimal et maximal de lignes pour le nombre de lignes de départ ou de fin. Par défaut, les données sont renvoyées pour les 10 premières lignes, si vous souhaitez demander les dix résultats suivants, définissez min à 11 et max à 21. Vous devez fournir un nombre à la fois pour min et max pour obtenir des résultats précis.Le filtrage par thème est maintenant disponible sur la base de la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l'API en séparant le code du thème par une virgule. Par exemple, &quot;administration, juridique, société&quot;. Dans cette version, le compte total pour le nombre de lignes est disponible dans le retour comme &quot;total&quot;. Le filtrage des organisations est maintenant disponible sur la base de la liste de valeurs suivante. Vous pouvez passer une ou plusieurs valeurs à l'API en séparant les valeurs par un &quot;|&quot;. Par exemple : &quot;Agence spatiale canadienne|Défense nationale&quot;. Le filtrage par type est désormais disponible sur la base de la liste de valeurs suivante. Vous pouvez transmettre une ou plusieurs valeurs à l'API en les séparant par un &quot;|&quot;. Par exemple : &quot;Dataset|Collection&quot;. Le filtrage fondamental est désormais disponible. En passant &quot;true&quot; à l'API, seuls les résultats de la requête qui ont été étiquetés comme couche de base seront renvoyés.</div>
 
@@ -1734,9 +1698,7 @@ nav_order: 6
   </div> <!-- method -->
   <hr/>
   <div class="method"><a name="id"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="get"><code class="huge"><span class="http-method">get</span> /id</code></pre></div>
+
     <div class="method-summary">Query by ID / Requête par ID (<span class="nickname">id</span>)</div>
     <div class="method-notes">Query metadata holdings by the UUID of the metadata / Interroger les fonds de métadonnées par l'UUID des métadonnées</div>
 
