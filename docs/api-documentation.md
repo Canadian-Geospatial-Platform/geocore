@@ -882,7 +882,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="ContributeContribuer">ContributeContribuer</a></h1>
+  <h1><a name="ContributeContribuer">Contribute / Contribuer</a></h1>
   <div class="method"><a name="contribute"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1025,9 +1025,9 @@ nav_order: 6
     <div class="field-items">
       <div class="param">source_key (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; If you are posting from an external system to geoCore, we will provide you a source key to include in new metadata events. We will use your source key and your system&#x27;s uuid as the uuid for geoCore. </div>      <div class="param">id (optional/optionnel)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; If you are posting from an external system to geoCore, we will provide you a source key to include in new metadata events. We will use your source key and your system&#x27;s uuid as the uuid for geoCore. / Si vous publiez depuis un système externe vers geoCore, nous vous fournirons une clé source à inclure dans les nouveaux événements de métadonnées. Nous utiliserons votre clé source et l'uuid de votre système comme uuid pour geoCore.</div>      <div class="param">id (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; If you are posting from an external system to geoCore, we will use your system&#x27;s source key along with your system&#x27;s uuid to create an unique uuid for geoCore. If you are posting to geoCore from your source system, we will provide you geoCore&#x27;s UUID in the response to a successful post request. </div>      <div class="param">coordinates (optional/optionnel)</div>
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; If you are posting from an external system to geoCore, we will use your system&#x27;s source key along with your system&#x27;s uuid to create an unique uuid for geoCore. If you are posting to geoCore from your source system, we will provide you geoCore&#x27;s UUID in the response to a successful post request. / Si vous publiez depuis un système externe vers geoCore, nous utiliserons la clé source de votre système avec l'uuid de votre système pour créer un uuid unique pour geoCore. Si vous publiez sur geoCore à partir de votre système source, nous vous fournirons l'UUID de geoCore en réponse à une demande de publication réussie.</div>      <div class="param">coordinates (optional/optionnel)</div>
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The coordinates of the item / Les coordonnées de l&#x27;article </div>      <div class="param">title_en (optional/optionnel)</div>
 
@@ -1471,7 +1471,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="SearchRecherche">SearchRecherche</a></h1>
+  <h1><a name="SearchRecherche">Search / Recherche</a></h1>
   <div class="method"><a name="featured"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -1860,7 +1860,6 @@ nav_order: 6
 
   <h3>Table of Contents</h3>
   <ol>
-    <li><a href="#Manufacturer"><code>Manufacturer</code></a></li>
     <li><a href="#featured"><code>featured</code></a></li>
     <li><a href="#foundational"><code>foundational</code></a></li>
     <li><a href="#foundational_inner"><code>foundational_inner</code></a></li>
@@ -1897,18 +1896,6 @@ nav_order: 6
     <li><a href="#update_inner"><code>update_inner</code></a></li>
   </ol>
 
-  <div class="model">
-    <h3><a name="Manufacturer"><code>Manufacturer</code></a> <a class="up" href="#__Models">Up</a></h3>
-
-    <div class="field-items">
-      <div class="param">name </div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-          <div class="param-desc"><span class="param-type">example: ACME Corporation</span></div>
-<div class="param">homePage (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  format: url</div>
-          <div class="param-desc"><span class="param-type">example: https://www.acme-corp.com</span></div>
-<div class="param">phone (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-          <div class="param-desc"><span class="param-type">example: 408-867-5309</span></div>
-    </div>  <!-- field-items -->
-  </div>
   <div class="model">
     <h3><a name="featured"><code>featured</code></a> <a class="up" href="#__Models">Up</a></h3>
 
