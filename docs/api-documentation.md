@@ -247,11 +247,11 @@ nav_order: 6
       <div class="param">body <a href="#putanalytics_inner">putanalytics_inner</a> (optional/optionnel)</div>
 
             <div class="param-desc"><span class="param-type">Body Parameter / Paramètre de corps</span> &mdash; Post analytics event / Événement post-analytique </div>
-                </div>  <!-- field-items -->
+                </div>   
 
     <h3 class="field-label">Request headers / En-têtes de requête</h3>
     <div class="field-items">
-    </div>  <!-- field-items -->
+    </div>   
 
     <h3 class="field-label">Query Parameter / Paramètre de requêtes / Paramètres de requête</h3>
     <div class="field-items">
@@ -281,7 +281,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record if dataset is foundational / Enregistrer si l&#x27;ensemble de données est fondamental </div>      <div class="param">type_filter (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record if type filter was used / Enregistrer si le filtre de type a été utilisé </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Record if type filter was used / Enregistrer si le filtre de type a été utilisé </div>    </div>   
 
 
 
@@ -367,7 +367,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">uuid (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; UUID of the record / UUID de l&#x27;enregistrement </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; UUID of the record / UUID de l&#x27;enregistrement </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -418,7 +418,7 @@ nav_order: 6
     <div class="field-items">
       <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme of data / Thème de la data </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme of data / Thème de la data </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -559,7 +559,7 @@ nav_order: 6
     <div class="field-items">
       <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -617,7 +617,7 @@ nav_order: 6
     <div class="field-items">
       <div class="param">lang (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -767,7 +767,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (required)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme of data / Thème de la data </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme of data / Thème de la data </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -827,7 +827,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">org (required)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Organizational owner of data / Propriétaire organisationnel des données </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Organizational owner of data / Propriétaire organisationnel des données </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -895,7 +895,7 @@ nav_order: 6
 
     <h3 class="field-label">Request headers</h3>
     <div class="field-items">
-    </div>  <!-- field-items -->
+    </div>   
 
     <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
@@ -903,7 +903,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The UUID of the metadata item where Plugin Configuration is being added / L&#x27;UUID de l&#x27;élément de métadonnées où la configuration du plug-in est ajoutée </div>      <div class="param">plugin_config (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The JSON Plugin Configuration for GeoView. This should include all languages required as per standard Plugin Configuration Schema. </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The JSON Plugin Configuration for GeoView. This should include all languages required as per standard Plugin Configuration Schema. </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -954,7 +954,7 @@ nav_order: 6
 
     <h3 class="field-label">Request headers</h3>
     <div class="field-items">
-    </div>  <!-- field-items -->
+    </div>   
 
     <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
@@ -964,7 +964,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The source code provided to you&#x27;re geonetwork instance by the geocore team. / Le code source fourni à votre instance geonetwork par l&#x27;équipe geocore. </div>      <div class="param">item (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The Geonetwork JSON File to be added to the system. / Le fichier Geonetwork JSON à ajouter au système </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The Geonetwork JSON File to be added to the system. / Le fichier Geonetwork JSON à ajouter au système </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1019,7 +1019,7 @@ nav_order: 6
 
     <h3 class="field-label">Request headers</h3>
     <div class="field-items">
-    </div>  <!-- field-items -->
+    </div>   
 
     <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
@@ -1123,7 +1123,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The options array of the item / Le tableau d&#x27;options de l&#x27;élément </div>      <div class="param">plugins (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The plugins array of the item / Le tableau de plugins de l&#x27;élément </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The plugins array of the item / Le tableau de plugins de l&#x27;élément </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1252,7 +1252,7 @@ nav_order: 6
 
     <h3 class="field-label">Request headers</h3>
     <div class="field-items">
-    </div>  <!-- field-items -->
+    </div>   
 
     <h3 class="field-label">Query Parameter / Paramètre de requêtes</h3>
     <div class="field-items">
@@ -1354,7 +1354,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The options array of the metadata item where metadata is being updated / Le tableau d&#x27;options de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>      <div class="param">plugins (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The plugins array of the metadata item where metadata is being updated / Le tableau de plugins de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; The plugins array of the metadata item where metadata is being updated / Le tableau de plugins de l&#x27;élément de métadonnées où les métadonnées sont mises à jour </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1489,7 +1489,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1567,7 +1567,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">theme (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Theme filtering is based on the standard theme list of the CGP. You can pass one or many values to the API by separating the theme code with a comma. E.g. “administration, legal, society”. The following codes can be used - administration, economy, environment, imagery, infrastructure, science, society, legal, and emergency. / Le filtrage des thèmes est basé sur la liste de thèmes standard du CGP. Vous pouvez transmettre une ou plusieurs valeurs à l&#x27;API en séparant le code du thème par une virgule. Par exemple, administration, juridique, société. Les codes suivants peuvent être utilisés - administration, économie, environnement, imagerie, infrastructure, science, société, juridique et urgence. </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1667,7 +1667,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Southern Bounding Box - Required if keyword_only is false  / Boîte de délimitation sud - Requis si keyword_only est false </div>      <div class="param">west (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Western Bounding Box - Required if keyword_only is false  / Boîte d&#x27;encerclement ouest - Requis si keyword_only est false </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Western Bounding Box - Required if keyword_only is false  / Boîte d&#x27;encerclement ouest - Requis si keyword_only est false </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1753,7 +1753,7 @@ nav_order: 6
 
             <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; Language of result / Langue du résultat </div>      <div class="param">id (optional/optionnel)</div>
 
-            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; UUID of the metadata / L&#x27;UUID des métadonnées </div>    </div>  <!-- field-items -->
+            <div class="param-desc"><span class="param-type">Query Parameter / Paramètre de requête</span> &mdash; UUID of the metadata / L&#x27;UUID des métadonnées </div>    </div>   
 
 
     <h3 class="field-label">Return Type / Type de retour</h3>
@@ -1900,13 +1900,13 @@ nav_order: 6
     <h3><a name="featured"><code>featured</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="foundational"><code>foundational</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="foundational_inner"><code>foundational_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -1926,13 +1926,13 @@ nav_order: 6
 <div class="param">temporalExtent (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">graphicOverview (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="geonetwork"><code>geonetwork</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="geonetwork_inner"><code>geonetwork_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -1941,19 +1941,19 @@ nav_order: 6
       <div class="param">uuid (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">source_code (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">item (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics1"><code>getanalytics1</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics10"><code>getanalytics10</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics10_inner"><code>getanalytics10_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -1961,13 +1961,13 @@ nav_order: 6
     <div class="field-items">
       <div class="param">30 (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">all (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics11"><code>getanalytics11</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics11_inner"><code>getanalytics11_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -1975,7 +1975,7 @@ nav_order: 6
     <div class="field-items">
       <div class="param">total (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">organizations (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics1_inner"><code>getanalytics1_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -1983,39 +1983,39 @@ nav_order: 6
     <div class="field-items">
       <div class="param">search (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">count (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics2"><code>getanalytics2</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics2_inner"><code>getanalytics2_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
       <div class="param">searches (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics3"><code>getanalytics3</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics3_inner"><code>getanalytics3_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
       <div class="param">accesses (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics4"><code>getanalytics4</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics4_inner"><code>getanalytics4_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2029,37 +2029,37 @@ nav_order: 6
 <div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">topicCategory (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">organisation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics5"><code>getanalytics5</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics6"><code>getanalytics6</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics7"><code>getanalytics7</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics8"><code>getanalytics8</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics9"><code>getanalytics9</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="getanalytics9_inner"><code>getanalytics9_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2073,13 +2073,13 @@ nav_order: 6
 <div class="param">keywords (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">topicCategory (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">organisation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="id"><code>id</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="id_inner"><code>id_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2118,19 +2118,19 @@ nav_order: 6
 <div class="param">supplementalInformation (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">credits (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">distributor (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="new"><code>new</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="plugin_config"><code>plugin_config</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="plugin_config_inner"><code>plugin_config_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2138,13 +2138,13 @@ nav_order: 6
     <div class="field-items">
       <div class="param">uuid (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">plugin_config (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="putanalytics"><code>putanalytics</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="putanalytics_inner"><code>putanalytics_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2163,13 +2163,13 @@ nav_order: 6
 <div class="param">org (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">foundational (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">type_filter (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="search"><code>search</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="search_inner"><code>search_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2192,13 +2192,13 @@ nav_order: 6
 <div class="param">graphicOverview (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">language (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">total (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   <div class="model">
     <h3><a name="update"><code>update</code></a> <a class="up" href="#__Models">Up</a></h3>
 
     <div class="field-items">
-          </div>  <!-- field-items -->
+          </div>   
   </div>
   <div class="model">
     <h3><a name="update_inner"><code>update_inner</code></a> <a class="up" href="#__Models">Up</a></h3>
@@ -2252,7 +2252,7 @@ nav_order: 6
 <div class="param">distributor (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
 <div class="param">options (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
 <div class="param">plugins (optional/optionnel)</div><div class="param-desc"><span class="param-type"><a href="#object">Object</a></span>  </div>
-    </div>  <!-- field-items -->
+    </div>   
   </div>
   </body>
 </html>
