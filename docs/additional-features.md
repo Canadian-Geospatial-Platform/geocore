@@ -34,9 +34,6 @@ If the user would like to add plugin configuration for use with viewer technolog
 <div class="method-summary">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">contribute</span>)</div>
 <div class="method-notes">Contribute plugin configuration for a specific UUID to the system. Requires API Key. / Contribuer à la configuration du plug-in pour un UUID spécifique au système. Nécessite une clé API</div>
 
-
-
-
 <h3 class="field-label">Request headers</h3>
 <div class="field-items">
 </div>   
