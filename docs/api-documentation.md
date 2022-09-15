@@ -229,9 +229,6 @@ nav_order: 6
 
   <h1><a name="AnalyticsAnalytique">Analytics / Analytique</a></h1>
   <div class="method"><a name="putAnalytics"></a>
-    <div class="method-path">
-    <a class="up" href="#__Methods">Up</a>
-    <pre class="post"><code class="huge"><span class="http-method">post</span> /analytics</code></pre></div>
     <div class="method-summary">Post analytics event / Événement post-analytique to system / Enregistrer l'événement analytique dans le système (<span class="nickname">putAnalytics</span>)</div>
     <div class="method-notes">Adds an Analytical event to the system / Ajoute un événement analytique au système      Requires API Key / Nécessite une clé API</div>
 
