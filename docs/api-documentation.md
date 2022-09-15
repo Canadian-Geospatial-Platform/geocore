@@ -859,7 +859,7 @@ nav_order: 6
   <hr/>
   <h1><a name="ContributeContribuer">Contribute / Contribuer</a></h1>
   <div class="method"><a name="contribute"></a>
-
+    <span name="contribute_plugin"></span>
     <div class="method-summary">Contribute plugin configuration to the system / Contribuer à la configuration du plugin sur le système (<span class="nickname">contribute</span>)</div>
     <div class="method-notes">Contribute plugin configuration for a specific UUID to the system. Requires API Key. / Contribuer à la configuration du plug-in pour un UUID spécifique au système. Nécessite une clé API</div>
 
