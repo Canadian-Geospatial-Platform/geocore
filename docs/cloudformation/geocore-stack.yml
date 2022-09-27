@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Deploys webpresence GeoCore solutions
+Description: Deploys webpresence geocore solutions
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Parameters:
   SslCertArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/geocore/ssl-cert-arn
-    Description: SSM parameter name for GeoCore ACM SSL Cert ARN
+    Description: SSM parameter name for geocore ACM SSL Cert ARN
   WebAclArn:
     Type: String
     Description: ARN of the WAF web ACL to use for CloudFront
@@ -61,7 +61,7 @@ Resources:
         function: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:dynamodb-analytics
       Type: LAMBDA
 
-  GeoCoreAthenaOutputBucket:
+  geocoreAthenaOutputBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub 'webpresence-geocore-athena-output-${Environment}'
@@ -160,18 +160,18 @@ Resources:
           KeyType: HASH
 
 
-  GeoCoreDatabase:
+  geocoreDatabase:
     Type: AWS::Glue::Database
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
         Name: geocore_metadata
 
-  GeoCoreTableQuery:
+  geocoreTableQuery:
     Type: AWS::Athena::NamedQuery
     Properties:
-      Database: !Ref GeoCoreDatabase
-      WorkGroup: !Ref GeoCoreAthenaWorkGroup
+      Database: !Ref geocoreDatabase
+      WorkGroup: !Ref geocoreAthenaWorkGroup
       QueryString:
         !Sub "CREATE EXTERNAL TABLE `metadata`(
           `features_type` string,
@@ -238,13 +238,13 @@ Resources:
           'typeOfData'='file')
         "
 
-  GeoCoreAthenaWorkGroup:
+  geocoreAthenaWorkGroup:
     Type: AWS::Athena::WorkGroup
     Properties:
-      Name: GeoCore
+      Name: geocore
       WorkGroupConfiguration:
         ResultConfiguration:
-          OutputLocation: !Sub 's3://${GeoCoreAthenaOutputBucket}'
+          OutputLocation: !Sub 's3://${geocoreAthenaOutputBucket}'
 
   LambdaId:
     Type: AWS::Serverless::Function

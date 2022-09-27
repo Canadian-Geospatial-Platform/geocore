@@ -42,7 +42,7 @@ Resources:
       CloudFrontOriginAccessIdentityConfig:
         Comment: geocore.metadata.geo.ca OAI
 
-  GeoCoreDistribution:
+  geocoreDistribution:
     Type: 'AWS::CloudFront::Distribution'
     Properties:
       DistributionConfig:

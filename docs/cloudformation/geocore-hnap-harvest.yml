@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Deploys HNAP JSON harvester solution + GeoNetwork to GeoCore translation
+Description: Deploys HNAP JSON harvester solution + GeoNetwork to geocore translation
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Parameters:
   SslCertArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/geocore-hnap-harvest/ssl-cert-arn
-    Description: SSM parameter name for GeoCore Harvest ACM SSL Cert ARN
+    Description: SSM parameter name for geocore Harvest ACM SSL Cert ARN
   WebAclArn:
     Type: String
     Description: ARN of the WAF web ACL to use for CloudFront
