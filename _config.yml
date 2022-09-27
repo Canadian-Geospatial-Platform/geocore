@@ -80,13 +80,13 @@ nav_sort: case_sensitive # Capital letters sorted before lowercase
 nav_external_links:
 
   - title: Build Document / Créer un document
-    url: https://github.com/canadian-geospatial-platform/geocore/docs/Build Document geoCore geospatial library.docx
+    url: https://github.com/Canadian-Geospatial-Platform/geocore/blob/main/docs/Build%20Document%20geoCore%20geospatial%20library.docx
 
   - title: AWS Cloud Formations / Formations cloud AWS
-    url: https://github.com/canadian-geospatial-platform/geocore/docs/cloudformation
+    url: https://github.com/Canadian-Geospatial-Platform/geocore/tree/main/docs/cloudformation
 
   - title: AWS Lambda Functions / Fonctions AWS Lambda
-    url: https://github.com/canadian-geospatial-platform/geocore/docs/lambda
+    url: https://github.com/Canadian-Geospatial-Platform/geocore/tree/main/docs/lambda
 
   - title: geocore Application / Application geocore
     url: https://github.com/Canadian-Geospatial-Platform/app.geo.ca
