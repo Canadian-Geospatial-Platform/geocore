@@ -83,7 +83,10 @@ nav_external_links:
     url: https://github.com/canadian-geospatial-platform/GeoCore/docs/Build Document geoCore geospatial library.docx
 
   - title: AWS Cloud Formations / Formations cloud AWS
-    url: https://github.com/Canadian-Geospatial-Platform/geoCore_cloudformation
+    url: https://github.com/canadian-geospatial-platform/GeoCore/docs/cloudformation
+
+  - title: AWS Lambda Functions / Fonctions AWS Lambda
+    url: https://github.com/canadian-geospatial-platform/GeoCore/docs/lambda
 
   - title: GeoCore Application / Application GeoCore
     url: https://github.com/Canadian-Geospatial-Platform/app.geo.ca
@@ -91,12 +94,12 @@ nav_external_links:
   - title: Enterprise Architecture / L'architecture d'entreprise
     url: https://fgp-pgf.my.canva.site/
 
+  - title: Geo.ca
+    url: https://geo.ca/
+
   - title: GeoCore on GitHub / GeoCore sur GitHub
     url: https://github.com/canadian-geospatial-platform/GeoCore
 
-
-  - title: Geo.ca
-    url: https://geo.ca/
 
 # Footer content
 # appears at the bottom of every page's main content

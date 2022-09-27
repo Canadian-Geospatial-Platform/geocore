@@ -1,0 +1,296 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploys webpresence app.geo.ca solution
+Parameters:
+
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/app-geo-ca/ssl-cert-arn
+    Description: SSM parameter name for app.geo.ca ACM SSL Cert ARN     
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+
+Conditions: 
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:
+
+  AppGeoCaStoreBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-app-geo-ca-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  AppGeoCaPipelineArtifactBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-app-geo-ca-pipeline-artifacts-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  AppGeoCaStoreBucketPolicy: 
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Ref AppGeoCaStoreBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: PolicyForCloudFrontPrivateContent
+          Effect: Allow
+          Principal: 
+            CanonicalUser: !GetAtt AppGeoCaOai.S3CanonicalUserId
+          Action: s3:GetObject
+          Resource: !Sub "arn:aws:s3:::webpresence-app-geo-ca-${Environment}/*"
+
+  CodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName:
+        Fn::Sub: CodeBuildRole-${AWS::StackName}
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: 'Allow'
+            Principal:
+              Service:
+                - 'codebuild.amazonaws.com'
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                Resource:
+                  - Fn::Sub: arn:aws:s3:::${AppGeoCaPipelineArtifactBucket}/*
+                  - Fn::Sub: arn:aws:s3:::${AppGeoCaPipelineArtifactBucket}
+              - Effect: 'Allow'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:PutLogEvents'
+                Resource: '*'              
+
+
+  AppCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: webpresence-app-geo-ca
+      ServiceRole: !GetAtt CodeBuildRole.Arn
+      Artifacts:
+        Type: CODEPIPELINE
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/amazonlinux2-x86_64-standard:3.0
+      Source:
+        Type: CODEPIPELINE
+        BuildSpec: |
+          version: 0.2
+
+          env:
+            git-credential-helper: yes
+
+          phases:
+            install:
+              runtime-versions:
+                nodejs: 12
+            pre_build:
+              commands:
+                - npm install
+            build:
+              commands:
+                - git init
+                - git fetch
+                - npm start
+
+          artifacts:
+            base-directory: dist
+            files:
+              - '**/*'
+              
+          cache:
+            paths:
+              - node_modules/**/*
+
+
+  AppPipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                Resource:
+                  - Fn::Sub: arn:aws:s3:::${AppGeoCaPipelineArtifactBucket}/*
+                  - Fn::Sub: arn:aws:s3:::${AppGeoCaPipelineArtifactBucket}
+                  - Fn::Sub: arn:aws:s3:::${AppGeoCaStoreBucket}/*
+                  - Fn::Sub: arn:aws:s3:::${AppGeoCaStoreBucket}
+              - Effect: 'Allow'
+                Action:
+                  - 'codebuild:StartBuild'
+                  - 'codebuild:BatchGetBuilds'
+                Resource: '*'
+                           
+
+  AppPipeline:
+    Type: AWS::CodePipeline::Pipeline
+    Properties:
+      Name: !Sub 'webpresence-app-geo-ca-${Environment}'
+      RoleArn: !GetAtt AppPipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              InputArtifacts: []
+              ActionTypeId:
+                Version: '1'
+                Owner: ThirdParty
+                Category: Source
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceCode
+              RunOrder: 1
+              Configuration:
+                OAuthToken: '{{resolve:secretsmanager:/webpresence/github/key}}'
+                Owner: Canadian-Geospatial-Platform
+                Repo: app.geo.ca
+                Branch: !Ref Environment
+                PollForSourceChanges: 'true'
+        - Name: Approval
+          Actions:
+            - Name: Approval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+        - Name: Build
+          Actions:
+            - Name: Build
+              ActionTypeId:
+                Category: Build
+                Owner: AWS
+                Provider: CodeBuild
+                Version: '1'
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts:
+                - Name: AppBuild
+              RunOrder: 1
+              Configuration:
+                ProjectName: !Ref AppCodeBuildProject                
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              InputArtifacts: 
+                - Name: AppBuild
+              OutputArtifacts: []
+              Configuration:
+                BucketName: !Ref AppGeoCaStoreBucket
+                Extract: 'true'
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref AppGeoCaPipelineArtifactBucket
+
+  AppGeoCaOai:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: app.geo.ca OAI
+
+  AppGeoCaDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !GetAtt AppGeoCaStoreBucket.RegionalDomainName
+            Id: !Ref AppGeoCaStoreBucket
+            S3OriginConfig:
+              OriginAccessIdentity: !Join ['', ['origin-access-identity/cloudfront/', !Ref AppGeoCaOai]]
+        Enabled: 'true'
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: !Ref AppGeoCaStoreBucket
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        DefaultRootObject: index.html
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: app-geo-ca
+        Aliases:
+          - !If 
+            - IsProd
+            - app.geo.ca
+            - !Sub 'app-${Environment}.geo.ca'
+          - !If 
+            - IsProd
+            - www.app.geo.ca
+            - !Sub 'www.app-${Environment}.geo.ca'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 10
+            ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+
+

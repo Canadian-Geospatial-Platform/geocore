@@ -1,0 +1,90 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Deploys webpresence geocore.metadata.geo.ca solution
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/geocore/metadata/ssl-cert-arn
+    Description: SSM parameter name for geo.ca ACM SSL Cert ARN     
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+
+Conditions: 
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:
+
+  GeocoreGeojsonBucketPolicy: 
+    Type: AWS::S3::BucketPolicy
+    Properties: 
+      Bucket: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Sid: PolicyForCloudFrontPrivateContent
+          Effect: Allow
+          Principal: 
+            CanonicalUser: !GetAtt GeocoreMetadataOai.S3CanonicalUserId
+          Action: s3:GetObject
+          Resource: !Sub "arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}/*"
+
+  GeocoreMetadataOai:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: geocore.metadata.geo.ca OAI
+
+  GeoCoreDistribution:
+    Type: 'AWS::CloudFront::Distribution'
+    Properties:
+      DistributionConfig:
+        Origins:
+          - DomainName: !Sub 'webpresence-geocore-json-to-geojson-${Environment}.s3.${AWS::Region}.amazonaws.com'
+            Id: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+            S3OriginConfig:
+              OriginAccessIdentity: !Join ['', ['origin-access-identity/cloudfront/', !Ref GeocoreMetadataOai]]
+        Enabled: 'true'
+        DefaultCacheBehavior:
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+          CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        DefaultRootObject: index.html
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: geocore-metadata
+        Aliases:
+          - !If 
+            - IsProd
+            - geocore.metadata.geo.ca
+            - !Sub 'geocore-${Environment}.metadata.geo.ca'
+          - !If 
+            - IsProd
+            - www.geocore.metadata.geo.ca
+            - !Sub 'www.geocore-${Environment}.metadata.geo.ca'            
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+        CustomErrorResponses:
+          - ErrorCachingMinTTL: 10
+            ErrorCode: 404
+            ResponsePagePath: /index.html
+            ResponseCode: 200
+
+
+

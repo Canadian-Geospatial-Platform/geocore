@@ -1,0 +1,359 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys HNAP JSON harvester solution + GeoNetwork to GeoCore translation
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/geocore-hnap-harvest/ssl-cert-arn
+    Description: SSM parameter name for GeoCore Harvest ACM SSL Cert ARN
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:
+  GeocoreHnapJsonHarvestBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-geocore-hnap-json-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  GeocoreHnapJsontoGeojsonBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  GeocoreGeojsontoParquetBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  HnapJsonHarvester2:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-2111119.zip
+      MemorySize: 1024
+      Handler: app.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          BUCKET_NAME: !Ref GeocoreHnapJsonHarvestBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /hnap_json_harvest
+            Method: any
+
+  GeocoreTransform:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs14.x
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geocore-transform/geocore-transform-2111119.zip
+      Handler: index.handler
+      MemorySize: 512
+      Timeout: 60
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Environment:
+        Variables:
+          OUTPUT_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
+      Events:
+        FileUploadEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref GeocoreHnapJsonHarvestBucket
+            Events: s3:ObjectCreated:*
+            
+  GeocoretoParquet:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.7
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-2111119.zip
+      MemorySize: 1024
+      Handler: app.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          GEOJSON_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
+          PARQUET_BUCKET_NAME: !Ref GeocoreGeojsontoParquetBucket
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /geocore_to_parquet
+            Method: any
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:*'
+                Resource:
+                  - !Sub arn:aws:s3:::webpresence-geocore-hnap-json-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-hnap-json-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
+
+  VerificationHeaderSecret: 
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: Verification header secret value used to identify request coming from CloudFront to API Gateway
+      Name: /webpresence/geocore-hnap-harvest/verification-header-secret
+      GenerateSecretString: 
+        ExcludePunctuation: true
+        PasswordLength: 32
+
+  OriginRequestPolicy: 
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties: 
+      OriginRequestPolicyConfig: 
+        CookiesConfig: 
+          CookieBehavior: none 
+        HeadersConfig: 
+          HeaderBehavior: whitelist  
+          Headers:
+            - x-origin-verify
+            - x-api-key
+        Name: geocore-hnap-harvest-cloudfront-to-api-gateway
+        QueryStringsConfig: 
+          QueryStringBehavior: all
+
+  HnapHarvestDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      DistributionConfig:
+        Enabled: 'true'
+        Origins:
+        - Id: ApiOrigin
+          DomainName: !Sub ${RestApi}.execute-api.${AWS::Region}.amazonaws.com
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only    
+            OriginSSLProtocols: 
+              - TLSv1.2  
+          OriginPath: /live   
+          OriginCustomHeaders:
+            - HeaderName: X-Origin-Verify
+              HeaderValue: '{{resolve:secretsmanager:/webpresence/geocore-hnap-harvest/verification-header-secret}}'   
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: ApiOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          OriginRequestPolicyId: !GetAtt OriginRequestPolicy.Id
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: geocore-hnap-harvest
+        Aliases:
+          - !If 
+            - IsProd
+            - geocore-harvest.api.geo.ca
+            - !Sub 'geocore-harvest-${Environment}.api.geo.ca'
+          - !If 
+            - IsProd
+            - www.geocore-harvest.api.geo.ca
+            - !Sub 'www.geocore-harvest-${Environment}.api.geo.ca'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+
+  RestApiWebAcl:
+    Type: AWS::WAFv2::WebACL
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      Name: webpresence-geocore-hnap-harvest-cloudfront
+      Scope: REGIONAL
+      Description: "Restrict access to CloudFront"
+      DefaultAction: 
+        Block: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-geocore-cloudfront    
+      Rules: 
+        - Name: webpresence-geocore-harvest-cloudfront-header-verification
+          Priority: 0
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-geocore-harvest-cloudfront-header-verification
+          Statement:
+            ByteMatchStatement:
+              FieldToMatch:
+                SingleHeader:
+                  Name: X-Origin-Verify
+              PositionalConstraint: EXACTLY
+              SearchString: '{{resolve:secretsmanager:/webpresence/geocore-hnap-harvest/verification-header-secret}}'
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+
+  RestApiWebAclAssociations:
+    Type: AWS::WAFv2::WebACLAssociation
+    DependsOn:
+      - RestApiliveStage
+    Properties:
+      ResourceArn: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${RestApi}/stages/live'
+      WebACLArn: !GetAtt RestApiWebAcl.Arn
+
+  RestApiKey:
+    Type: AWS::ApiGateway::ApiKey
+    DependsOn:
+      - RestApiliveStage
+    Properties: 
+      Description: API key for "hnap-json-harvest" API Gateway
+      Name: hnap-json-harvest
+      Enabled: true
+      StageKeys:
+        - RestApiId: !Ref RestApi
+          StageName: live
+
+  RestApiKeyUsagePlan:
+    Type: AWS::ApiGateway::UsagePlan
+    DependsOn:
+      - RestApiliveStage    
+    Properties: 
+      ApiStages: 
+        - ApiId: !Ref RestApi
+          Stage: live
+      Description: Usage plan for "hnap-json-harvest" API Gateway
+      UsagePlanName: hnap-json-harvest  
+
+  RestApiKeyUsagePlanKey:
+    Type: AWS::ApiGateway::UsagePlanKey
+    Properties: 
+      KeyId: !Ref RestApiKey
+      KeyType: API_KEY
+      UsagePlanId: !Ref RestApiKeyUsagePlan
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: hnap-json-harvest
+      AccessLogSetting:
+        DestinationArn: !GetAtt LogGroup.Arn
+        Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
+      EndpointConfiguration:
+        Type: REGIONAL
+      OpenApiVersion: '2.0'
+      StageName: live
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: 'hnap-json-harvest'
+        schemes:
+          - 'https'
+        paths:
+          /hnap_json_harvest:
+            get:
+              security:
+              - api_key: []
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${HnapJsonHarvester2.Arn}/invocations'
+              responses: {}
+          /geocore_to_parquet:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoretoParquet.Arn}/invocations'
+              responses: {}
+        securityDefinitions:
+          api_key:
+            type: "apiKey"
+            name: "x-api-key"
+            in: "header"
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/hnap_json_harvest'
+      RetentionInDays: 3653

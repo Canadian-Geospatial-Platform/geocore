@@ -1,0 +1,186 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys Web ACLs that will be used by CloudFront. This template must be run in Virginia region.
+
+Parameters:
+  Environment:
+    Type: String
+    AllowedValues:
+      - dev
+      - stage
+      - prod
+    Description: Environment name
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:
+  LambdaEdgeRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+        Path: "/"
+        ManagedPolicyArns:
+            - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+        AssumeRolePolicyDocument:
+          Version: "2012-10-17"
+          Statement:
+            -
+              Sid: "AllowLambdaServiceToAssumeRole"
+              Effect: "Allow"
+              Action:
+                - "sts:AssumeRole"
+              Principal:
+                Service:
+                  - "lambda.amazonaws.com"
+                  - "edgelambda.amazonaws.com"
+
+  # https://aws.amazon.com/blogs/networking-and-content-delivery/adding-http-security-headers-using-lambdaedge-and-amazon-cloudfront/
+  LambdaEdgeSecHeaders:
+      Type: AWS::Serverless::Function
+      Properties:
+        InlineCode: |
+          'use strict';
+          exports.handler = (event, context, callback) => {
+
+              //Get contents of response
+              const response = event.Records[0].cf.response;
+              const headers = response.headers;
+
+              if (response.status == '403') {
+                  response.status = '404';
+              }
+
+              //Set new headers
+              headers['strict-transport-security'] = [{key: 'Strict-Transport-Security', value: 'max-age=63072000; includeSubdomains; preload'}];
+              headers['x-content-type-options'] = [{key: 'X-Content-Type-Options', value: 'nosniff'}];
+              headers['x-frame-options'] = [{key: 'X-Frame-Options', value: 'DENY'}];
+              headers['x-xss-protection'] = [{key: 'X-XSS-Protection', value: '1; mode=block'}];
+              headers['referrer-policy'] = [{key: 'Referrer-Policy', value: 'same-origin'}];
+
+              //Return modified response
+              callback(null, response);
+          };
+        Role: !GetAtt LambdaEdgeRole.Arn
+        AutoPublishAlias: live
+        Runtime: nodejs14.x
+        Handler: index.handler
+        Timeout: 5
+
+  IPSets:
+    Type: AWS::WAFv2::IPSet
+    Properties:
+      Description: 'IPSet for webpresence CloudFront'
+      Name: webpresence-cloudfront
+      Scope: CLOUDFRONT
+      IPAddressVersion: IPV4
+      Addresses:
+        - '####'
+
+  WebAcl:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: webpresence-cloudfront
+      Scope: CLOUDFRONT
+      Description: 'WebACL for webpresence CloudFront'
+      DefaultAction:
+        Allow: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-cloudfront
+      Rules:
+        - Name: AWSManagedRules
+          Priority: 0
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-cloudfront-aws-managed-rule
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+              ExcludedRules: []
+        - Name: AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: aws-managed-bad-inputs
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+              ExcludedRules: []
+
+  WebAclNrcan:
+    Type: AWS::WAFv2::WebACL
+    Properties:
+      Name: webpresence-cloudfront-nrcan
+      Scope: CLOUDFRONT
+      Description: 'WebACL for webpresence CloudFront to allow only NRCAN'
+      CustomResponseBodies:
+        CustomResponseBlockMessage:
+          ContentType: TEXT_PLAIN
+          Content: Request blocked
+      DefaultAction:
+        Block:
+          CustomResponse:
+            ResponseCode: '400'
+            CustomResponseBodyKey: CustomResponseBlockMessage
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-cloudfront
+      Rules:
+        - Name: AWSManagedRules
+          Priority: 0
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-cloudfront-aws-managed-rule
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesCommonRuleSet
+              ExcludedRules: []
+        - Name: AWSManagedRulesKnownBadInputsRuleSet
+          Priority: 1
+          OverrideAction:
+            None: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: aws-managed-bad-inputs
+          Statement:
+            ManagedRuleGroupStatement:
+              VendorName: AWS
+              Name: AWSManagedRulesKnownBadInputsRuleSet
+              ExcludedRules: []
+        - Name: NrcanNetworkRule
+          Priority: 2
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-cloudfront-nrcan-ip-rule
+          Statement:
+            IPSetReferenceStatement:
+              Arn: !GetAtt IPSets.Arn
+
+
+
+
+Outputs:
+  WebpresenceWebAclArn:
+    Value: !GetAtt WebAcl.Arn
+  WebpresenceWebAclNrcanArn:
+    Value: !GetAtt WebAclNrcan.Arn
+  WebpresenceSecHeadersLambdaEdgeArn:
+    Value: !Ref LambdaEdgeSecHeaders.Version
