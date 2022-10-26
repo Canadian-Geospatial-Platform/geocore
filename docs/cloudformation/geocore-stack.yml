@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: 'AWS::Serverless-2016-10-31'
-Description: Deploys webpresence geocore solutions
+Description: Deploys webpresence GeoCore solutions
 
 Parameters:
   Environment:
@@ -14,7 +14,7 @@ Parameters:
   SslCertArn:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/geocore/ssl-cert-arn
-    Description: SSM parameter name for geocore ACM SSL Cert ARN
+    Description: SSM parameter name for GeoCore ACM SSL Cert ARN   
   WebAclArn:
     Type: String
     Description: ARN of the WAF web ACL to use for CloudFront
@@ -22,7 +22,7 @@ Parameters:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
 
-Conditions:
+Conditions: 
   IsProd: !Equals [prod, !Ref Environment]
 
 Resources:
@@ -48,20 +48,20 @@ Resources:
       Location:
         ApplicationId: arn:aws:serverlessrepo:us-east-1:292517598671:applications/AthenaDynamoDBConnector
         SemanticVersion: 2021.41.1
-      Parameters:
+      Parameters: 
         AthenaCatalogName: dynamodb-analytics
         SpillBucket: !Ref AthenaDynamodbSpillBucket
 
   AthenaDynamodbAnalyticsCatalog:
     Type: AWS::Athena::DataCatalog
     DependsOn: AthenaDynamoDBConnector
-    Properties:
+    Properties: 
       Name: dynamodb-analytics
-      Parameters:
+      Parameters: 
         function: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:dynamodb-analytics
       Type: LAMBDA
 
-  geocoreAthenaOutputBucket:
+  GeoCoreAthenaOutputBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub 'webpresence-geocore-athena-output-${Environment}'
@@ -78,173 +78,194 @@ Resources:
 
   DynamoDb:
     Type: AWS::DynamoDB::Table
-    Properties:
+    Properties: 
       TableName: tag
       BillingMode: PAY_PER_REQUEST
-      PointInTimeRecoverySpecification:
+      PointInTimeRecoverySpecification: 
          PointInTimeRecoveryEnabled: true
-      AttributeDefinitions:
-        -
+      AttributeDefinitions: 
+        - 
           AttributeName: tag
           AttributeType: S
-        -
+        - 
           AttributeName: uuid
-          AttributeType: S
-      KeySchema:
-        -
+          AttributeType: S      
+      KeySchema: 
+        - 
           AttributeName: tag
           KeyType: HASH
-        -
+        - 
           AttributeName: uuid
           KeyType: RANGE
 
   DynamoDbFoundational:
     Type: AWS::DynamoDB::Table
-    Properties:
+    Properties: 
       TableName: foundational
       BillingMode: PAY_PER_REQUEST
-      PointInTimeRecoverySpecification:
+      PointInTimeRecoverySpecification: 
          PointInTimeRecoveryEnabled: true
-      AttributeDefinitions:
-        -
+      AttributeDefinitions: 
+        - 
           AttributeName: tag
           AttributeType: S
-        -
+        - 
           AttributeName: uuid
-          AttributeType: S
-      KeySchema:
-        -
+          AttributeType: S      
+      KeySchema: 
+        - 
           AttributeName: tag
           KeyType: HASH
-        -
+        - 
           AttributeName: uuid
           KeyType: RANGE
 
   DynamoDbTheme:
     Type: AWS::DynamoDB::Table
-    Properties:
+    Properties: 
       TableName: theme
       BillingMode: PAY_PER_REQUEST
-      PointInTimeRecoverySpecification:
+      PointInTimeRecoverySpecification: 
          PointInTimeRecoveryEnabled: true
-      AttributeDefinitions:
-        -
+      AttributeDefinitions: 
+        - 
           AttributeName: tag
           AttributeType: S
-        -
+        - 
           AttributeName: uuid
-          AttributeType: S
-      KeySchema:
-        -
+          AttributeType: S      
+      KeySchema: 
+        - 
           AttributeName: tag
           KeyType: HASH
-        -
+        - 
           AttributeName: uuid
           KeyType: RANGE
 
   DynamoDbAnalytics:
     Type: AWS::DynamoDB::Table
-    Properties:
+    Properties: 
       TableName: analytics
       BillingMode: PAY_PER_REQUEST
-      PointInTimeRecoverySpecification:
+      PointInTimeRecoverySpecification: 
          PointInTimeRecoveryEnabled: true
-      AttributeDefinitions:
-        -
+      AttributeDefinitions: 
+        - 
           AttributeName: key
           AttributeType: S
-
-      KeySchema:
-        -
+  
+      KeySchema: 
+        - 
           AttributeName: key
           KeyType: HASH
+       
 
-
-  geocoreDatabase:
+  GeoCoreDatabase:
     Type: AWS::Glue::Database
     Properties:
       CatalogId: !Ref AWS::AccountId
       DatabaseInput:
         Name: geocore_metadata
 
-  geocoreTableQuery:
+  GeoCoreTableQuery:
     Type: AWS::Athena::NamedQuery
-    Properties:
-      Database: !Ref geocoreDatabase
-      WorkGroup: !Ref geocoreAthenaWorkGroup
-      QueryString:
+    Properties: 
+      Database: !Ref GeoCoreDatabase
+      WorkGroup: !Ref GeoCoreAthenaWorkGroup
+      QueryString: 
         !Sub "CREATE EXTERNAL TABLE `metadata`(
-          `features_type` string,
-          `features_geometry_type` string,
-          `features_geometry_coordinates` string,
-          `features_properties_id` string,
-          `features_properties_title_en` string,
-          `features_properties_title_fr` string,
-          `features_properties_description_en` string,
-          `features_properties_description_fr` string,
-          `features_properties_keywords_en` string,
-          `features_properties_keywords_fr` string,
-          `features_properties_topiccategory` string,
-          `features_properties_date_published_text` string,
-          `features_properties_date_published_date` string,
-          `features_properties_date_created_text` string,
-          `features_properties_date_created_date` string,
-          `features_properties_spatialrepresentation` string,
-          `features_properties_type` string,
-          `features_properties_geometry` string,
-          `features_properties_temporalextent_begin` string,
-          `features_properties_temporalextent_end` string,
-          `features_properties_refsys` string,
-          `features_properties_refsys_version` string,
-          `features_properties_status` string,
-          `features_properties_maintenance` string,
-          `features_properties_metadatastandard_en` string,
-          `features_properties_metadatastandard_fr` string,
-          `features_properties_metadatastandardversion` string,
-          `features_properties_graphicoverview` string,
-          `features_properties_distributionformat_name` string,
-          `features_properties_distributionformat_format` string,
-          `features_properties_uselimits_en` string,
-          `features_properties_uselimits_fr` string,
-          `features_properties_accessconstraints` string,
-          `features_properties_otherconstraints_en` string,
-          `features_properties_otherconstraints_fr` string,
-          `features_properties_datestamp` string,
-          `features_properties_dataseturi` string,
-          `features_properties_locale_language` string,
-          `features_properties_locale_country` string,
-          `features_properties_locale_encoding` string,
-          `features_properties_language` string,
-          `features_properties_characterset` string,
-          `features_properties_environmentdescription` string,
-          `features_properties_supplementalinformation_en` string,
-          `features_properties_supplementalinformation_fr` string,
-          `features_properties_contact` string,
-          `features_properties_credits` string,
-          `features_properties_cited` string,
-          `features_properties_distributor` string,
-          `features_properties_options` string)
-        ROW FORMAT SERDE
-          'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe'
-        STORED AS INPUTFORMAT
-          'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat'
-        OUTPUTFORMAT
-          'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
-        LOCATION
-          's3://webpresence-geocore-geojson-to-parquet-${Environment}/'
-        TBLPROPERTIES (
-          'classification'='parquet',
-          'compressionType'='none',
-          'typeOfData'='file')
+          `features_type` string, 
+          `features_geometry_type` string, 
+          `features_geometry_coordinates` string, 
+          `features_properties_id` string, 
+          `features_properties_title_en` string, 
+          `features_properties_title_fr` string, 
+          `features_properties_description_en` string, 
+          `features_properties_description_fr` string, 
+          `features_properties_keywords_en` string, 
+          `features_properties_keywords_fr` string, 
+          `features_properties_topiccategory` string, 
+          `features_properties_date_published_text` string, 
+          `features_properties_date_published_date` string, 
+          `features_properties_date_created_text` string, 
+          `features_properties_date_created_date` string, 
+          `features_properties_date_revision_text` string, 
+          `features_properties_date_revision_date` string, 
+          `features_properties_date_notavailable_text` string, 
+          `features_properties_date_notavailable_date` string, 
+          `features_properties_date_inforce_text` string, 
+          `features_properties_date_inforce_date` string, 
+          `features_properties_date_adopted_text` string, 
+          `features_properties_date_adopted_date` string, 
+          `features_properties_date_deprecated_text` string, 
+          `features_properties_date_deprecated_date` string, 
+          `features_properties_date_superceded_text` string, 
+          `features_properties_date_superceded_date` string, 
+          `features_properties_spatialrepresentation` string, 
+          `features_properties_type` string, 
+          `features_properties_geometry` string, 
+          `features_properties_temporalextent_begin` string, 
+          `features_properties_temporalextent_end` string, 
+          `features_properties_refsys` string, 
+          `features_properties_refsys_version` string, 
+          `features_properties_status` string, 
+          `features_properties_maintenance` string, 
+          `features_properties_metadatastandard_en` string, 
+          `features_properties_metadatastandard_fr` string, 
+          `features_properties_metadatastandardversion` string, 
+          `features_properties_graphicoverview` string, 
+          `features_properties_distributionformat_name` string, 
+          `features_properties_distributionformat_format` string, 
+          `features_properties_uselimits_en` string, 
+          `features_properties_uselimits_fr` string, 
+          `features_properties_accessconstraints` string, 
+          `features_properties_otherconstraints_en` string, 
+          `features_properties_otherconstraints_fr` string, 
+          `features_properties_datestamp` string, 
+          `features_properties_dataseturi` string, 
+          `features_properties_locale_language` string, 
+          `features_properties_locale_country` string, 
+          `features_properties_locale_encoding` string, 
+          `features_properties_language` string, 
+          `features_properties_characterset` string, 
+          `features_properties_environmentdescription` string, 
+          `features_properties_supplementalinformation_en` string, 
+          `features_properties_supplementalinformation_fr` string, 
+          `features_properties_contact` string, 
+          `features_properties_credits` string, 
+          `features_properties_cited` string, 
+          `features_properties_distributor` string, 
+          `features_properties_options` string, 
+          `features_properties_plugins` string, 
+          `features_popularity` string)
+          ROW FORMAT SERDE 
+            'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
+          STORED AS INPUTFORMAT 
+            'org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat' 
+          OUTPUTFORMAT 
+            'org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat'
+          LOCATION
+            's3://webpresence-geocore-geojson-to-parquet-${Environment}/'
+          TBLPROPERTIES (
+            'classification'='parquet', 
+            'compressionType'='none', 
+            'last_modified_by'='hadoop', 
+            'last_modified_time'='1636512328', 
+            'numFiles'='1', 
+            'numRows'='-1', 
+            'rawDataSize'='-1', 
+            'totalSize'='6676041', 
+            'transient_lastDdlTime'='1647981845', 
+            'typeOfData'='file')
         "
-
-  geocoreAthenaWorkGroup:
+        
+  GeoCoreAthenaWorkGroup:
     Type: AWS::Athena::WorkGroup
-    Properties:
-      Name: geocore
+    Properties: 
+      Name: GeoCore
       WorkGroupConfiguration:
         ResultConfiguration:
-          OutputLocation: !Sub 's3://${geocoreAthenaOutputBucket}'
+          OutputLocation: !Sub 's3://${GeoCoreAthenaOutputBucket}'
 
   LambdaId:
     Type: AWS::Serverless::Function
@@ -253,7 +274,7 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/id/id-211119.zip
+        Key: cloudformation-templates/lambda/id/id-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -273,7 +294,7 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geo/geo-211119.zip
+        Key: cloudformation-templates/lambda/geo/geo-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -293,7 +314,7 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/featured/featured-211119.zip
+        Key: cloudformation-templates/lambda/featured/featured-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -313,7 +334,7 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/foundation/foundation_layer-211119.zip
+        Key: cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -333,7 +354,7 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/analytics/analytics-211119.zip
+        Key: cloudformation-templates/lambda/analytics/analytics-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -353,7 +374,7 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/get_analytics/get_analytics-211119a.zip
+        Key: cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -364,6 +385,28 @@ Resources:
           Properties:
             RestApiId: !Ref RestApi
             Path: /*
+            Method: any
+
+  LambdaCollections:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.7
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/collections/collections-20220921-1700.zip
+      MemorySize: 1024
+      Handler: app.lambda_handler
+      Timeout: 60
+      Environment:
+        Variables:
+          PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /collections
             Method: any
 
   LambdaExecutionRole:
@@ -385,23 +428,23 @@ Resources:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AWSLambda_FullAccess
 
-  VerificationHeaderSecret:
+  VerificationHeaderSecret: 
     Type: AWS::SecretsManager::Secret
-    Properties:
+    Properties: 
       Description: Verification header secret value used to identify request coming from CloudFront to API Gateway
       Name: /webpresence/geocore/verification-header-secret
-      GenerateSecretString:
+      GenerateSecretString: 
         ExcludePunctuation: true
         PasswordLength: 32
 
-  OriginRequestPolicy:
+  OriginRequestPolicy: 
     Type: AWS::CloudFront::OriginRequestPolicy
-    Properties:
-      OriginRequestPolicyConfig:
-        CookiesConfig:
-          CookieBehavior: none
-        HeadersConfig:
-          HeaderBehavior: whitelist
+    Properties: 
+      OriginRequestPolicyConfig: 
+        CookiesConfig: 
+          CookieBehavior: none 
+        HeadersConfig: 
+          HeaderBehavior: whitelist  
           Headers:
             - x-origin-verify
             - x-api-key
@@ -409,7 +452,7 @@ Resources:
             - Access-Control-Request-Method
             - Origin
         Name: geocore-cloudfront-to-api-gateway
-        QueryStringsConfig:
+        QueryStringsConfig: 
           QueryStringBehavior: all
 
   GeocoreDistribution:
@@ -423,13 +466,13 @@ Resources:
           DomainName: !Sub ${RestApi}.execute-api.${AWS::Region}.amazonaws.com
           CustomOriginConfig:
             HTTPSPort: 443
-            OriginProtocolPolicy: https-only
-            OriginSSLProtocols:
-              - TLSv1.2
-          OriginPath: /live
+            OriginProtocolPolicy: https-only    
+            OriginSSLProtocols: 
+              - TLSv1.2  
+          OriginPath: /live   
           OriginCustomHeaders:
             - HeaderName: X-Origin-Verify
-              HeaderValue: '{{resolve:secretsmanager:/webpresence/geocore/verification-header-secret}}'
+              HeaderValue: '{{resolve:secretsmanager:/webpresence/geocore/verification-header-secret}}'   
         DefaultCacheBehavior:
           AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
           ViewerProtocolPolicy: redirect-to-https
@@ -446,11 +489,11 @@ Resources:
           IncludeCookies: true
           Prefix: geocore
         Aliases:
-          - !If
+          - !If 
             - IsProd
             - geocore.api.geo.ca
             - !Sub 'geocore-${Environment}.api.geo.ca'
-          - !If
+          - !If 
             - IsProd
             - www.geocore.api.geo.ca
             - !Sub 'www.geocore-${Environment}.api.geo.ca'
@@ -458,7 +501,7 @@ Resources:
         ViewerCertificate:
           AcmCertificateArn: !Ref SslCertArn
           SslSupportMethod: sni-only
-          MinimumProtocolVersion: TLSv1.2_2021
+          MinimumProtocolVersion: TLSv1.2_2021 
 
   RestApiWebAcl:
     Type: AWS::WAFv2::WebACL
@@ -467,13 +510,13 @@ Resources:
       Name: webpresence-geocore-cloudfront
       Scope: REGIONAL
       Description: "Restrict access to CloudFront"
-      DefaultAction:
+      DefaultAction: 
         Block: {}
       VisibilityConfig:
         SampledRequestsEnabled: true
         CloudWatchMetricsEnabled: true
-        MetricName: webpresence-geocore-cloudfront
-      Rules:
+        MetricName: webpresence-geocore-cloudfront    
+      Rules: 
         - Name: webpresence-geocore-cloudfront-header-verification
           Priority: 0
           Action:
@@ -495,9 +538,9 @@ Resources:
 
   RestApiWebAclAssociations:
     Type: AWS::WAFv2::WebACLAssociation
-    DependsOn:
+    DependsOn: 
       - RestApiliveStage
-    Properties:
+    Properties: 
       ResourceArn: !Sub "arn:aws:apigateway:${AWS::Region}::/restapis/${RestApi}/stages/live"
       WebACLArn: !GetAtt RestApiWebAcl.Arn
 
@@ -505,7 +548,7 @@ Resources:
     Type: AWS::ApiGateway::ApiKey
     DependsOn:
       - RestApiliveStage
-    Properties:
+    Properties: 
       Description: API key for "search" API Gateway
       Name: search
       Enabled: true
@@ -516,17 +559,17 @@ Resources:
   RestApiKeyUsagePlan:
     Type: AWS::ApiGateway::UsagePlan
     DependsOn:
-      - RestApiliveStage
-    Properties:
-      ApiStages:
+      - RestApiliveStage    
+    Properties: 
+      ApiStages: 
         - ApiId: !Ref RestApi
           Stage: live
       Description: Usage plan for "search" API Gateway
-      UsagePlanName: search
+      UsagePlanName: search  
 
   RestApiKeyUsagePlanKey:
     Type: AWS::ApiGateway::UsagePlanKey
-    Properties:
+    Properties: 
       KeyId: !Ref RestApiKey
       KeyType: API_KEY
       UsagePlanId: !Ref RestApiKeyUsagePlan
@@ -534,13 +577,13 @@ Resources:
   RestApi:
     Type: AWS::Serverless::Api
     Properties:
-      Name: search
+      Name: search  
       AccessLogSetting:
         DestinationArn: !GetAtt LogGroup.Arn
         Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
       EndpointConfiguration:
         Type: REGIONAL
-      OpenApiVersion: "2.0"
+      OpenApiVersion: "2.0"  
       StageName: live
       DefinitionBody:
         swagger: "2.0"
@@ -616,7 +659,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -625,7 +668,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"1\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -672,7 +715,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                  
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -681,7 +724,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"10\",\r\n    \"uuid\" : \"$input.params('uuid')\"\
                     \r\n}"
@@ -729,7 +772,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -738,7 +781,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"2\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -785,7 +828,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -794,7 +837,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"3\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -841,7 +884,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -850,7 +893,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"4\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -897,7 +940,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -906,7 +949,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"5\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -953,7 +996,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -962,7 +1005,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"6\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -1009,7 +1052,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -1018,7 +1061,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"7\"\r\n}"
                 passthroughBehavior: "when_no_templates"
@@ -1065,7 +1108,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -1074,7 +1117,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"                    
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"8\",\r\n    \"lang\" : \"$input.params('lang')\"\
                     ,\r\n    \"theme\" : \"$input.params('theme')\"\r\n}"
@@ -1122,7 +1165,7 @@ Resources:
                     $ref: "#/definitions/Empty"
                   headers:
                     Access-Control-Allow-Origin:
-                      type: "string"
+                      type: "string"                    
               x-amazon-apigateway-integration:
                 type: "aws"
                 httpMethod: "POST"
@@ -1131,7 +1174,7 @@ Resources:
                   default:
                     statusCode: "200"
                     responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"              
                 requestTemplates:
                   application/json: "{\r\n    \"id\" : \"9\",\r\n    \"lang\" : \"$input.params('lang')\"\
                     ,\r\n    \"org\" : \"$input.params('org')\"\r\n}"
@@ -1222,7 +1265,7 @@ Resources:
                       method.response.header.Access-Control-Allow-Origin: "'*'"
                 requestTemplates:
                   application/json: "{\"statusCode\": 200}"
-                passthroughBehavior: "when_no_match"
+                passthroughBehavior: "when_no_match"                
           /featured:
             get:
               consumes:
@@ -1457,6 +1500,62 @@ Resources:
                 requestTemplates:
                   application/json: "{\"statusCode\": 200}"
                 passthroughBehavior: "when_no_match"
+          /collections:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                type: "aws"
+                httpMethod: "POST"
+                uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\r\n    \"id\" : \"$input.params('id')\"\r\n}"
+                passthroughBehavior: "when_no_templates"
+                contentHandling: "CONVERT_TO_TEXT"
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  schema:
+                    $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"
+              x-amazon-apigateway-integration:
+                type: "mock"
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                passthroughBehavior: "when_no_match"
         securityDefinitions:
           api_key:
             type: "apiKey"
@@ -1485,3 +1584,5 @@ Resources:
       ServiceToken: !ImportValue LogGroupHelperLambdaArn
       LogGroupName: !Sub '/${Environment}/webpresence/geocore'
       RetentionInDays: 3653
+
+
