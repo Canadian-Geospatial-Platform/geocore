@@ -71,19 +71,19 @@ nav_order: 6
       }
       
       pre.get {
-        background-color: #0f6ab4;
+        background-color: #808080;
       }
       
       pre.post {
-        background-color: #10a54a;
+        background-color: #808080;
       }
       
       pre.put {
-        background-color: #c5862b;
+        background-color: #808080;
       }
       
       pre.delete {
-        background-color: #a41e22;
+        background-color: #808080;
       }
       
       .huge	{
@@ -106,7 +106,7 @@ nav_order: 6
       
       .method-path {
         font-size: 1.5em;
-        background-color: #0f6ab4;
+        background-color: #808080;
       }
       
       .up {
@@ -172,7 +172,7 @@ nav_order: 6
       }
       
       .method-tag {
-        background: none repeat scroll 0% 0% #24A600;
+        background: none repeat scroll 0% 0% #808080;
         border-radius: 3px;
         padding: 2px 10px;
         margin: 2px;
@@ -198,7 +198,7 @@ nav_order: 6
 
   <h3>Table of Contents </h3>
   <div class="method-summary"></div>
-  <h4><a href="#AnalyticsAnalytique">AnalyticsAnalytique</a></h4>
+  <h4><a href="#Analytics / Analytique">Analytics / Analytique</a></h4>
   <ul>
   <li><a href="#putAnalytics"><code><span class="http-method">post</span> /analytics</code></a></li>
   <li><a href="#viewAnalytics1"><code><span class="http-method">get</span> /analytics/1</code></a></li>
@@ -213,7 +213,7 @@ nav_order: 6
   <li><a href="#viewAnalytics8"><code><span class="http-method">get</span> /analytics/8</code></a></li>
   <li><a href="#viewAnalytics9"><code><span class="http-method">get</span> /analytics/9</code></a></li>
   </ul>
-  <h4><a href="#CommunityCommunaut">CommunityCommunaut</a></h4>
+  <h4><a href="#Community / Communaut">Community / Communaut</a></h4>
   <ul>
   <li><a href="#communityAdd"><code><span class="http-method">post</span> /community/add</code></a></li>
   <li><a href="#communityAddAnnouncements"><code><span class="http-method">post</span> /community/announcements/add</code></a></li>
@@ -237,14 +237,14 @@ nav_order: 6
   <li><a href="#myCommunityGetData"><code><span class="http-method">get</span> /community/my_community/data</code></a></li>
   <li><a href="#myCommunityGetResources"><code><span class="http-method">get</span> /community/my_community/resources</code></a></li>
   </ul>
-  <h4><a href="#ContributeContribuer">ContributeContribuer</a></h4>
+  <h4><a href="#Contribute / Contribuer">Contribute / Contribuer</a></h4>
   <ul>
   <li><a href="#contribute"><code><span class="http-method">post</span> /contribute/plugin</code></a></li>
   <li><a href="#geonetwork"><code><span class="http-method">post</span> /contribute/geonetwork</code></a></li>
   <li><a href="#new"><code><span class="http-method">post</span> /contribute/new</code></a></li>
   <li><a href="#update"><code><span class="http-method">post</span> /contribute/update</code></a></li>
   </ul>
-  <h4><a href="#SaveSauvegarder">SaveSauvegarder</a></h4>
+  <h4><a href="#Save / Sauvegarder">Save / Sauvegarder</a></h4>
   <ul>
   <li><a href="#addSavedRecord"><code><span class="http-method">post</span> /saved_records/add</code></a></li>
   <li><a href="#addSavedSearch"><code><span class="http-method">post</span> /saved_search/add</code></a></li>
@@ -253,7 +253,7 @@ nav_order: 6
   <li><a href="#getSavedRecord"><code><span class="http-method">get</span> /saved_records/get</code></a></li>
   <li><a href="#getSavedSearch"><code><span class="http-method">get</span> /saved_search/get</code></a></li>
   </ul>
-  <h4><a href="#SearchRecherche">SearchRecherche</a></h4>
+  <h4><a href="#Search / Recherche">Search / Recherche</a></h4>
   <ul>
   <li><a href="#featured"><code><span class="http-method">get</span> /featured</code></a></li>
   <li><a href="#foundational"><code><span class="http-method">get</span> /foundational</code></a></li>
@@ -261,7 +261,7 @@ nav_order: 6
   <li><a href="#id"><code><span class="http-method">get</span> /id</code></a></li>
   </ul>
 
-  <h1><a name="AnalyticsAnalytique">AnalyticsAnalytique</a></h1>
+  <h1><a name="Analytics / Analytique">Analytics / Analytique</a></h1>
   <div class="method"><a name="putAnalytics"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -916,7 +916,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="CommunityCommunaut">CommunityCommunaut</a></h1>
+  <h1><a name="Community / Communaut">Community / Communaut</a></h1>
   <div class="method"><a name="communityAdd"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2122,7 +2122,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="ContributeContribuer">ContributeContribuer</a></h1>
+  <h1><a name="Contribute / Contribuer">Contribute / Contribuer</a></h1>
   <div class="method"><a name="contribute"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -2711,7 +2711,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="SaveSauvegarder">SaveSauvegarder</a></h1>
+  <h1><a name="Save / Sauvegarder">Save / Sauvegarder</a></h1>
   <div class="method"><a name="addSavedRecord"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
@@ -3029,7 +3029,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="SearchRecherche">SearchRecherche</a></h1>
+  <h1><a name="Search / Recherche">Search / Recherche</a></h1>
   <div class="method"><a name="featured"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>

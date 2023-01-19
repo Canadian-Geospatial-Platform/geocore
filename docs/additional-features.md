@@ -77,7 +77,7 @@ One of the biggest concerns when publishing mass amounts of information is the q
 
 For [GEO.CA](https://geo.ca/) we use the combined total of Access and Use analytics as a north star metric of overall access to open geospatial content. This allows us to understand how access to Canada's geospatial information is growing through time, and we highly encourage the use of this metric for your organization as well.
 
-[View API Reference](https://canadian-geospatial-platform.github.io/geocore/docs/api-documentation/#AnalyticsAnalytique)
+[View API Reference](https://canadian-geospatial-platform.github.io/geocore/docs/api-documentation/#Analytics / Analytique)
 
 ---
 
@@ -143,4 +143,4 @@ L'une des plus grandes préoccupations lors de la publication de quantités mass
 
 Pour [GEO.CA](https://geo.ca/), nous utilisons le total combiné des analyses d'accès et d'utilisation comme métrique nord-étoile de l'accès global au contenu géospatial ouvert. Cela nous permet de comprendre comment l'accès à l'information géospatiale du Canada se développe au fil du temps, et nous encourageons fortement l'utilisation de cette mesure pour votre organisation également.
 
-[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/geocore/docs/api-documentation/#AnalyticsAnalytique)
+[Afficher la référence de l'API](https://canadian-geospatial-platform.github.io/geocore/docs/api-documentation/#Analytics / Analytique)
