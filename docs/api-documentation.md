@@ -260,6 +260,10 @@ nav_order: 6
   <li><a href="#geo"><code><span class="http-method">get</span> /geo</code></a></li>
   <li><a href="#id"><code><span class="http-method">get</span> /id</code></a></li>
   </ul>
+  <h4><a href="#TranslateTraduire">Translate / Traduire</a></h4>
+  <ul>
+  <li><a href="#translate"><code><span class="http-method">get</span> /translate</code></a></li>
+  </ul>
 
   <h1><a name="Analytics / Analytique">Analytics / Analytique</a></h1>
   <div class="method"><a name="putAnalytics"></a>
@@ -3412,6 +3416,61 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
+  <h1><a name="TranslateTraduire">TranslateTraduire</a></h1>
+  <div class="method"><a name="translate"></a>
+    <div class="method-path">
+    <a class="up" href="#__Methods">Up</a>
+    <pre class="get"><code class="huge"><span class="http-method">get</span> /translate</code></pre></div>
+    <div class="method-summary">translate text to given language / traduire un texte dans une langue donnée (<span class="nickname">translate</span>)</div>
+    <div class="method-notes">translate text to given language / traduire un texte dans une langue donnée</div>
+
+
+
+
+
+    <h3 class="field-label">Query parameters</h3>
+    <div class="field-items">
+      <div class="param">text (optional)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; text to be translated / texte à traduire </div>      <div class="param">from_lang (optional)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; from text language / du langage textuel </div>      <div class="param">to_lang (optional)</div>
+      
+            <div class="param-desc"><span class="param-type">Query Parameter</span> &mdash; to text language / au langage textuel </div>    </div>  <!-- field-items -->
+
+
+    <h3 class="field-label">Return type</h3>
+    <div class="return-type">
+      <a href="#translate">translate</a>
+      
+    </div>
+
+    <!--Todo: process Response Object and its headers, schema, examples -->
+
+    <h3 class="field-label">Example data</h3>
+    <div class="example-data-content-type">Content-Type: application/json</div>
+    <pre class="example"><code>{
+  "from_lang" : "from_lang",
+  "to_lang" : "to_lang",
+  "text" : "text"
+}</code></pre>
+
+    <h3 class="field-label">Produces</h3>
+    This API call produces the following media types according to the <span class="header">Accept</span> request header;
+    the media type will be conveyed by the <span class="header">Content-Type</span> response header.
+    <ul>
+      <li><code>application/json</code></li>
+    </ul>
+
+    <h3 class="field-label">Responses</h3>
+    <h4 class="field-label">200</h4>
+    translate text to given language / traduire un texte dans une langue donnée
+        <a href="#translate">translate</a>
+    <h4 class="field-label">400</h4>
+    bad input parameters
+        <a href="#"></a>
+  </div> <!-- method -->
+  <hr/>
 
   <h2><a name="__Models">Models</a></h2>
   [ Jump to <a href="#__Methods">Methods</a> ]
@@ -3484,6 +3543,7 @@ nav_order: 6
     <li><a href="#saved_search_get"><code>saved_search_get</code></a></li>
     <li><a href="#search"><code>search</code></a></li>
     <li><a href="#search_inner"><code>search_inner</code></a></li>
+    <li><a href="#translate"><code>translate</code></a></li>
     <li><a href="#update"><code>update</code></a></li>
     <li><a href="#update_inner"><code>update_inner</code></a></li>
   </ol>
@@ -4070,6 +4130,15 @@ nav_order: 6
 <div class="param">graphicOverview (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">language (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
 <div class="param">total (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+    </div>  <!-- field-items -->
+  </div>
+  <div class="model">
+    <h3><a name="translate"><code>translate</code></a> <a class="up" href="#__Models">Up</a></h3>
+    
+    <div class="field-items">
+      <div class="param">text (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">from_lang (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
+<div class="param">to_lang (optional)</div><div class="param-desc"><span class="param-type"><a href="#string">String</a></span>  </div>
     </div>  <!-- field-items -->
   </div>
   <div class="model">
