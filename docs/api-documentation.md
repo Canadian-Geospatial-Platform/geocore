@@ -3416,7 +3416,7 @@ nav_order: 6
         <a href="#"></a>
   </div> <!-- method -->
   <hr/>
-  <h1><a name="TranslateTraduire">TranslateTraduire</a></h1>
+  <h1><a name="TranslateTraduire">Translate / Traduire</a></h1>
   <div class="method"><a name="translate"></a>
     <div class="method-path">
     <a class="up" href="#__Methods">Up</a>
