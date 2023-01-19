@@ -87,7 +87,7 @@ nav_order: 6
       }
       
       .huge	{
-      	color: #fff;
+      	color: #808080;
       }
       
       pre.example {
