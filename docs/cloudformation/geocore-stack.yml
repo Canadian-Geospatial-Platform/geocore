@@ -158,7 +158,192 @@ Resources:
         - 
           AttributeName: key
           KeyType: HASH
-       
+
+  DynamoDbAnnouncements:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: announcements
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: datetime
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: datetime
+            KeyType: RANGE
+
+  DynamoDbCommunity:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: community
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S  
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+
+  DynamoDbCommunityannouncement:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: community_announcement
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: datetime
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: datetime
+            KeyType: RANGE
+
+  DynamoDbCommunitydata:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: community_data
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: communityId
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: communityId
+            KeyType: RANGE
+
+  DynamoDbCommunityresource:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: community_resource
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: communityId
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: communityId
+            KeyType: RANGE     
+
+  DynamoDbCommunityroles:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: community_roles
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: communityId
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: communityId
+            KeyType: RANGE 
+
+  DynamoDbSavedrecords:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: saved_records
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: userId
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: userId
+            KeyType: RANGE
+
+  DynamoDbSavedsearches:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: saved_searches
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: key
+            AttributeType: S
+          - 
+            AttributeName: userId
+            AttributeType: S      
+        KeySchema: 
+          - 
+            AttributeName: key
+            KeyType: HASH
+          - 
+            AttributeName: userId
+            KeyType: RANGE
+
+  DynamoDbUsers:
+      Type: AWS::DynamoDB::Table
+      Properties: 
+        TableName: users
+        BillingMode: PAY_PER_REQUEST
+        PointInTimeRecoverySpecification: 
+          PointInTimeRecoveryEnabled: true
+        AttributeDefinitions: 
+          - 
+            AttributeName: userId
+            AttributeType: S 
+        KeySchema: 
+          - 
+            AttributeName: userId
+            KeyType: HASH
 
   GeoCoreDatabase:
     Type: AWS::Glue::Database
@@ -270,7 +455,7 @@ Resources:
   LambdaId:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
@@ -290,7 +475,7 @@ Resources:
   LambdaGeo:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
@@ -310,7 +495,7 @@ Resources:
   LambdaFeatured:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
@@ -330,7 +515,7 @@ Resources:
   LambdaFoundation:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
@@ -350,7 +535,7 @@ Resources:
   LambdaAnalytics:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
@@ -367,14 +552,614 @@ Resources:
             Path: /*
             Method: any
 
-  LambdaGetAnalytics:
+  LambdaAnnouncementsadd:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs14.x
+      Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+        Key: cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaAnnouncementsdelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaAnnouncementsget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaSavedrecordadd:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaSavedrecordget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaSavedrecorddelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaSavedsearchadd:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaSavedsearchget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaSavedsearchdelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityaddmember:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_add_member-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaCommunityadd:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_add-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaCommunityannouncementsadd:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityannouncementsdelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityannouncementsedit:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityannouncementsget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaCommunitydataadd:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_data_add-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunitydatadelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_data_delete-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunitydataget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_data_get-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaCommunityresourcesadd:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_resource_add-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityresourcesdelete:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityresourcesedit:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityresourcesget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_resource_get-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunitydeletemember:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_delete_member-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityeditmember:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_edit_member-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityedit:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_edit-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunitygetmembers:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_get_members-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaCommunityget:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/community_get-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaMycommunityannouncements:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaMycommunitydata:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/my_community_data-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaMycommunityresources:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/community/my_community_resources-230201.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaTranslate:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/tanslate/translate-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1266,316 +2051,2011 @@ Resources:
                 requestTemplates:
                   application/json: "{\"statusCode\": 200}"
                 passthroughBehavior: "when_no_match"                
-          /featured:
-            get:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "aws"
-                httpMethod: "POST"
-                uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaFeatured}/invocations"
+            /announcements:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\n    \"theme\" : \"$input.params('theme')\",\n    \"\
-                    lang\" : \"$input.params('lang')\"\n}"
-                passthroughBehavior: "when_no_templates"
-                contentHandling: "CONVERT_TO_TEXT"
-            options:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-                    Access-Control-Allow-Methods:
-                      type: "string"
-                    Access-Control-Allow-Headers:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "mock"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\"statusCode\": 200}"
-                passthroughBehavior: "when_no_match"
-          /foundational:
-            get:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "aws"
-                httpMethod: "POST"
-                uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaFoundation}/invocations"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /announcements/add:
+              post:
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\n    \"theme\" : \"$input.params('theme')\",\n    \"\
-                    lang\" : \"$input.params('lang')\"\n}"
-                passthroughBehavior: "when_no_templates"
-                contentHandling: "CONVERT_TO_TEXT"
-            options:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-                    Access-Control-Allow-Methods:
-                      type: "string"
-                    Access-Control-Allow-Headers:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "mock"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\"statusCode\": 200}"
-                passthroughBehavior: "when_no_match"
-          /geo:
-            get:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "aws"
-                httpMethod: "POST"
-                uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaGeo}/invocations"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /announcements/delete:
+              post:
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\r\n    \"north\" : \"$input.params('north')\",\r\n\
-                    \    \"east\" : \"$input.params('east')\",\r\n    \"south\" : \"$input.params('south')\"\
-                    ,\r\n    \"west\" : \"$input.params('west')\",\r\n    \"keyword\" : \"\
-                    $input.params('keyword')\",\r\n    \"keyword_only\" : \"$input.params('keyword_only')\"\
-                    ,\r\n    \"lang\" : \"$input.params('lang')\",\r\n    \"theme\" : \"$input.params('theme')\"\
-                    ,\r\n    \"type\": \"$input.params('type')\",\r\n    \"org\": \"$input.params('org')\"\
-                    ,\r\n    \"min\": \"$input.params('min')\",\r\n    \"max\": \"$input.params('max')\"\
-                    ,\r\n    \"foundational\": \"$input.params('foundational')\"\r\n}"
-                passthroughBehavior: "when_no_templates"
-                contentHandling: "CONVERT_TO_TEXT"
-            options:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-                    Access-Control-Allow-Methods:
-                      type: "string"
-                    Access-Control-Allow-Headers:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "mock"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsdelete}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\"statusCode\": 200}"
-                passthroughBehavior: "when_no_match"
-          /id:
-            get:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "aws"
-                httpMethod: "POST"
-                uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaId}/invocations"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+              /collections:
+                get:
+                  consumes:
+                  - "application/json"
+                  produces:
+                  - "application/json"
+                  responses:
+                    "200":
+                      description: "200 response"
+                      schema:
+                        $ref: "#/definitions/Empty"
+                      headers:
+                        Access-Control-Allow-Origin:
+                          type: "string"
+                  x-amazon-apigateway-integration:
+                    uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
+                    httpMethod: "POST"
+                    responses:
+                      default:
+                        statusCode: "200"
+                        responseParameters:
+                          method.response.header.Access-Control-Allow-Origin: "'*'"
+                    requestTemplates:
+                      application/json: "{\r\n    \"id\" : \"$input.params('id')\"\r\n}"
+                    passthroughBehavior: "when_no_templates"
+                    contentHandling: "CONVERT_TO_TEXT"
+                    type: "aws"
+                options:
+                  consumes:
+                  - "application/json"
+                  produces:
+                  - "application/json"
+                  responses:
+                    "200":
+                      description: "200 response"
+                      schema:
+                        $ref: "#/definitions/Empty"
+                      headers:
+                        Access-Control-Allow-Origin:
+                          type: "string"
+                        Access-Control-Allow-Methods:
+                          type: "string"
+                        Access-Control-Allow-Headers:
+                          type: "string"
+                  x-amazon-apigateway-integration:
+                    responses:
+                      default:
+                        statusCode: "200"
+                        responseParameters:
+                          method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                          method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                          method.response.header.Access-Control-Allow-Origin: "'*'"
+                    requestTemplates:
+                      application/json: "{\"statusCode\": 200}"
+                    passthroughBehavior: "when_no_match"
+                    type: "mock"            
+            /community/add:
+              post:
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
-                    \  \"id\" : \"$input.params('id')\"\r\n}"
-                passthroughBehavior: "when_no_templates"
-                contentHandling: "CONVERT_TO_TEXT"
-            options:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-                    Access-Control-Allow-Methods:
-                      type: "string"
-                    Access-Control-Allow-Headers:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "mock"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\"statusCode\": 200}"
-                passthroughBehavior: "when_no_match"
-          /collections:
-            get:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "aws"
-                httpMethod: "POST"
-                uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/add_member:
+              post:
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\r\n    \"id\" : \"$input.params('id')\"\r\n}"
-                passthroughBehavior: "when_no_templates"
-                contentHandling: "CONVERT_TO_TEXT"
-            options:
-              consumes:
-              - "application/json"
-              produces:
-              - "application/json"
-              responses:
-                "200":
-                  description: "200 response"
-                  schema:
-                    $ref: "#/definitions/Empty"
-                  headers:
-                    Access-Control-Allow-Origin:
-                      type: "string"
-                    Access-Control-Allow-Methods:
-                      type: "string"
-                    Access-Control-Allow-Headers:
-                      type: "string"
-              x-amazon-apigateway-integration:
-                type: "mock"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityaddmember}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
                 responses:
-                  default:
-                    statusCode: "200"
-                    responseParameters:
-                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                      method.response.header.Access-Control-Allow-Origin: "'*'"
-                requestTemplates:
-                  application/json: "{\"statusCode\": 200}"
-                passthroughBehavior: "when_no_match"
-        securityDefinitions:
-          api_key:
-            type: "apiKey"
-            name: "x-api-key"
-            in: "header"
-        definitions:
-          Empty:
-            type: "object"
-            title: "Empty Schema"
-        x-amazon-apigateway-gateway-responses:
-          DEFAULT_5XX:
-            responseParameters:
-              gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-              gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-              gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-          DEFAULT_4XX:
-            responseParameters:
-              gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-              gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
-              gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/announcements/add:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityannouncementsadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/announcements/delete:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityannouncementsdelete}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/announcements/edit:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityannouncementsedit}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/announcements/get:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityannouncementsget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"communityId\" : \"$input.params('communityId')\"\
+                      \n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/data/add:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunitydataadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/data/delete:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunitydatadelete}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/data/get:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunitydataget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"communityId\" : \"$input.params('communityId')\"\
+                      \n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/delete_member:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunitydeletemember}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/edit:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityedit}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/edit_member:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityeditmember}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/get:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"communityId\" : \"$input.params('communityId')\"\
+                      \n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/get_member:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunitygetmember}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"communityId\" : \"$input.params('communityId')\"\
+                      \n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/my_community/announcements:
+              get:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaMycommunityannouncements}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/my_community/data:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaMycommunitydata}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"userId\" : \"$input.params('userId')\"\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/my_community/resources:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaMycommunityresources}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"userId\" : \"$input.params('userId')\"\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/resources/add:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityresourcesadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/resources/delete:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityresourcesdelete}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/resources/edit:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityresourcesedit}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /community/resources/get:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCommunityresourcesget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"communityId\" : \"$input.params('communityId')\"\
+                      \r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /featured:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaFeatured}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"theme\" : \"$input.params('theme')\",\n    \"\
+                      lang\" : \"$input.params('lang')\"\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+            /foundational:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaFoundation}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"theme\" : \"$input.params('theme')\",\n    \"\
+                      lang\" : \"$input.params('lang')\"\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+            /geo:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaGeo}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"north\" : \"$input.params('north')\",\r\n\
+                      \    \"east\" : \"$input.params('east')\",\r\n    \"south\" : \"$input.params('south')\"\
+                      ,\r\n    \"west\" : \"$input.params('west')\",\r\n    \"keyword\" : \"\
+                      $input.params('keyword')\",\r\n    \"keyword_only\" : \"$input.params('keyword_only')\"\
+                      ,\r\n    \"lang\" : \"$input.params('lang')\",\r\n    \"theme\" : \"$input.params('theme')\"\
+                      ,\r\n    \"type\": \"$input.params('type')\",\r\n    \"org\": \"$input.params('org')\"\
+                      ,\r\n    \"min\": \"$input.params('min')\",\r\n    \"max\": \"$input.params('max')\"\
+                      ,\r\n    \"foundational\": \"$input.params('foundational')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+            /id:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaId}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
+                      \  \"id\" : \"$input.params('id')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+            /saved_records/add:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaSavedrecordadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /saved_records/delete:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaSavedrecorddelete}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /saved_records/get:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaSavedrecordget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"userId\" : \"$input.params('userId')\"\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /saved_searches/add:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaSavedsearchadd}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /saved_searches/delete:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaSavedsearchdelete}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /saved_searches/get:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaSavedsearchget}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\n    \"userId\" : \"$input.params('userId')\"\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+            /translate:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaTranslate}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"text\" : \"$input.params('text')\",\r\n  \
+                      \  \"from_lang\" : \"$input.params('from_lang')\",\r\n    \"to_lang\"\
+                      \ : \"$input.params('to_lang')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+          securityDefinitions:
+            api_key:
+              type: "apiKey"
+              name: "x-api-key"
+              in: "header"
+          definitions:
+            Empty:
+              type: "object"
+              title: "Empty Schema"
+          x-amazon-apigateway-gateway-responses:
+            DEFAULT_4XX:
+              responseParameters:
+                gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            DEFAULT_5XX:
+              responseParameters:
+                gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
 
 
   LogGroup:
