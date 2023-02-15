@@ -195,5 +195,5 @@ Resources:
         CustomErrorResponses:
           - ErrorCachingMinTTL: 10
             ErrorCode: 404
-            ResponsePagePath: /index.html
-            ResponseCode: 200
+            ResponsePagePath: /404.html
+            ResponseCode: 404
