@@ -552,6 +552,26 @@ Resources:
             Path: /*
             Method: any
 
+  LambdaGetAnalytics:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/analytics/get_analytics-220323.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
   LambdaAnnouncementsadd:
     Type: AWS::Serverless::Function
     Properties:
