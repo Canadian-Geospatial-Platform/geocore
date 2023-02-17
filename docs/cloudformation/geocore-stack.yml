@@ -502,7 +502,7 @@ Resources:
         Key: cloudformation-templates/lambda/featured/featured-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
-      MemorySize: 512
+      MemorySize: 1024
       Timeout: 60
       Events:
         ApiEvent:
