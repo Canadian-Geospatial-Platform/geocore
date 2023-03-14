@@ -1,0 +1,20 @@
+name: Find and Replace Dev Deployment
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Initiate - Dev
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT }}
+        ref: ${{ github.head_ref }}
+    
+    - name: Push changes - Init Stage
+      run: git push origin -f dev:stage

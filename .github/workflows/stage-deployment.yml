@@ -1,0 +1,20 @@
+name: Find and Replace Stage Deployment
+
+on:
+  push:
+    branches: [ stage ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Initiate - Stage
+      uses: actions/checkout@v3
+      with:
+        token: ${{ secrets.PAT }}
+        ref: ${{ github.head_ref }}
+    
+    - name: Push changes - Init Prod
+      run: git push origin -f stage:prod
