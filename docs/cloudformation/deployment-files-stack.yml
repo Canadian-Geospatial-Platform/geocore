@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys deployment files for the webpresence geo.ca solution
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored    
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:
+  GeoCaStoreBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'webpresence-auto-deployment-files-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  GeoCaPipelineArtifactBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'webpresence-auto-deployment-files-pipeline-artifacts-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+            BucketKeyEnabled: true
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  GeoCaStoreBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref GeoCaStoreBucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Sid: PolicyForCloudFrontPrivateContent
+            Effect: Allow
+            Principal:
+              CanonicalUser: !GetAtt GeoCaOai.S3CanonicalUserId
+            Action: s3:GetObject
+            Resource: !Sub 'arn:aws:s3:::webpresence-auto-deployment-files-${Environment}/*'
+
+  AppPipelineRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:PutObject'
+                  - 's3:GetObject'
+                  - 's3:GetObjectVersion'
+                Resource:
+                  - Fn::Sub: arn:aws:s3:::${GeoCaPipelineArtifactBucket}/*
+                  - Fn::Sub: arn:aws:s3:::${GeoCaPipelineArtifactBucket}
+                  - Fn::Sub: arn:aws:s3:::${GeoCaStoreBucket}/*
+                  - Fn::Sub: arn:aws:s3:::${GeoCaStoreBucket}
+
+  AppPipeline:
+    Type: 'AWS::CodePipeline::Pipeline'
+    Properties:
+      Name: !Sub 'webpresence-auto-deployment-files-${Environment}'
+      RoleArn: !GetAtt AppPipelineRole.Arn
+      Stages:
+        - Name: Source
+          Actions:
+            - Name: Source
+              InputArtifacts: []
+              ActionTypeId:
+                Version: '1'
+                Owner: ThirdParty
+                Category: Source
+                Provider: GitHub
+              OutputArtifacts:
+                - Name: SourceCode
+              RunOrder: 1
+              Configuration:
+                OAuthToken: '{{resolve:secretsmanager:/webpresence/github/key}}'
+                Owner: Canadian-Geospatial-Platform
+                Repo: geocore
+                Branch: !Ref Environment
+                PollForSourceChanges: 'true'
+        - Name: Approval
+          Actions:
+            - Name: Approval
+              ActionTypeId:
+                Category: Approval
+                Owner: AWS
+                Version: 1
+                Provider: Manual
+        - Name: Deploy
+          Actions:
+            - Name: Deploy
+              ActionTypeId:
+                Category: Deploy
+                Owner: AWS
+                Version: 1
+                Provider: S3
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts: []
+              Configuration:
+                BucketName: !Ref GeoCaStoreBucket
+                Extract: 'true'
+              RunOrder: 1
+      ArtifactStore:
+        Type: S3
+        Location: !Ref GeoCaPipelineArtifactBucket
+
+  GeoCaOai:
+    Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: geo.ca OAI

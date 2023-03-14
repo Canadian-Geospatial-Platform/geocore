@@ -1,5 +1,5 @@
 AWSTemplateFormatVersion: 2010-09-09
-Description: Deploys webpresence app.geo.ca solution
+Description: Deploys webpresence features.app.geo.ca solution
 Parameters:
 
   Environment:
@@ -8,7 +8,7 @@ Parameters:
     Description: SSM parameter name for environment
   SslCertArn:
     Type: AWS::SSM::Parameter::Value<String>
-    Default: /webpresence/app-geo-ca/ssl-cert-arn
+    Default: /webpresence/features-app-geo-ca/ssl-cert-arn
     Description: SSM parameter name for app.geo.ca ACM SSL Cert ARN     
   WebAclArn:
     Type: String
@@ -25,7 +25,7 @@ Resources:
   AppGeoCaStoreBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'webpresence-app-geo-ca-${Environment}'
+      BucketName: !Sub 'webpresence-features-app-geo-ca-${Environment}'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -41,7 +41,7 @@ Resources:
   AppGeoCaPipelineArtifactBucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub 'webpresence-app-geo-ca-pipeline-artifacts-${Environment}'
+      BucketName: !Sub 'webpresence-features-app-geo-ca-pipeline-artifacts-${Environment}'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -66,7 +66,7 @@ Resources:
           Principal: 
             CanonicalUser: !GetAtt AppGeoCaOai.S3CanonicalUserId
           Action: s3:GetObject
-          Resource: !Sub "arn:aws:s3:::webpresence-app-geo-ca-${Environment}/*"
+          Resource: !Sub "arn:aws:s3:::webpresence-features-app-geo-ca-${Environment}/*"
 
   CodeBuildRole:
     Type: AWS::IAM::Role
@@ -106,7 +106,7 @@ Resources:
   AppCodeBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
-      Name: webpresence-app-geo-ca
+      Name: webpresence-features-app-geo-ca
       ServiceRole: !GetAtt CodeBuildRole.Arn
       Artifacts:
         Type: CODEPIPELINE
@@ -270,7 +270,7 @@ Resources:
   AppPipeline:
     Type: AWS::CodePipeline::Pipeline
     Properties:
-      Name: !Sub 'webpresence-app-geo-ca-${Environment}'
+      Name: !Sub 'webpresence-features-app-geo-ca-${Environment}'
       RoleArn: !GetAtt AppPipelineRole.Arn
       Stages:
         - Name: Source
@@ -289,16 +289,8 @@ Resources:
                 OAuthToken: '{{resolve:secretsmanager:/webpresence/github/key}}'
                 Owner: Canadian-Geospatial-Platform
                 Repo: app.geo.ca
-                Branch: !Ref Environment
+                Branch: features
                 PollForSourceChanges: 'true'
-        - Name: Approval
-          Actions:
-            - Name: Approval
-              ActionTypeId:
-                Category: Approval
-                Owner: AWS
-                Version: 1
-                Provider: Manual
         - Name: Build
           Actions:
             - Name: Build
@@ -352,7 +344,7 @@ Resources:
     Type: AWS::CloudFront::CloudFrontOriginAccessIdentity
     Properties:
       CloudFrontOriginAccessIdentityConfig:
-        Comment: app.geo.ca OAI
+        Comment: features.app.geo.ca OAI
 
   AppGeoCaDistribution:
     Type: 'AWS::CloudFront::Distribution'
@@ -377,16 +369,16 @@ Resources:
         Logging:
           Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
           IncludeCookies: true
-          Prefix: app-geo-ca
+          Prefix: features-app-geo-ca
         Aliases:
           - !If 
             - IsProd
-            - app.geo.ca
-            - !Sub 'app-${Environment}.geo.ca'
+            - features.app.geo.ca
+            - !Sub 'features.app-${Environment}.geo.ca'
           - !If 
             - IsProd
-            - www.app.geo.ca
-            - !Sub 'www.app-${Environment}.geo.ca'
+            - www.features.app.geo.ca
+            - !Sub 'www.features.app-${Environment}.geo.ca'
         PriceClass: PriceClass_All
         ViewerCertificate:
           AcmCertificateArn: !Ref SslCertArn
@@ -397,5 +389,3 @@ Resources:
             ErrorCode: 404
             ResponsePagePath: /index.html
             ResponseCode: 200
-
-

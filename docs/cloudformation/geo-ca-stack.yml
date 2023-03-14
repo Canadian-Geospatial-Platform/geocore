@@ -96,6 +96,99 @@ Resources:
                   - Fn::Sub: arn:aws:s3:::${GeoCaPipelineArtifactBucket}
                   - Fn::Sub: arn:aws:s3:::${GeoCaStoreBucket}/*
                   - Fn::Sub: arn:aws:s3:::${GeoCaStoreBucket}
+              - Effect: 'Allow'
+                Action:
+                  - 'lambda:InvokeFunction'
+                Resource:
+                  - Fn::Sub: arn:aws:lambda:*
+
+  
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+        - PolicyName: policy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Resource: '*'
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:PutRetentionPolicy'
+                  - 'logs:DescribeSubscriptionFilters'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DeleteSubscriptionFilter'
+                  - 'logs:PutSubscriptionFilter'
+              - Effect: Allow
+                Resource: '*'
+                Action:
+                  - 'codepipeline:PutJobFailureResult'
+                  - 'codepipeline:PutJobSuccessResult'
+                  - 'cloudfront:CreateInvalidation'
+
+  LambdaInvalidation:
+      Type: AWS::Lambda::Function
+      Properties:
+        Code:
+          ZipFile: |
+            import json
+            import boto3
+
+            code_pipeline = boto3.client("codepipeline")
+            cloud_front = boto3.client("cloudfront")
+
+            def lambda_handler(event, context):
+                job_id = event["CodePipeline.job"]["id"]
+                try:
+                    user_params = json.loads(
+                        event["CodePipeline.job"]
+                            ["data"]
+                            ["actionConfiguration"]
+                            ["configuration"]
+                            ["UserParameters"]
+                    )
+                    cloud_front.create_invalidation(
+                        DistributionId=user_params,
+                        InvalidationBatch={
+                            "Paths": {
+                                  "Quantity": 1,
+                                  "Items": [
+                                  "/*"
+                              ]
+                              },
+                            "CallerReference": event["CodePipeline.job"]["id"],
+                        },
+                    )
+                except Exception as e:
+                    code_pipeline.put_job_failure_result(
+                        jobId=job_id,
+                        failureDetails={
+                            "type": "JobFailed",
+                            "message": str(e),
+                        },
+                    )
+                else:
+                    code_pipeline.put_job_success_result(
+                        jobId=job_id,
+                    )
+
+        Role: !GetAtt LambdaExecutionRole.Arn
+        Runtime: python3.8
+        Handler: index.lambda_handler
+        Timeout: 15
+
 
   AppPipeline:
     Type: 'AWS::CodePipeline::Pipeline'
@@ -143,6 +236,21 @@ Resources:
               Configuration:
                 BucketName: !Ref GeoCaStoreBucket
                 Extract: 'true'
+              RunOrder: 1
+        - Name: Invalidate
+          Actions:
+            - Name: Invalidate
+              ActionTypeId:
+                Category: Invoke
+                Owner: AWS
+                Version: 1
+                Provider: Lambda
+              InputArtifacts:
+                - Name: SourceCode
+              OutputArtifacts: []
+              Configuration:
+                FunctionName: !Ref LambdaInvalidation
+                UserParameters: !Sub '"${GeoCaDistribution.Id}"'
               RunOrder: 1
       ArtifactStore:
         Type: S3
