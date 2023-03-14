@@ -17,4 +17,4 @@ jobs:
         ref: ${{ github.head_ref }}
     
     - name: Push changes - Init Stage
-      run: git push origin -f dev:stage
+      run: git push origin -f dev:stage 
