@@ -279,15 +279,15 @@ Resources:
         - 
           Arn: 
             Fn::GetAtt: 
-              - GeocoreStacHarvestFunction
+              - GeocoreStacHarvestAndTransformFunction
               - Arn
-          Id: !Ref GeocoreStacHarvestFunction
+          Id: !Ref GeocoreStacHarvestAndTransformFunction
 
   PermissionForEventsToInvokeStacHarvesterLambda:
     Condition: IsDev
     Type: AWS::Lambda::Permission
     Properties: 
-      FunctionName: !Ref GeocoreStacHarvestFunction
+      FunctionName: !Ref GeocoreStacHarvestAndTransformFunction
       Action: 'lambda:InvokeFunction'
       Principal: 'events.amazonaws.com'
       SourceArn: !GetAtt 
@@ -515,19 +515,7 @@ Resources:
         #      x-amazon-apigateway-integration:
         #        type: aws_proxy
         #        httpMethod: POST
-        #        uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoreStacHarvestFunction.Arn}/invocations'
-        #      responses: {}
-        #securityDefinitions:
-        #  api_key:
-        #    type: "apiKey"
-        #    name: "x-api-key"
-        #    in: "header"
-        #  /stac_geocore:
-        #    get:
-        #      x-amazon-apigateway-integration:
-        #        type: aws_proxy
-        #        httpMethod: POST
-        #        uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${StactoGeocoreFunction.Arn}/invocations'
+        #        uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoreStacHarvestAndTransformFunction.Arn}/invocations'
         #      responses: {}
         securityDefinitions:
           api_key:
