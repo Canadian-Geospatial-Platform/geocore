@@ -224,6 +224,8 @@ Resources:
         Variables:
           GEOJSON_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
           PARQUET_BUCKET_NAME: !Ref GeocoreGeojsontoParquetBucket
+          DYNAMODB_TABLE: 'analytics_popularity'
+          REGION_NAME: 'ca-central-1'
       Events:
         ApiEvent:
           Type: Api
