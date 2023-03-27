@@ -116,11 +116,11 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest.zip
+            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest.zip
-              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-2111119.zip
+              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
+              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
       MemorySize: 1024
       Handler: app.lambda_handler
       Timeout: 900
@@ -173,11 +173,11 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-transform/geocore-transform.zip
+            - cloudformation-templates/lambda/geocore-transform/geocore-transform-20221114-1700.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-transform/geocore-transform.zip
-              - cloudformation-templates/lambda/geocore-transform/geocore-transform-2111119.zip
+              - cloudformation-templates/lambda/geocore-transform/geocore-transform-20221114-1700.zip
+              - cloudformation-templates/lambda/geocore-transform/geocore-transform-20221114-1700.zip
       Handler: index.handler
       MemorySize: 512
       Timeout: 60
@@ -193,7 +193,6 @@ Resources:
             Events: s3:ObjectCreated:*
 
   GeocoretoParquetRule:
-    Condition: IsDev  
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub 'parquet-60mins-${Environment}'
@@ -209,7 +208,6 @@ Resources:
           Id: !Ref GeocoretoParquet
 
   PermissionForEventsToInvokeGeocoretoParquetLambda:
-    Condition: IsDev  
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: !Ref GeocoretoParquet
@@ -229,11 +227,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230324-1500.zip
+            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230324-1500.zip
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230324-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
       MemorySize: 1024
       Handler: app.lambda_handler
       Timeout: 900
@@ -295,7 +293,8 @@ Resources:
               - Arn
           Id: !Ref GeocoreStacHarvestFunction
 
-  PermissionForEventsToInvokeStacHarvesterLambda: 
+  PermissionForEventsToInvokeStacHarvesterLambda:
+    Condition: IsDev
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: !Ref GeocoreStacHarvestFunction
