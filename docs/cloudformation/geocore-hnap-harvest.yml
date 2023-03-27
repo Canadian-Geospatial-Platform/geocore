@@ -217,7 +217,7 @@ Resources:
               - IsStage
               - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
               - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
-      MemorySize: 1024
+      MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
       Environment:
@@ -505,11 +505,6 @@ Resources:
                 httpMethod: POST
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoretoParquet.Arn}/invocations'
               responses: {}
-        #securityDefinitions:
-        #  api_key:
-        #    type: "apiKey"
-        #    name: "x-api-key"
-        #    in: "header"
         #  /stac_harvest:
         #    get:
         #      x-amazon-apigateway-integration:
