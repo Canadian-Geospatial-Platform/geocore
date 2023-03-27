@@ -74,21 +74,6 @@ Resources:
         RestrictPublicBuckets: True
       AccessControl: Private
 
-  GeocoreStacHarvestBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub 'webpresence-stac-json-${Environment}'
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: True
-        BlockPublicPolicy: True
-        IgnorePublicAcls: True
-        RestrictPublicBuckets: True
-      AccessControl: Private
-
   GeocoreFormatTemplateBucket:
     Condition: IsDev
     Type: AWS::S3::Bucket
@@ -247,7 +232,7 @@ Resources:
             Path: /geocore_to_parquet
             Method: any
 
-  GeocoreStacHarvestFunction:
+  GeocoreStacHarvestAndTransformFunction:
     Condition: IsDev
     Type: AWS::Serverless::Function
     Properties:
@@ -258,23 +243,28 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-stac-harvest/stac-harvest-20220719.zip
+            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230330-0000.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-stac-harvest/stac-harvest-20220719.zip
-              - cloudformation-templates/lambda/geocore-stac-harvest/stac-harvest-20220719.zip
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230330-0000.zip
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230330-0000.zip
       MemorySize: 1024
       Handler: app.lambda_handler
       Timeout: 900
       Environment:
         Variables:
-          BUCKET_NAME: !Ref GeocoreStacHarvestBucket
+          GEOCORE_TEMPLATE_BUCKET_NAME: !Ref GeocoreFormatTemplateBucket
+          GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
+          GEOCORE_TO_PARQUET_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
+          STAC_API_ROOT: 'https://datacube.services.geo.ca/api'
+          ROOT_NAME: 'CCMEO Datacube API / CCCOT Cube de données API'
+          SOURCE: 'ccmeo'
       Events:
         ApiEvent:
           Type: Api
           Properties:
             RestApiId: !Ref RestApi
-            Path: /STAC_harvest
+            Path: /stac_harvest
             Method: any
 
   StacHarvesterRule:
@@ -302,65 +292,6 @@ Resources:
       Principal: 'events.amazonaws.com'
       SourceArn: !GetAtt 
         - StacHarvesterRule
-        - Arn
-
-  StactoGeocoreFunction:
-    Condition: IsDev
-    Type: AWS::Serverless::Function
-    Properties:
-      Runtime: python3.8
-      Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri:
-        Bucket: !Ref DeploymentBucket
-        Key: 
-          Fn::If:
-            - IsProd
-            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20220725.zip
-            - Fn::If:
-              - IsStage
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20220725.zip
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20220725.zip
-      MemorySize: 1024
-      Handler: app.lambda_handler
-      Timeout: 900
-      Environment:
-        Variables:
-          STAC_BUCKET_NAME: !Ref GeocoreStacHarvestBucket
-          GEOCORE_TEMPLATE_BUCKET_NAME: !Ref GeocoreFormatTemplateBucket
-          STAC_GEOCORE_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApi
-            Path: /stac_geocore
-            Method: any
-
-  StactoGeocoreRule:
-    Condition: IsDev
-    Type: AWS::Events::Rule
-    Properties:
-      Name: !Sub 'stac-to-geocore-1day-${Environment}'
-      Description: Stac to GeoCore on a 1 day interval
-      State: DISABLED
-      ScheduleExpression: 'rate(1 day)'
-      Targets:
-        - 
-          Arn: 
-            Fn::GetAtt: 
-              - StactoGeocoreFunction
-              - Arn
-          Id: !Ref StactoGeocoreFunction
-
-  PermissionForEventsToInvokeStactoGeocoreLambda:
-    Condition: IsDev  
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref StactoGeocoreFunction
-      Action: 'lambda:InvokeFunction'
-      Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt 
-        - StactoGeocoreRule
         - Arn
 
   LambdaExecutionRole:
