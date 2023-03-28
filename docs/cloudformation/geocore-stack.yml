@@ -24,6 +24,8 @@ Parameters:
 
 Conditions: 
   IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
 
 Resources:
 
@@ -345,6 +347,28 @@ Resources:
             AttributeName: userId
             KeyType: HASH
 
+  DynamoDbPopularity:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: analytics_popularity
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification: 
+         PointInTimeRecoveryEnabled: true
+      AttributeDefinitions: 
+        - 
+          AttributeName: uuid
+          AttributeType: S
+        - 
+          AttributeName: popularity
+          AttributeType: N
+      KeySchema: 
+        - 
+          AttributeName: uuid
+          KeyType: HASH
+        - 
+          AttributeName: popularity
+          KeyType: RANGE            
+
   GeoCoreDatabase:
     Type: AWS::Glue::Database
     Properties:
@@ -479,7 +503,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geo/geo.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
+              - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1199,7 +1230,14 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/collections/collections.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
+              - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
       MemorySize: 1024
       Handler: app.lambda_handler
       Timeout: 60
@@ -1213,6 +1251,32 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /collections
             Method: any
+
+  LambdaPopularity:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0000.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0000.zip
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0000.zip
+      MemorySize: 4096
+      Handler: lambda_function.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: 'analytics_popularity'
+          GEOJSON_BUCKET_NAME: 'webpresence-geocore-json-to-geojson-dev'
+          GEONETWORK_POPULARITY_PATH: ''
+          PARQUET_BUCKET_NAME: 's3://webpresence-geocore-geojson-to-parquet-dev/'
+          REGION_NAME: 'ca-central-1' 
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
