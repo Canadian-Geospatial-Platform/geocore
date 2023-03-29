@@ -1514,23 +1514,23 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0000.zip
+            - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0000.zip
-              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0000.zip
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
       MemorySize: 4096
       Handler: lambda_function.lambda_handler
       Timeout: 900
       Environment:
         Variables:
           DYNAMODB_TABLE: 'analytics_popularity'
-          GEOJSON_BUCKET_NAME: 'webpresence-geocore-json-to-geojson-dev'
+          GEOJSON_BUCKET_NAME: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
           GEONETWORK_POPULARITY_PATH: ''
-          PARQUET_BUCKET_NAME: 's3://webpresence-geocore-geojson-to-parquet-dev/'
+          PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}/'
           REGION_NAME: 'ca-central-1'
       Layers:
-        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:5
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:4
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
