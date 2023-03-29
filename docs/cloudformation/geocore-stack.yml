@@ -1528,7 +1528,9 @@ Resources:
           GEOJSON_BUCKET_NAME: 'webpresence-geocore-json-to-geojson-dev'
           GEONETWORK_POPULARITY_PATH: ''
           PARQUET_BUCKET_NAME: 's3://webpresence-geocore-geojson-to-parquet-dev/'
-          REGION_NAME: 'ca-central-1' 
+          REGION_NAME: 'ca-central-1'
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:5
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
