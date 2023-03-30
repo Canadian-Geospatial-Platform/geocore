@@ -205,18 +205,18 @@ Resources:
   GeocoretoParquet:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.8
+      Runtime: python3.7
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
+            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-1500.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-0000.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-1500.zip
       MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
@@ -234,7 +234,7 @@ Resources:
             Path: /geocore_to_parquet
             Method: any
       Layers:
-        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:4
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python37:5
 
   GeocoreStacHarvestAndTransformFunction:
     Condition: IsDev
@@ -312,6 +312,7 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess        
       Policies:
         - PolicyName: 'policy'
           PolicyDocument:
