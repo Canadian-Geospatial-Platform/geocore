@@ -540,7 +540,7 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - ccloudformation-templates/lambda/featured/featured-220323.zip
+            - cloudformation-templates/lambda/featured/featured-220323.zip
             - Fn::If:
               - IsStage
               - cloudformation-templates/lambda/featured/featured-220323.zip
