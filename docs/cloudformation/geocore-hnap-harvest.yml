@@ -205,7 +205,7 @@ Resources:
   GeocoretoParquet:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.7
+      Runtime: python3.8
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
@@ -233,6 +233,8 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /geocore_to_parquet
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:4
 
   GeocoreStacHarvestAndTransformFunction:
     Condition: IsDev
