@@ -22,6 +22,7 @@ Parameters:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
 
+
 Conditions: 
   IsProd: !Equals [prod, !Ref Environment]
   IsStage: !Equals [stage, !Ref Environment]
@@ -381,8 +382,8 @@ Resources:
     Properties: 
       Database: !Ref GeoCoreDatabase
       WorkGroup: !Ref GeoCoreAthenaWorkGroup
-      QueryString: 
-        !Sub "CREATE EXTERNAL TABLE `metadata`(
+      QueryString:
+        !Sub "CREATE EXTERNAL TABLE IF NOT EXISTS `metadata`(
           `features_type` string, 
           `features_geometry_type` string, 
           `features_geometry_coordinates` string, 
@@ -465,7 +466,12 @@ Resources:
             'rawDataSize'='-1', 
             'totalSize'='6676041', 
             'transient_lastDdlTime'='1647981845', 
-            'typeOfData'='file')
+            'typeOfData'='file');
+
+        -- To add a new column(s) update below
+
+        ALTER EXTERNAL TABLE `metadata`
+        ADD COLUMN IF NOT EXISTS `features_popularity` int;
         "
         
   GeoCoreAthenaWorkGroup:
