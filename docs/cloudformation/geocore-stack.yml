@@ -24,6 +24,8 @@ Parameters:
 
 Conditions: 
   IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
 
 Resources:
 
@@ -345,6 +347,28 @@ Resources:
             AttributeName: userId
             KeyType: HASH
 
+  DynamoDbPopularity:
+    Type: AWS::DynamoDB::Table
+    Properties: 
+      TableName: analytics_popularity
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification: 
+         PointInTimeRecoveryEnabled: true
+      AttributeDefinitions: 
+        - 
+          AttributeName: uuid
+          AttributeType: S
+        - 
+          AttributeName: popularity
+          AttributeType: N
+      KeySchema: 
+        - 
+          AttributeName: uuid
+          KeyType: HASH
+        - 
+          AttributeName: popularity
+          KeyType: RANGE            
+
   GeoCoreDatabase:
     Type: AWS::Glue::Database
     Properties:
@@ -422,7 +446,7 @@ Resources:
           `features_properties_distributor` string, 
           `features_properties_options` string, 
           `features_properties_plugins` string, 
-          `features_popularity` string)
+          `features_popularity` int)
           ROW FORMAT SERDE 
             'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
           STORED AS INPUTFORMAT 
@@ -459,7 +483,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/id/id.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/id/id-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/id/id-220323.zip
+              - cloudformation-templates/lambda/id/id-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -479,7 +510,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geo/geo.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
+              - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -499,7 +537,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/featured/featured.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/featured/featured-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/featured/featured-220323.zip
+              - cloudformation-templates/lambda/featured/featured-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -519,7 +564,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/foundation/foundation_layer.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
+              - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -539,7 +591,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/analytics/analytics.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/analytics/analytics-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/analytics/analytics-220323.zip
+              - cloudformation-templates/lambda/analytics/analytics-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -559,7 +618,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/get_analytics/get_analytics.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+              - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -579,7 +645,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/announcements/announcement_add.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -599,7 +672,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/announcements/announcement_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -619,7 +699,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/announcements/announcement_get.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -639,7 +726,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_record/saved_record.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -659,7 +753,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_record/get_saved_record.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -679,7 +780,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_record/delete_saved_record.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -699,7 +807,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_search/saved_search.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+              - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -719,7 +834,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_search/get_saved_searches.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
+              - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip        
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -739,7 +861,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_search/delete_saved_search.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+              - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -759,7 +888,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_add_member.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_add_member-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_add_member-230201.zip
+              - cloudformation-templates/lambda/community/community_add_member-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -779,7 +915,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_add.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_add-230201.zip
+              - cloudformation-templates/lambda/community/community_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -799,7 +942,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_add.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -819,7 +969,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -839,7 +996,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_edit.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -859,7 +1023,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_get.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -879,7 +1050,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_data_add.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_data_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_data_add-230201.zip
+              - cloudformation-templates/lambda/community/community_data_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -899,7 +1077,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_data_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_data_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_data_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_data_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -919,7 +1104,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_data_get.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_data_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_data_get-230201.zip
+              - cloudformation-templates/lambda/community/community_data_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -939,7 +1131,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_add.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_add-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -959,7 +1158,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -979,7 +1185,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_edit.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -999,7 +1212,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_get.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_get-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_get-230201.zip        
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1019,7 +1239,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_delete_member.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_delete_member-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_delete_member-230201.zip
+              - cloudformation-templates/lambda/community/community_delete_member-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1039,7 +1266,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_edit_member.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_edit_member-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_edit_member-230201.zip
+              - cloudformation-templates/lambda/community/community_edit_member-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1059,7 +1293,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_edit.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_edit-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_edit-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1079,7 +1320,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_get_members.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_get_members-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_get_members-230201.zip
+              - cloudformation-templates/lambda/community/community_get_members-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1099,7 +1347,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_get.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_get-230201.zip
+              - cloudformation-templates/lambda/community/community_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1119,7 +1374,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/my_community_announcements.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+              - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1139,7 +1401,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/my_community_data.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/my_community_data-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/my_community_data-230201.zip
+              - cloudformation-templates/lambda/community/my_community_data-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1159,7 +1428,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/my_community_resources.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/my_community_resources-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/my_community_resources-230201.zip
+              - cloudformation-templates/lambda/community/my_community_resources-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1179,7 +1455,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/translate/translate.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/translate/translate-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/translate/translate-230201.zip
+              - cloudformation-templates/lambda/translate/translate-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1199,7 +1482,14 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/collections/collections.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
+              - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
       MemorySize: 1024
       Handler: app.lambda_handler
       Timeout: 60
@@ -1213,6 +1503,34 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /collections
             Method: any
+
+  LambdaPopularity:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+      MemorySize: 4096
+      Handler: lambda_function.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: 'analytics_popularity'
+          GEOJSON_BUCKET_NAME: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+          GEONETWORK_POPULARITY_PATH: ''
+          PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}/'
+          REGION_NAME: 'ca-central-1'
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:4
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -3581,7 +3899,8 @@ Resources:
                       ,\r\n    \"lang\" : \"$input.params('lang')\",\r\n    \"theme\" : \"$input.params('theme')\"\
                       ,\r\n    \"type\": \"$input.params('type')\",\r\n    \"org\": \"$input.params('org')\"\
                       ,\r\n    \"min\": \"$input.params('min')\",\r\n    \"max\": \"$input.params('max')\"\
-                      ,\r\n    \"foundational\": \"$input.params('foundational')\"\r\n}"
+                      ,\r\n    \"foundational\": \"$input.params('foundational')\"
+                      ,\r\n     \"sort\": \"$input.params('sort')\"\r\n}"
                   passthroughBehavior: "when_no_templates"
                   contentHandling: "CONVERT_TO_TEXT"
               options:
