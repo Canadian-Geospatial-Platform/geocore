@@ -408,7 +408,6 @@ Resources:
       FunctionCode: >
         function handler(event) {
           var request = event.request;
-          var uri = request.uri;
           // Redirects requests to the www. url to the non www. url.
           if (request.headers && request.headers.host && request.headers.host.value.includes('www.')) {
             var newurl = request.headers.host.value.replace('www.', '')
