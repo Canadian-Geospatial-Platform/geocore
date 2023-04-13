@@ -309,6 +309,9 @@ Resources:
             ErrorCode: 404
             ResponsePagePath: /404.html
             ResponseCode: 404
+        CustomHeaders:
+          - HeaderName: Cache-Control
+            HeaderValue: max-age=31536000
 
   CloudfrontRootHandler:
     Type: AWS::CloudFront::Function
