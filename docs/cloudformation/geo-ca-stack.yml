@@ -273,6 +273,7 @@ Resources:
               OriginAccessIdentity: !Join ['', ['origin-access-identity/cloudfront/', !Ref GeoCaOai]]
         Enabled: 'true'
         DefaultCacheBehavior:
+          Compress: true
           ViewerProtocolPolicy: redirect-to-https
           TargetOriginId: !Ref GeoCaStoreBucket
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
