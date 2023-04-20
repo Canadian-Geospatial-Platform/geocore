@@ -71,6 +71,18 @@ Resources:
             Action: s3:GetObject
             Resource: !Sub 'arn:aws:s3:::webpresence-geo-ca-${Environment}/*'
 
+  GeoCaResponseHeadersPolicy:
+    Type: AWS::CloudFront::ResponseHeadersPolicy
+    Properties:
+      ResponseHeadersPolicyConfig:
+        Name: geoca-response-headers-policy
+        Comment: Add custom response header to set cache-control
+        CustomHeadersConfig:
+          Items:
+            - Header: cache-control
+              Value: public, max-age=31536000
+              Override: true
+
   AppPipelineRole:
     Type: AWS::IAM::Role
     Properties:
@@ -102,7 +114,7 @@ Resources:
                 Resource:
                   - Fn::Sub: arn:aws:lambda:*
 
-  
+
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -277,6 +289,7 @@ Resources:
           ViewerProtocolPolicy: redirect-to-https
           TargetOriginId: !Ref GeoCaStoreBucket
           CachePolicyId: 658327ea-f89d-4fab-a63d-7e88639e58f6 # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          ResponseHeadersPolicyId: !Ref GeoCaResponseHeadersPolicy
           LambdaFunctionAssociations:
             - EventType: origin-response
               LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
