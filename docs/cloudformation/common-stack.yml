@@ -12,6 +12,8 @@ Metadata:
           - GeocoreSslCertArn
           - GeocoreMetadataSslCertArn
           - GeocoreHarvestSslCertArn
+          - GeocorePygeoapiSslCertArn
+          - GeolocatorSslCertArn
           - GeoCaSslCertArn
           - AppGeoCaSslCertArn
           - GithubUsername
@@ -26,6 +28,13 @@ Parameters:
       - prod
     Default: dev
     Description: Type of App Environment - dev stage prod
+  DynamoDBCreationBool:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: false
+    Description: True or false to recreate all dynamodb tables
   DeploymentBucket:
     Description: S3 bucket where all the deployment related files are
     Type: String
@@ -38,7 +47,13 @@ Parameters:
     Type: String    
   GeocoreHarvestSslCertArn:
     Description: ARN of the SSL cert stored in ACM to be used for Geocore HNAP JSON Harvester
-    Type: String    
+    Type: String
+  GeocorePygeoapiSslCertArn:
+    Description: ARN of the SSL cert stored in ACM to be used for Geocore pygeoapi
+    Type: String
+  GeolocatorSslCertArn:
+    Description: ARN of the SSL cert stored in ACM to be used for Geolocator
+    Type: String
   GeoCaSslCertArn:
     Description: ARN of the SSL cert stored in ACM to be used for geo.ca
     Type: String    
@@ -52,6 +67,10 @@ Parameters:
     Description: Github Key for accessing Canadian Geospatial Platform 
     Type: String  
 
+Conditions: 
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
 
 Resources:
 
@@ -145,6 +164,14 @@ Resources:
       Type: String
       Value: !Ref Environment
 
+  DynamoDBCreationParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: True or false to recreate all dynamodb tables
+      Name: /webpresence/dynamodb_creation
+      Type: String
+      Value: !Ref DynamoDBCreationBool
+
   GeocoreHarvestSslCertArnParam:
     Type: AWS::SSM::Parameter
     Properties:
@@ -152,6 +179,23 @@ Resources:
       Name: /webpresence/geocore-hnap-harvest/ssl-cert-arn
       Type: String
       Value: !Ref GeocoreHarvestSslCertArn
+  
+  GeocorePygeoapiSslCertArnParam:
+    Condition: IsDev
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: ARN of the SSL cert stored in ACM to be used for Geocore pygeoapi
+      Name: /webpresence/geocore-pygeoapi/ssl-cert-arn
+      Type: String
+      Value: !Ref GeocorePygeoapiSslCertArn
+      
+  GeolocatorSslCertArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: ARN of the SSL cert stored in ACM to be used for Geolocator
+      Name: /webpresence/geolocator/ssl-cert-arn
+      Type: String
+      Value: !Ref GeolocatorSslCertArn
 
   GeocoreSslCertArnParam:
     Type: AWS::SSM::Parameter

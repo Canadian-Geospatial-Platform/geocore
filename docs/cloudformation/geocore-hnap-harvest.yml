@@ -75,7 +75,6 @@ Resources:
       AccessControl: Private
 
   GeocoreFormatTemplateBucket:
-    # Condition: IsDev
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub 'webpresence-geocore-template-${Environment}'
@@ -237,7 +236,6 @@ Resources:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python37:5
 
   GeocoreStacHarvestAndTransformFunction:
-    # Condition: IsDev
     Type: AWS::Serverless::Function
     Properties:
       Runtime: python3.9
@@ -275,7 +273,6 @@ Resources:
 
 
   StacHarvesterRule:
-    # Condition: IsDev
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub 'stac-harvester-1day-${Environment}'
@@ -291,7 +288,6 @@ Resources:
           Id: !Ref GeocoreStacHarvestAndTransformFunction
 
   PermissionForEventsToInvokeStacHarvesterLambda:
-    # Condition: IsDev
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: !Ref GeocoreStacHarvestAndTransformFunction

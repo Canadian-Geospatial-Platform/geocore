@@ -7,6 +7,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/environment
     Description: SSM parameter name for environment
+  CreateDynamoDb:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/dynamodb_creation
+    Description: Parameter Store value to determine if DynamoDB tables need to be created
   DeploymentBucket:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/deployment-bucket
@@ -27,6 +31,7 @@ Conditions:
   IsProd: !Equals [prod, !Ref Environment]
   IsStage: !Equals [stage, !Ref Environment]
   IsDev: !Equals [dev, !Ref Environment]
+  CreateDynamoDb: !Equals [true, !Ref CreateDynamoDb]
 
 Resources:
 
@@ -81,6 +86,7 @@ Resources:
 
   DynamoDb:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: tag
       BillingMode: PAY_PER_REQUEST
@@ -103,6 +109,7 @@ Resources:
 
   DynamoDbFoundational:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: foundational
       BillingMode: PAY_PER_REQUEST
@@ -125,6 +132,7 @@ Resources:
 
   DynamoDbTheme:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: theme
       BillingMode: PAY_PER_REQUEST
@@ -147,6 +155,7 @@ Resources:
 
   DynamoDbAnalytics:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: analytics
       BillingMode: PAY_PER_REQUEST
@@ -164,6 +173,7 @@ Resources:
 
   DynamoDbAnnouncements:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: announcements
         BillingMode: PAY_PER_REQUEST
@@ -183,9 +193,10 @@ Resources:
           - 
             AttributeName: datetime
             KeyType: RANGE
-
+  
   DynamoDbCommunity:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community
         BillingMode: PAY_PER_REQUEST
@@ -202,6 +213,7 @@ Resources:
 
   DynamoDbCommunityannouncement:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_announcement
         BillingMode: PAY_PER_REQUEST
@@ -224,6 +236,7 @@ Resources:
 
   DynamoDbCommunitydata:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_data
         BillingMode: PAY_PER_REQUEST
@@ -246,6 +259,7 @@ Resources:
 
   DynamoDbCommunityresource:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_resource
         BillingMode: PAY_PER_REQUEST
@@ -268,6 +282,7 @@ Resources:
 
   DynamoDbCommunityroles:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_roles
         BillingMode: PAY_PER_REQUEST
@@ -290,6 +305,7 @@ Resources:
 
   DynamoDbSavedrecords:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: saved_records
         BillingMode: PAY_PER_REQUEST
@@ -312,7 +328,8 @@ Resources:
 
   DynamoDbSavedsearches:
       Type: AWS::DynamoDB::Table
-      Properties: 
+      Condition: CreateDynamoDb
+      Properties:
         TableName: saved_searches
         BillingMode: PAY_PER_REQUEST
         PointInTimeRecoverySpecification: 
@@ -334,6 +351,7 @@ Resources:
 
   DynamoDbUsers:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: users
         BillingMode: PAY_PER_REQUEST
@@ -350,6 +368,7 @@ Resources:
 
   DynamoDbPopularity:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: analytics_popularity
       BillingMode: PAY_PER_REQUEST
@@ -485,22 +504,27 @@ Resources:
   LambdaId:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: nodejs16.x
+      Runtime: python3.9
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
+        Key: 
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/id/id-220323.zip
+            - cloudformation-templates/lambda/id/id-20230529-1030.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/id/id-220323.zip
-              - cloudformation-templates/lambda/id/id-220323.zip
-      Handler: index.handler
+              - cloudformation-templates/lambda/id/id-20230529-1030.zip
+              - cloudformation-templates/lambda/id/id-20230529-1030.zip
+      Handler: app.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
-      MemorySize: 512
+      MemorySize: 3009
       Timeout: 60
+      Environment:
+        Variables:
+          CACHE_EXPIRY_IN_DAYS: '2'
+          PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}'
       Events:
         ApiEvent:
           Type: Api
@@ -508,6 +532,32 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /*
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+  
+  KeepLambdaIdWarmScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: KeepLambdaIdWarm
+      ScheduleExpression: rate(2 minutes)
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - LambdaId
+              - Arn
+          Id: TargetFunctionV1
+  
+  PermissionToInvokeLambdaId:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref LambdaId
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - KeepLambdaIdWarmScheduleRule
+        - Arn
 
   LambdaGeo:
     Type: AWS::Serverless::Function
@@ -1484,24 +1534,25 @@ Resources:
   LambdaCollections:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.7
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
+            - cloudformation-templates/lambda/collections/collections-20230529-1500.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
-              - cloudformation-templates/lambda/collections/collections-20220921-1700.zip
-      MemorySize: 1024
+              - cloudformation-templates/lambda/collections/collections-20230529-1500.zip
+              - cloudformation-templates/lambda/collections/collections-20230529-1500.zip
+      MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 60
       Environment:
         Variables:
           PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}'
+          CACHE_EXPIRY_IN_DAYS: '2'
       Events:
         ApiEvent:
           Type: Api
@@ -1509,6 +1560,32 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /collections
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+  
+  KeepCollectionsWarmScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: KeepCollectionsWarm
+      ScheduleExpression: rate(2 minutes)
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - LambdaCollections
+              - Arn
+          Id: TargetFunctionV1
+  
+  PermissionToInvokeLambdaId:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref LambdaCollections
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - KeepCollectionsWarmScheduleRule
+        - Arn
 
   LambdaPopularity:
     Type: AWS::Serverless::Function
