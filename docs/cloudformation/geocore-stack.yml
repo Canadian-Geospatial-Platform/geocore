@@ -2487,7 +2487,7 @@ Resources:
                       Access-Control-Allow-Origin:
                         type: "string"
                 x-amazon-apigateway-integration:
-                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsget}/invocations"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsget}/invocations"
                   httpMethod: "POST"
                   responses:
                     default:
@@ -2541,7 +2541,7 @@ Resources:
                       Access-Control-Allow-Origin:
                         type: "string"
                 x-amazon-apigateway-integration:
-                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsadd}/invocations"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsadd}/invocations"
                   httpMethod: "POST"
                   responses:
                     default:
@@ -2593,7 +2593,7 @@ Resources:
                       Access-Control-Allow-Origin:
                         type: "string"
                 x-amazon-apigateway-integration:
-                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsdelete}/invocations"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsdelete}/invocations"
                   httpMethod: "POST"
                   responses:
                     default:
@@ -2647,7 +2647,7 @@ Resources:
                         Access-Control-Allow-Origin:
                           type: "string"
                   x-amazon-apigateway-integration:
-                    uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
+                    uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
                     httpMethod: "POST"
                     responses:
                       default:
