@@ -39,7 +39,7 @@ Resources:
       Timeout: 900
       Environment:
         Variables:
-          S3_BUCKET_NAME: !Sub 'geolocator-api-${Environment}'
+          S3_BUCKET_NAME: !Sub 'webpresence-geolocator-${Environment}'
       Events:
         ApiEvent:
           Type: Api
@@ -102,7 +102,7 @@ Resources:
               - TLSv1.2  
           OriginPath: /live   
           OriginCustomHeaders:
-            - HeaderName: X-Origin-Verify
+            - HeaderName: x-origin-verify
               HeaderValue: '{{resolve:secretsmanager:/webpresence/geolocator/verification-header-secret}}'   
         DefaultCacheBehavior:
           AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
