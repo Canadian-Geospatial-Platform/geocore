@@ -21,6 +21,9 @@ Parameters:
   SecHeadersLambdaEdgeArn:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+  OSDomain:
+    Type: String
+    Description: Open Search Domain Endpoint
 
 
 Conditions: 
@@ -482,6 +485,72 @@ Resources:
         ResultConfiguration:
           OutputLocation: !Sub 's3://${GeoCoreAthenaOutputBucket}'
 
+  LambdaProcessIndex:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.8
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/search-repo/add-to-os.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/search-repo/add-to-os.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Environment:
+        Variables:
+          ES_HOST:
+            Ref: OSdomain
+          ES_INDEX:
+            Ref: search
+          API_KEY:
+            Ref: RestApiKey
+          API:
+            Ref: RestApi    
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+  
+  LambdaResourceIndex:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/search-repo/resource-parser.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/search-repo/resource-parser.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Environment:
+        Variables:
+          bucket:
+            Ref: !Sub 's3-documentparser-documents-${Environment}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
   LambdaId:
     Type: AWS::Serverless::Function
     Properties:
@@ -492,11 +561,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/id/id-220323.zip
+            - cloudformation-templates/lambda/id/id.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/id/id-220323.zip
-              - cloudformation-templates/lambda/id/id-220323.zip
+              - cloudformation-templates/lambda/id/id.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -522,7 +590,6 @@ Resources:
             - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
               - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
@@ -573,11 +640,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
+            - cloudformation-templates/lambda/foundation/foundation_layer.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
-              - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
+              - cloudformation-templates/lambda/foundation/foundation_layer.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -600,11 +666,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/analytics/analytics-220323.zip
+            - cloudformation-templates/lambda/analytics/analytics.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/analytics/analytics-220323.zip
-              - cloudformation-templates/lambda/analytics/analytics-220323.zip
+              - cloudformation-templates/lambda/analytics/analytics.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -627,11 +692,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+            - cloudformation-templates/lambda/get_analytics/get_analytics.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
-              - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+              - cloudformation-templates/lambda/get_analytics/get_analytics.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -654,11 +718,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+            - cloudformation-templates/lambda/announcements/announcement_add.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
-              - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_add.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -681,11 +744,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+            - cloudformation-templates/lambda/announcements/announcement_delete.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
-              - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_delete.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -708,11 +770,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+            - cloudformation-templates/lambda/announcements/announcement_get.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
-              - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_get.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -735,11 +796,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+            - cloudformation-templates/lambda/saved_record/saved_record.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
-              - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/saved_record.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -762,11 +822,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+            - cloudformation-templates/lambda/saved_record/get_saved_record.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
-              - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/get_saved_record.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -789,11 +848,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+            - cloudformation-templates/lambda/saved_record/delete_saved_record.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
-              - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/delete_saved_record.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -816,11 +874,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+            - cloudformation-templates/lambda/saved_search/saved_search.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
-              - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+              - cloudformation-templates/lambda/saved_search/saved_search.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -843,11 +900,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
+            - cloudformation-templates/lambda/saved_search/get_saved_searches.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
-              - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip        
+              - cloudformation-templates/lambda/saved_search/get_saved_searches.zip    
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -870,11 +926,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+            - cloudformation-templates/lambda/saved_search/delete_saved_search.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
-              - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+              - cloudformation-templates/lambda/saved_search/delete_saved_search.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -897,11 +952,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_add_member-230201.zip
+            - cloudformation-templates/lambda/community/community_add_member.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_add_member-230201.zip
-              - cloudformation-templates/lambda/community/community_add_member-230201.zip
+              - cloudformation-templates/lambda/community/community_add_member.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -924,11 +978,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_add-230201.zip
+            - cloudformation-templates/lambda/community/community_add.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_add-230201.zip
-              - cloudformation-templates/lambda/community/community_add-230201.zip
+              - cloudformation-templates/lambda/community/community_add.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -951,11 +1004,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+            - cloudformation-templates/lambda/community/community_announcement_add.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
-              - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_add.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -978,11 +1030,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+            - cloudformation-templates/lambda/community/community_announcement_delete.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
-              - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_delete.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1005,11 +1056,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+            - cloudformation-templates/lambda/community/community_announcement_edit.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
-              - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_edit.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1032,11 +1082,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+            - cloudformation-templates/lambda/community/community_announcement_get.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
-              - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_get.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1059,11 +1108,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_data_add-230201.zip
+            - cloudformation-templates/lambda/community/community_data_add.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_data_add-230201.zip
-              - cloudformation-templates/lambda/community/community_data_add-230201.zip
+              - cloudformation-templates/lambda/community/community_data_add.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1086,11 +1134,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_data_delete-230201.zip
+            - cloudformation-templates/lambda/community/community_data_delete.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_data_delete-230201.zip
-              - cloudformation-templates/lambda/community/community_data_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_data_delete.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1113,11 +1160,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_data_get-230201.zip
+            - cloudformation-templates/lambda/community/community_data_get.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_data_get-230201.zip
-              - cloudformation-templates/lambda/community/community_data_get-230201.zip
+              - cloudformation-templates/lambda/community/community_data_get.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1140,11 +1186,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_resource_add-230201.zip
+            - cloudformation-templates/lambda/community/community_resource_add.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_resource_add-230201.zip
-              - cloudformation-templates/lambda/community/community_resource_add-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_add.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1167,11 +1212,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+            - cloudformation-templates/lambda/community/community_resource_delete.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
-              - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_delete.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1194,11 +1238,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+            - cloudformation-templates/lambda/community/community_resource_edit.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
-              - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_edit.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1221,11 +1264,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_resource_get-230201.zip
+            - cloudformation-templates/lambda/community/community_resource_get.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_resource_get-230201.zip
-              - cloudformation-templates/lambda/community/community_resource_get-230201.zip        
+              - cloudformation-templates/lambda/community/community_resource_get.zip      
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1248,11 +1290,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_delete_member-230201.zip
+            - cloudformation-templates/lambda/community/community_delete_member.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_delete_member-230201.zip
-              - cloudformation-templates/lambda/community/community_delete_member-230201.zip
+              - cloudformation-templates/lambda/community/community_delete_member.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1275,11 +1316,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_edit_member-230201.zip
+            - cloudformation-templates/lambda/community/community_edit_member.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_edit_member-230201.zip
-              - cloudformation-templates/lambda/community/community_edit_member-230201.zip
+              - cloudformation-templates/lambda/community/community_edit_member.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1302,11 +1342,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_edit-230201.zip
+            - cloudformation-templates/lambda/community/community_edit.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_edit-230201.zip
-              - cloudformation-templates/lambda/community/community_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_edit.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1329,11 +1368,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_get_members-230201.zip
+            - cloudformation-templates/lambda/community/community_get_members.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_get_members-230201.zip
-              - cloudformation-templates/lambda/community/community_get_members-230201.zip
+              - cloudformation-templates/lambda/community/community_get_members.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1356,11 +1394,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/community_get-230201.zip
+            - cloudformation-templates/lambda/community/community_get.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/community_get-230201.zip
-              - cloudformation-templates/lambda/community/community_get-230201.zip
+              - cloudformation-templates/lambda/community/community_get.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1383,11 +1420,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+            - cloudformation-templates/lambda/community/my_community_announcements.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
-              - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+              - cloudformation-templates/lambda/community/my_community_announcements.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1410,11 +1446,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/my_community_data-230201.zip
+            - cloudformation-templates/lambda/community/my_community_data.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/my_community_data-230201.zip
-              - cloudformation-templates/lambda/community/my_community_data-230201.zip
+              - cloudformation-templates/lambda/community/my_community_data.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1437,11 +1472,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/community/my_community_resources-230201.zip
+            - cloudformation-templates/lambda/community/my_community_resources.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/community/my_community_resources-230201.zip
-              - cloudformation-templates/lambda/community/my_community_resources-230201.zip
+              - cloudformation-templates/lambda/community/my_community_resources.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1464,11 +1498,10 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/translate/translate-230201.zip
+            - cloudformation-templates/lambda/translate/translate.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/translate/translate-230201.zip
-              - cloudformation-templates/lambda/translate/translate-230201.zip
+              - cloudformation-templates/lambda/translate/translate.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -4381,6 +4414,62 @@ Resources:
                     application/json: "{\"statusCode\": 200}"
                   passthroughBehavior: "when_no_match"
                   type: "mock"
+          /resourceindex:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaResourceIndex}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+          
+          
           securityDefinitions:
             api_key:
               type: "apiKey"
