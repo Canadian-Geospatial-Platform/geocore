@@ -75,7 +75,6 @@ Resources:
       AccessControl: Private
 
   GeocoreFormatTemplateBucket:
-    Condition: IsDev
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub 'webpresence-geocore-template-${Environment}'
@@ -237,22 +236,21 @@ Resources:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python37:5
 
   GeocoreStacHarvestAndTransformFunction:
-    Condition: IsDev
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.7
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230330-0000.zip
+            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230605-1500.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230330-0000.zip
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230330-0000.zip
-      MemorySize: 1024
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230605-1500.zip
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230605-1500.zip
+      MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
       Environment:
@@ -270,14 +268,16 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /stac_harvest
             Method: any
+      Layers: 
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+
 
   StacHarvesterRule:
-    Condition: IsDev
     Type: AWS::Events::Rule
     Properties:
       Name: !Sub 'stac-harvester-1day-${Environment}'
       Description: Stac Harvester on a 1 day interval
-      State: DISABLED
+      State: ENABLED
       ScheduleExpression: 'rate(1 day)'
       Targets:
         - 
@@ -288,7 +288,6 @@ Resources:
           Id: !Ref GeocoreStacHarvestAndTransformFunction
 
   PermissionForEventsToInvokeStacHarvesterLambda:
-    Condition: IsDev
     Type: AWS::Lambda::Permission
     Properties: 
       FunctionName: !Ref GeocoreStacHarvestAndTransformFunction
@@ -328,8 +327,6 @@ Resources:
                   - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
-                  - !Sub arn:aws:s3:::webpresence-stac-json-${Environment}/*
-                  - !Sub arn:aws:s3:::webpresence-stac-json-${Environment} 
                   - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}/*
                   - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}  
             
@@ -510,13 +507,13 @@ Resources:
                 httpMethod: POST
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoretoParquet.Arn}/invocations'
               responses: {}
-        #  /stac_harvest:
-        #    get:
-        #      x-amazon-apigateway-integration:
-        #        type: aws_proxy
-        #        httpMethod: POST
-        #        uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoreStacHarvestAndTransformFunction.Arn}/invocations'
-        #      responses: {}
+          /stac_harvest:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoreStacHarvestAndTransformFunction.Arn}/invocations'
+              responses: {}
         securityDefinitions:
           api_key:
             type: "apiKey"
