@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: patterns-s3-docrepo
+
 Parameters:
   Environment:
     Type: AWS::SSM::Parameter::Value<String>
@@ -11,10 +12,20 @@ Parameters:
     Default: document-parser-code
   MetadataBucket:
     Type: String
-    Default: document-parser-code
+    Default: webpresence-geocore-json-to-geojson-${Environment}
+  DocumentsBucketName:
+    Type: String
+    Default: 's3-documentparser-documents-${Environment}'
+  StagingBucketName:
+    Type: String
+    Default: 's3-documentparser-staging-${Environment}'
+  QueuedBucketName:
+    Type: String
+    Default: 's3-documentparser-queued-${Environment}'
   OSdomain:
     Type: String
-    Default: 'https://search-document-parser-ltv75hugsaf67iv63dtnklz67a.ca-central-1.es.amazonaws.com'
+    Default: 'https://search-search-m6agsr5kq5tlt7z6tbe7axm5gy.ca-central-1.es.amazonaws.com'
+
 Globals:
   Function:
     Timeout: 15
@@ -27,17 +38,17 @@ Resources:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
-        Ref: !Sub 's3-documentparser-documents-${Environment}'
+        Ref: DocumentsBucketName
   StagingBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
-        Ref: !Sub 's3-documentparser-staging-${Environment}'
+        Ref: StagingBucketName
   QueuedBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName:
-        Ref: !Sub 's3-documentparser-queued-${Environment}'
+        Ref: QueuedBucketName
 
   MySqsQueue:
     Type: AWS::SQS::Queue
