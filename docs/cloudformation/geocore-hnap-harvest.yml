@@ -93,19 +93,19 @@ Resources:
   HnapJsonHarvester2:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.8
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
+            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230712-0000.zip
             - Fn::If:
               - IsStage
               - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
               - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
-      MemorySize: 1024
+      MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 900
       Environment:
@@ -122,6 +122,8 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /hnap_json_harvest
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
 
   HnapJsonHarvesterRule:
     Type: AWS::Events::Rule
