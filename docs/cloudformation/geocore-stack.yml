@@ -581,20 +581,12 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-<<<<<<< HEAD
-            - cloudformation-templates/lambda/id/id.zip
-            - Fn::If:
-              - IsStage
-              - cloudformation-templates/lambda/id/id.zip
-      Handler: index.handler
-=======
             - cloudformation-templates/lambda/id/id-20230529-1030.zip
             - Fn::If:
               - IsStage
               - cloudformation-templates/lambda/id/id-20230529-1030.zip
               - cloudformation-templates/lambda/id/id-20230529-1030.zip
       Handler: app.lambda_handler
->>>>>>> e1f30778918001b0be9921c3a7c36d811db8a61e
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 3009
       Timeout: 60
@@ -611,6 +603,33 @@ Resources:
             Method: any
       Layers:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+
+  LambdaIdV1:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: nodejs16.x
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/id/id-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/id/id-220323.zip
+              - cloudformation-templates/lambda/id/id-220323.zip
+      Handler: index.handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 512
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
   
   KeepLambdaIdWarmScheduleRule:
     Type: AWS::Events::Rule
@@ -649,12 +668,8 @@ Resources:
             - cloudformation-templates/lambda/geo/geo-20230612-1700.zip
             - Fn::If:
               - IsStage
-<<<<<<< HEAD
-              - cloudformation-templates/lambda/geo/geo-20230330-0000.zip
-=======
               - cloudformation-templates/lambda/geo/geo-20230612-1700.zip
               - cloudformation-templates/lambda/geo/geo-20230612-1700.zip
->>>>>>> e1f30778918001b0be9921c3a7c36d811db8a61e
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -4080,6 +4095,63 @@ Resources:
                   type: "aws"
                   httpMethod: "POST"
                   uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaId}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
+                      \  \"id\" : \"$input.params('id')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+          /id/v1:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaIdV1}/invocations"
                   responses:
                     default:
                       statusCode: "200"
