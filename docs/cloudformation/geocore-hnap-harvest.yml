@@ -213,11 +213,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-1500.zip
+            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230823-1500.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-1500.zip
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230330-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230823-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230823-1500.zip
       MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
