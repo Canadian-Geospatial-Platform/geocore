@@ -582,11 +582,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/id/id-20230529-1030.zip
+            - cloudformation-templates/lambda/id/id-20230823-1330.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/id/id-20230529-1030.zip
-              - cloudformation-templates/lambda/id/id-20230529-1030.zip
+              - cloudformation-templates/lambda/id/id-20230823-1330.zip
+              - cloudformation-templates/lambda/id/id-20230823-1330.zip
       Handler: app.lambda_handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 3009
