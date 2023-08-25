@@ -1,0 +1,178 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys  similarity engine solution
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/geocore-hnap-harvest/ssl-cert-arn
+    Description: SSM parameter name for geocore Harvest ACM SSL Cert ARN
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+
+Resources:
+  NlpDataPreprocessingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-nlp-data-preprocessing-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  SimilarityEngineDataPreprocessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt LambdaExecutionRole.Arn
+      PackageType: Image
+      ImageUri:
+        Fn::If:
+          - IsProd
+          - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-data-preprocess-python39-lambda-prod:1'
+          - Fn::If:
+            - IsStage
+            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-data-preprocess-python39-lambda-stage:latest'
+            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-data-preprocess-python39-v1-lambda:latest'
+      MemorySize: 4096
+      Timeout: 900 # This sets the timeout to 900 seconds, which is 15 minutes
+      Environment:
+        Variables:
+          BUCKET_NAME_NLP: !Ref NlpDataPreprocessingBucket
+          BUCKET_NAME: !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
+          FILE_NAME: "records.parquet"
+
+# CloudWatch Events Rule to trigger the Lambda function once per day
+  SimilarityEngineDataPreprocessRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'similarity-engine-data-preprocess-1day-${Environment}'
+      Description: Similarity engine data preprocess on a 1 day interval
+      State: ENABLED
+      ScheduleExpression: 'rate(1 day)'
+      Targets:
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - SimilarityEngineDataPreprocessFunction
+              - Arn
+          Id: !Ref SimilarityEngineDataPreprocessFunction
+
+  PermissionForEventsToInvokeSimilarityEngineDataPreprocessFunction:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref SimilarityEngineDataPreprocessFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - SimilarityEngineDataPreprocessRule
+        - Arn
+
+  SimilarityEngineWord2VecFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 4096
+      Timeout: 900 # This sets the timeout to 900 seconds, which is 15 minutes
+      PackageType: Image
+      ImageUri:
+        Fn::If:
+          - IsProd
+          - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda-prod:1'
+          - Fn::If:
+            - IsStage
+            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda-stage:1'
+            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda:2'
+      Environment:
+        Variables:
+          BUCKET_NAME_NLP: !Ref NlpDataPreprocessingBucket
+          BUCKET_NAME: !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
+          FILE_NAME: "Processed_records.parquet"
+          FILE_NAME_ORIGINAL: "records.parquet"       
+
+
+
+  SimilarityEngineWord2VecRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'similarity-engine-word2vec-model-1day-${Environment}'
+      Description: Similarity engine model word2vec on a 1 day interval
+      State: ENABLED
+      ScheduleExpression: 'rate(1 day)'
+      Targets:
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - SimilarityEngineWord2VecFunction
+              - Arn
+          Id: !Ref SimilarityEngineWord2VecFunction
+
+  PermissionForEventsToInvokeSimilarityEngineWord2VecFunction:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref SimilarityEngineWord2VecFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - SimilarityEngineWord2VecRule
+        - Arn
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess  
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:*'
+                Resource:
+                  - !Sub arn:aws:s3:::webpresence-nlp-data-preprocessing-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-nlp-data-preprocessing-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/similarity_engine'
+      RetentionInDays: 3653
