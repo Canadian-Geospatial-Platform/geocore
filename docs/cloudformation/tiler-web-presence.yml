@@ -52,7 +52,24 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: python3.10
-      Role: !GetAtt LambdaExecutionRole.Arn
+      Policies:
+        - AWSLambdaExecute # Managed Policy
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:HeadObject
+              Resource:
+                !Split
+                  - ','
+                  - !Join
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - !Join
+                            - '/*,arn:aws:s3:::'
+                            - !Ref Bucket
+                        - '/*'
 
       InlineCode: |
         import logging
@@ -91,33 +108,6 @@ Resources:
             Method: any
       Layers:
         - arn:aws:lambda:ca-central-1:552819999234:layer:titiler:8
-
-  LambdaExecutionRole:
-    Type: AWS::IAM::Role
-    Properties:
-      AssumeRolePolicyDocument:
-        Version: '2012-10-17'
-        Statement:
-          - Effect: Allow
-            Principal:
-              Service:
-                - lambda.amazonaws.com
-            Action:
-              - sts:AssumeRole
-              - s3:GetObject
-              - s3:HeadObject
-            Resource:
-              !Split
-                - ','
-                - !Join
-                    - ''
-                    - - 'arn:aws:s3:::'
-                      - !Join
-                          - '/*,arn:aws:s3:::'
-                          - !Ref Bucket
-                      - '/*'
-      ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
   VerificationHeaderSecret: 
     Type: AWS::SecretsManager::Secret
@@ -178,11 +168,11 @@ Resources:
           - !If 
             - IsProd
             - tiler.api.geo.ca
-            - !Sub 'titiler-${Environment}.api.geo.ca'
+            - !Sub 'tiler-${Environment}.api.geo.ca'
           - !If 
             - IsProd
             - www.tiler.api.geo.ca
-            - !Sub 'www.titiler-${Environment}.api.geo.ca'
+            - !Sub 'www.tiler-${Environment}.api.geo.ca'
         PriceClass: PriceClass_All
         ViewerCertificate:
           AcmCertificateArn: !Ref SslCertArn
@@ -251,6 +241,25 @@ Resources:
         paths:
           /:
             get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+          /{proxy+}:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+            post:
               x-amazon-apigateway-integration:
                 type: aws_proxy
                 httpMethod: POST
