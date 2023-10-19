@@ -615,11 +615,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/id/id-220323.zip
+            - cloudformation-templates/lambda/id/idv1-20230926-1100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/id/id-220323.zip
-              - cloudformation-templates/lambda/id/id-220323.zip
+              - cloudformation-templates/lambda/id/idv1-20230926-1100.zip
+              - cloudformation-templates/lambda/id/idv1-20230926-1100.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1638,11 +1638,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/collections/collections-20230529-1500.zip
+            - cloudformation-templates/lambda/collections/collections-20230926-1100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/collections/collections-20230529-1500.zip
-              - cloudformation-templates/lambda/collections/collections-20230529-1500.zip
+              - cloudformation-templates/lambda/collections/collections-20230926-1100.zip
+              - cloudformation-templates/lambda/collections/collections-20230926-1100.zip
       MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 60
