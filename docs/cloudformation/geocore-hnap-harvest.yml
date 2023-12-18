@@ -74,22 +74,6 @@ Resources:
         RestrictPublicBuckets: True
       AccessControl: Private
 
-  GeocoreFormatTemplateBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub 'webpresence-geocore-template-${Environment}'
-      BucketEncryption:
-        ServerSideEncryptionConfiguration:
-          - ServerSideEncryptionByDefault:
-              SSEAlgorithm: AES256
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: True
-        BlockPublicPolicy: True
-        IgnorePublicAcls: True
-        RestrictPublicBuckets: True
-      AccessControl: Private
-
-
   HnapJsonHarvester2:
     Type: AWS::Serverless::Function
     Properties:
@@ -100,11 +84,11 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230712-0000.zip
+            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230823-1800.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
-              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230330-0000.zip
+              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230823-1800.zip
+              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20230823-1800.zip
       MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 900
@@ -237,68 +221,7 @@ Resources:
       Layers:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python37:5
 
-  GeocoreStacHarvestAndTransformFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Runtime: python3.9
-      Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri:
-        Bucket: !Ref DeploymentBucket
-        Key:
-          Fn::If:
-            - IsProd
-            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230605-1500.zip
-            - Fn::If:
-              - IsStage
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230605-1500.zip
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20230605-1500.zip
-      MemorySize: 4096
-      Handler: app.lambda_handler
-      Timeout: 900
-      Environment:
-        Variables:
-          GEOCORE_TEMPLATE_BUCKET_NAME: !Ref GeocoreFormatTemplateBucket
-          GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
-          GEOCORE_TO_PARQUET_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
-          STAC_API_ROOT: 'https://datacube.services.geo.ca/api'
-          ROOT_NAME: 'CCMEO Datacube API / CCCOT Cube de données API'
-          SOURCE: 'ccmeo'
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApi
-            Path: /stac_harvest
-            Method: any
-      Layers: 
-        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
-
-
-  StacHarvesterRule:
-    Type: AWS::Events::Rule
-    Properties:
-      Name: !Sub 'stac-harvester-1day-${Environment}'
-      Description: Stac Harvester on a 1 day interval
-      State: ENABLED
-      ScheduleExpression: 'rate(1 day)'
-      Targets:
-        - 
-          Arn: 
-            Fn::GetAtt: 
-              - GeocoreStacHarvestAndTransformFunction
-              - Arn
-          Id: !Ref GeocoreStacHarvestAndTransformFunction
-
-  PermissionForEventsToInvokeStacHarvesterLambda:
-    Type: AWS::Lambda::Permission
-    Properties: 
-      FunctionName: !Ref GeocoreStacHarvestAndTransformFunction
-      Action: 'lambda:InvokeFunction'
-      Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt 
-        - StacHarvesterRule
-        - Arn
-
+ 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -508,13 +431,6 @@ Resources:
                 type: aws_proxy
                 httpMethod: POST
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoretoParquet.Arn}/invocations'
-              responses: {}
-          /stac_harvest:
-            get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
-                httpMethod: POST
-                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GeocoreStacHarvestAndTransformFunction.Arn}/invocations'
               responses: {}
         securityDefinitions:
           api_key:
