@@ -666,11 +666,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geo/geo-20230612-1700.zip
+            - cloudformation-templates/lambda/geo/geo-20231218-1700.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geo/geo-20230612-1700.zip
-              - cloudformation-templates/lambda/geo/geo-20230612-1700.zip
+              - cloudformation-templates/lambda/geo/geo-20231218-1700.zip
+              - cloudformation-templates/lambda/geo/geo-20231218-1700.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
