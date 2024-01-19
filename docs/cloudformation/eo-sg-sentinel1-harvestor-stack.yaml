@@ -1,0 +1,372 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Sentinel-1 collection harvestor using serverless Scatter Gather parttern 
+
+Parameters:
+  RegionName:
+    Type: String
+    Default: 'ca-central-1'
+    Description: Default region for deployment.
+  SGSentinel1ProcessesTableName:
+    Type: String
+    Default: eo_sg_sentinel1_processes
+    Description: DynamoDB table name to store information by process triggered
+  SGSentinel1AggregateTableName:
+    Type: String
+    Default: eo_sg_sentinel1_aggregate
+    Description: DynamoDB table name to store information by scatter_gatter aggregated
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are store
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+
+
+Resources:
+########################################################
+# S3 Bucket processed data (S3 bucket for testing only)
+########################################################
+  ProcessedDataSentinel1S3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      BucketName: !Sub 'eo-sg-processed-data-sentinel1-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  # EOItemLinksS3Bucket:
+  #   Type: 'AWS::S3::Bucket'
+  #   Properties:
+  #     BucketName: !Sub 'eo-sg-api-item-links-${Environment}'
+  #     BucketEncryption:
+  #       ServerSideEncryptionConfiguration:
+  #         - ServerSideEncryptionByDefault:
+  #             SSEAlgorithm: AES256
+  #     PublicAccessBlockConfiguration:
+  #       BlockPublicAcls: True
+  #       BlockPublicPolicy: True
+  #       IgnorePublicAcls: True
+  #       RestrictPublicBuckets: True
+  #     AccessControl: Private
+
+
+# ########################################################
+# # Lambda Function api links collector 
+# ########################################################
+#   CollectorFunction:
+#     Type: AWS::Serverless::Function
+#     Properties:
+#       CodeUri: 
+#         Bucket: !Ref DeploymentBucket
+#         Key:
+#           Fn::If:
+#             - IsProd
+#             - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240115-1730.zip
+#             - Fn::If:
+#               - IsStage
+#               - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240115-1730.zip
+#               - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240115-1730.zip
+#       Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+#       Handler: app.lambda_handler
+#       Runtime: python3.9
+#       Architectures:
+#         - x86_64
+#       Timeout: 900
+#       MemorySize: 4096
+#       Environment:
+#         Variables:
+#           ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
+#           API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
+#           COLLECTION: 'sentinel-1'
+#       Layers:
+#         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+
+#   CollectorFunctionRule:
+#     Type: AWS::Events::Rule
+#     Properties:
+#       Name: !Sub 'eo-sg-scattercollector-1day-${Environment}'
+#       Description: collector on one day interval
+#       State: ENABLED
+#       ScheduleExpression: CollectorFunction
+#       Targets:
+#         - Arn: !GetAtt [CollectorFunction, Arn]
+#           Id: !Ref CollectorFunction
+
+#   PermissionForEventsToInvokeCollectorLambda:
+#     Type: AWS::Lambda::Permission
+#     Properties: 
+#       FunctionName: !Ref CollectorFunction
+#       Action: 'lambda:InvokeFunction'
+#       Principal: 'events.amazonaws.com'
+#       SourceArn: !GetAtt CollectorFunction.Arn
+
+  EOSGLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess 
+        - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+
+
+########################################################
+# Lambda Function processor
+########################################################
+  ProcessorFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: app.lambda_handler
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-processor-20240115-1600.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-processor-20240115-1600.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-processor-20240115-1600.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn     
+      MemorySize: 4096
+      Timeout: 900
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          GEOCORE_TEMPLATE_BUCKET_NAME: 'webpresence-geocore-template-dev'
+          GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
+          #GEOCORE_TO_PARQUET_BUCKET_NAME: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'??
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataSentinel1S3Bucket
+          API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
+          ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
+          SOURCE: 'eodms'
+          SOURCESYSTEMNAME: 'ccmeo-eodms'
+          COLLECTION: 'sentinel-1'
+          SG_PROCESSES_TABLE_NAME: !Ref SGSentinel1ProcessesTableName
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+      Events: 
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProcessorSQSQueue.Arn
+            BatchSize: 1
+########################################################
+# SQS to trigger the Lambda Function processor
+########################################################
+  ProcessorSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 901
+      QueueName: "eo_processor_q_sentinel1"
+
+########################################################
+# DynamoDB tables
+########################################################
+  SGProcessesDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref SGSentinel1ProcessesTableName
+      KeySchema:
+        - AttributeName: scatter_gather_id
+          KeyType: HASH
+        - AttributeName: process_id
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: scatter_gather_id
+          AttributeType: S
+        - AttributeName: process_id
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  SGAggregateDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref SGSentinel1AggregateTableName
+      KeySchema:
+        - AttributeName: scatter_gather_id
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: scatter_gather_id
+          AttributeType: S
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+########################################################
+# Lambda Function Scatter
+########################################################
+  ScatterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240115-1730.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240116-1230.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240116-1230.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 4096
+      Environment:
+        Variables:
+          #ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
+          ITEM_LINK_BUCKET_NAME: 'eo-sgp-datacube-item-links'
+          JSON_FILENAME: 'sentinel-1-item-api.json'
+          SG_PROCESSES_TABLE_NAME: !Ref SGSentinel1ProcessesTableName
+          SG_AGGREGATE_TABLE_NAME: !Ref SGSentinel1AggregateTableName
+          QUEUE_URL: !GetAtt ProcessorSQSQueue.QueueUrl
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  ScatterFunctionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'eo-sg-scatter-every-monday-${Environment}'
+      Description: scatter on once per week on Monday interval
+      State: ENABLED
+      ScheduleExpression: 'cron(0 8 ? * MON *)'
+      Targets:
+        - Arn: !GetAtt [ScatterFunction, Arn]
+          Id: !Ref ScatterFunction
+
+  PermissionForEventsToInvokeScatterLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref ScatterFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt ScatterFunctionRule.Arn
+
+########################################################
+# Lambda Function Aggregator
+########################################################
+  AggregatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-aggregator-20240116-1100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-aggregator-20240116-1230.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-aggregator-20240116-1230.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 4096
+      Environment:
+        Variables:
+          SG_AGGREGATE_TABLE_NAME: !Ref SGSentinel1AggregateTableName
+      Layers:
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  EventSourceSGProcessesDBTableStream:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 100
+      MaximumBatchingWindowInSeconds: 30
+      Enabled: True
+      FilterCriteria:
+        Filters:
+          - Pattern: '{"eventName":["MODIFY"]}'
+      EventSourceArn: !GetAtt SGProcessesDBTable.StreamArn
+      FunctionName: !GetAtt AggregatorFunction.Arn
+      StartingPosition: LATEST
+
+########################################################
+# Lambda Function Gather
+########################################################
+  GatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-gather-20240116-1130.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-gather-20240116-1230.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-gather-20240116-1230.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 4096
+      Environment:
+        Variables:
+          SG_AGGREGATE_TABLE_NAME: !Ref SGSentinel1AggregateTableName
+      Layers:
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  EventSourceSGAggregateDBTableStream:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 100
+      MaximumBatchingWindowInSeconds: 30
+      Enabled: True
+      FilterCriteria:
+        Filters:
+          - Pattern: '{"eventName":["MODIFY"]}'
+      EventSourceArn: !GetAtt SGAggregateDBTable.StreamArn
+      FunctionName: !GetAtt GatherFunction.Arn
+      StartingPosition: LATEST
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/eo_sg_sentinel1_harvester'
+      RetentionInDays: 3653 
