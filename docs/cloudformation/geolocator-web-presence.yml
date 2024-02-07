@@ -33,7 +33,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geolocator/geolocator-20230531-1000.zip
+        Key: cloudformation-templates/lambda/geolocator/geolocator-commit-2f475324b916378edee790a5aed63ced37544f6e.zip
       MemorySize: 3009
       Handler: index.handler
       Timeout: 900
