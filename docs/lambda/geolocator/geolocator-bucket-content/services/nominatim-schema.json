@@ -1,0 +1,89 @@
+{
+  "url": "https://nominatim.openstreetmap.org/search",
+  "urlParams": {},
+  "staticParams": {
+	"countrycodes": "CA",
+	"format": "jsonv2"
+  },
+  "urlCodeTables": {},
+  "lookup": {
+      "in": {
+          "q": "q",
+          "lang": "accept-language"
+      },
+      "out": {
+        "structure" : {
+            "Type": "list"
+            },
+        "data": {
+            "name": {
+                "field": "display_name",
+                "lookup": {
+                    "type": "csv",
+                    "field": "name",
+                    "range": "3"
+                }
+            },
+            "province": {
+                "field": "display_name",
+                "lookup": {
+                    "type": "csv",
+                    "field": "province",
+                    "range": "3"
+                }
+            },
+            "category": {
+                "field": "category",
+                "lookup": {
+                    "type": "table",
+                    "field": "description"
+                }
+            },
+           "lat": {
+                "field":"lat",
+                "lookup": ""
+            },
+            "lng": {
+                "field": "lon",
+                "lookup": ""
+            },
+            "bbox": [
+                {
+                    "field": "boundingbox",
+                    "lookup": {
+                        "type": "array",
+                        "field":"2"
+                    }
+                },
+                {
+                    "field": "boundingbox",
+                    "lookup": {
+                        "type": "array",
+                        "field":"0"
+                    }
+                },
+                {
+                    "field": "boundingbox",
+                    "lookup": {
+                        "type": "array",
+                        "field":"3"
+                    }
+                },
+                {
+                    "field": "boundingbox",
+                    "lookup": {
+                        "type": "array",
+                        "field":"1"
+                    }
+                }
+            ],
+            "tag": [
+                {
+                "field": "category",
+                "lookup": ""
+              }
+            ]
+        }
+    }
+  }
+}
