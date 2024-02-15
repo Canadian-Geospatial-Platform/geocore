@@ -25,86 +25,132 @@ The following is an example of the geoCore format:
 ```
 {
   "type": "FeatureCollection",
-    "features": [
-      {
-        "type":"Feature",
-        "geometry": {
-          "type": "Polygon",
-          "coordinates": [[[ west, south ], [ east, south ], [ east, north ], [ west, north ], [ west, south]]]},
-        "properties": {
-          "id": id,
-          "title": {
-            "en": title_en,
-            "fr": title_fr
-            },
-          "description": {
-            "en": description_en,
-            "fr": description_fr
+  "features": [
+    {
+      "type":"Feature",
+      "geometry": {
+        "type": null,
+        "coordinates": [
+          [
+            [null , null], [null , null], [null , null], [null , null], [null , null]
+            ]]
+      },
+      "properties": {
+        "id": null,
+        "title": {
+          "en": null,
+          "fr": null 
+        },
+        "description": {
+          "en": null,
+          "fr": null 
+        },
+        "keywords": {
+          "en": null,
+          "fr": null  
+        },
+        "topicCategory": null,
+        "parentIdentifier": null,
+        "date": {
+          "published": {
+            "text": null,
+            "date": null 
           },
-          "keywords": {
-            "en": keyword_String_en,
-            "fr": keyword_String_fr
+          "created": {
+            "text": null,
+            "date": null 
           },
-          "topicCategory": topicCategory,
-          "date": {
-            "published": {
-              "text": date_text_publication,
-              "date": date_publication
-            },
-            "created": {
-              "text": date_text_creation,
-              "date": date_creation
-            }
+          "revision": {
+            "text": null,
+            "date": null 
           },
-          "spatialRepresentation": spatialRepresentation,
-          "type": type,
-          "geometry": boundingbox,
-          "temporalExtent": {
-            "begin": temporalExtent_begin,
-            "end": temporalExtent_end
+          "notavailable": {
+            "text": null,
+            "date": null 
           },
-          "refSys": refSys,
-          "refSys_version": refSys_version,
-          "status": status,
-          "maintenance": maintenance,
-          "metadataStandard": {
-            "en": metadataStandard_en,
-            "fr": metadataStandard_fr
+          "inforce": {
+            "text": null,
+            "date": null 
           },
-          "metadataStandardVersion": metadataStandardVersion,
-          "graphicOverview": goArray,
-          "distributionFormat_name": distributionFormat_name,
-          "distributionFormat_format": distributionFormat_format,
-          "useLimits": {
-            "en": useLimits_en,
-            "fr": useLimits_fr
+          "adopted": {
+            "text": null,
+            "date": null 
           },
-          "accessConstraints": accessConstraints,
-          "otherConstraints": {
-            "en": otherConstraints_en,
-            "fr": otherConstraints_fr
+          "deprecated": {
+            "text": null,
+            "date": null 
           },
-          "dateStamp": dateStamp,
-          "dataSetURI": dataSetURI,
-          "locale": {
-            "language": locale_language,
-            "country": locale_country,
-            "encoding": locale_encoding
-          },
-          "language": language,
-          "characterSet": characterSet,
-          "environmentDescription": environmentDescription,
-          "supplementalInformation": {
-            "en": supplementalInformation_en,
-            "fr": supplementalInformation_fr
-          },
-          "contact": contacts_Array,
-          "credits": credits_Array,
-          "cited": cited_Array,
-          "distributor": dist_Array,
-          "options": options_Array
+          "superceded": {
+            "text": null,
+            "date": null 
           }
-        }]}
+        },
+        "spatialRepresentation": null,
+        "type": null,
+        "geometry": null,
+        "temporalExtent": {
+          "begin": null ,
+          "end": null 
+        },
+        "refSys": null,
+        "refSys_version": null,
+        "status": null,
+        "maintenance": null,
+        "metadataStandard": {
+          "en": null,
+          "fr": null 
+        },
+        "metadataStandardVersion": null,
+		"graphicOverview": [
+		{
+			"overviewFileName": null,
+			"overviewFileDescription": null,
+			"overviewFileTupe": null
+		}],
+        "distributionFormat_name": null,
+        "distributionFormat_format": null ,
+        "useLimits": {
+          "en": null,
+          "fr": null 
+        },
+        "accessConstraints": null,
+        "otherConstraints": {
+          "en": null,
+          "fr": null 
+        },
+        "dateStamp": null,
+        "dataSetURI": null,
+        "locale": {
+          "language": null,
+          "country": null,
+          "encoding": null 
+        },
+        "language": null,
+        "characterSet": null,
+        "environmentDescription": null,
+        "supplementalInformation": {
+          "en": null,
+          "fr": null 
+        },
+        "contact": [null],
+        "credits": [null],
+        "cited": [null],
+        "distributor": [null],
+        "options": [
+		{
+			"url":null,
+			"protocol":null,
+			"name": {
+				"en":null,
+				"fr":null
+				}
+	    }],
+        "sourceSystemName":null,
+		"eoCollection": null, 
+		"eoFilters":[null]		
+      }
+    }]
+  }
 ```
 
 ## Extending the Format
