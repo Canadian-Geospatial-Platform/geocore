@@ -513,6 +513,12 @@ Resources:
 
         ALTER EXTERNAL TABLE `metadata`
         ADD COLUMN IF NOT EXISTS `features_popularity` int;
+        
+        ALTER EXTERNAL TABLE `metadata`
+        ADD COLUMN IF NOT EXISTS `features_properties_eocollection` string;
+        
+        ALTER EXTERNAL TABLE `metadata`
+        ADD COLUMN IF NOT EXISTS `features_properties_eofilters` string;
         "
         
   GeoCoreAthenaWorkGroup:
