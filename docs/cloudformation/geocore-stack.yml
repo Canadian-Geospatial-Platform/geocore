@@ -486,7 +486,9 @@ Resources:
           `features_properties_distributor` string, 
           `features_properties_options` string, 
           `features_properties_plugins` string, 
-          `features_popularity` int)
+          `features_popularity` int,
+          `features_properties_eocollection` string,
+          `features_properties_eofilters` string)
           ROW FORMAT SERDE 
             'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
           STORED AS INPUTFORMAT 
