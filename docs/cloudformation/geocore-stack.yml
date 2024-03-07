@@ -4138,7 +4138,11 @@ Resources:
                       ,\r\n    \"type\": \"$input.params('type')\",\r\n    \"org\": \"$input.params('org')\"\
                       ,\r\n    \"min\": \"$input.params('min')\",\r\n    \"max\": \"$input.params('max')\"\
                       ,\r\n    \"foundational\": \"$input.params('foundational')\"
-                      ,\r\n     \"sort\": \"$input.params('sort')\"\r\n}"
+                      ,\r\n     \"sort\": \"$input.params('sort')\"
+                      ,\r\n    \"source_system\": \"$input.params('sourcesystemname')\"
+                      ,\r\n    \"eo_collection\": \"$input.params('eocollection')\"
+                      ,\r\n    \"polarization\": \"$input.params('polarization')\"
+                      ,\r\n    \"orbit_direction\": \"$input.params('orbit')\"}"
                   passthroughBehavior: "when_no_templates"
                   contentHandling: "CONVERT_TO_TEXT"
               options:
