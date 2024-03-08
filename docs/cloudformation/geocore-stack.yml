@@ -422,7 +422,7 @@ Resources:
       Database: !Ref GeoCoreDatabase
       WorkGroup: !Ref GeoCoreAthenaWorkGroup
       QueryString:
-        !Sub "CREATE EXTERNAL TABLE IF NOT EXISTS `metadata`(
+        !Sub "CREATE EXTERNAL TABLE `metadata`(
           `features_type` string, 
           `features_geometry_type` string, 
           `features_geometry_coordinates` string, 
@@ -509,16 +509,16 @@ Resources:
             'transient_lastDdlTime'='1647981845', 
             'typeOfData'='file');
 
-        -- To add a new column(s) update below
+        -- To add a new column(s) update below and run each manually. This named query is for documentation purpose only.
 
         ALTER EXTERNAL TABLE `metadata`
-        ADD COLUMN IF NOT EXISTS `features_popularity` int;
+        ADD COLUMN `features_popularity` int;
         
         ALTER EXTERNAL TABLE `metadata`
-        ADD COLUMN IF NOT EXISTS `features_properties_eocollection` string;
+        ADD COLUMN `features_properties_eocollection` string;
         
         ALTER EXTERNAL TABLE `metadata`
-        ADD COLUMN IF NOT EXISTS `features_properties_eofilters` string;
+        ADD COLUMN `features_properties_eofilters` string;
         "
         
   GeoCoreAthenaWorkGroup:
