@@ -33,7 +33,7 @@
             },
             "table": {
               "type": "string",
-              "enum": ["category", "component", "generic", "province", "tableurl", "none"],
+              "enum": ["category", "component", "generic", "province", "none"],
               "default" : "none",
               "description": "return json dump of table"
             },
