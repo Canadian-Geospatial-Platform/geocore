@@ -63,6 +63,19 @@ Resources:
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
         - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+      Policies:
+        - PolicyName: GeolocatorS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket]]
+                  - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket, '/*']]
 
   VerificationHeaderSecret: 
     Type: AWS::SecretsManager::Secret
