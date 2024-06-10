@@ -190,18 +190,18 @@ Resources:
   GeocoretoParquet:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.7
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230823-1500.zip
+            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230823-1500.zip
-              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20230823-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
       MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
@@ -211,6 +211,7 @@ Resources:
           PARQUET_BUCKET_NAME: !Ref GeocoreGeojsontoParquetBucket
           DYNAMODB_TABLE: 'analytics_popularity'
           REGION_NAME: 'ca-central-1'
+          PARQUET_FILENAME: 'records.parquet'
       Events:
         ApiEvent:
           Type: Api
@@ -219,7 +220,7 @@ Resources:
             Path: /geocore_to_parquet
             Method: any
       Layers:
-        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python37:5
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
 
  
   LambdaExecutionRole:
