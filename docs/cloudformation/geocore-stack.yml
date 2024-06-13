@@ -1674,7 +1674,7 @@ Resources:
       Environment:
         Variables:
           PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}'
-          CACHE_EXPIRY_IN_DAYS: '2'
+          MAX_CHILD_OR_SIBLING_LENGTH: 5000
       Events:
         ApiEvent:
           Type: Api
