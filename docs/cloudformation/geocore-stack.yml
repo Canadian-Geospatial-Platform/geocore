@@ -486,6 +486,7 @@ Resources:
           `features_properties_distributor` string, 
           `features_properties_options` string, 
           `features_properties_plugins` string, 
+          `features_properties_sourcesystemname` string, 
           `features_popularity` int,
           `features_properties_eocollection` string,
           `features_properties_eofilters` string)
@@ -691,10 +692,10 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geo/geo-20231218-1700.zip
+            - cloudformation-templates/lambda/geo/geo-20240627-2300.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geo/geo-20231218-1700.zip
+              - cloudformation-templates/lambda/geo/geo-20240627-2300.zip
               - cloudformation-templates/lambda/geo/geocore-LambdaGeo-20240315.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
