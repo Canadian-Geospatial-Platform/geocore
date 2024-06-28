@@ -44,11 +44,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20231019-1200.zip
+            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20240628-1430.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20231019-1200.zip
-              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20231019-1200.zip
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20240628-1430.zip
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20240628-1430.zip
       MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
@@ -60,6 +60,7 @@ Resources:
           STAC_API_ROOT: 'https://datacube.services.geo.ca/api'
           ROOT_NAME: 'CCMEO Datacube API / CCCOT Cube de données API'
           SOURCE: 'ccmeo'
+          SOURCESYSTEMNAME: 'ccmeo-datacube'
       Layers: 
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
 
