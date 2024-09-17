@@ -1686,35 +1686,6 @@ Resources:
       Layers:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
 
-  LambdaImageProcessor:
-    Type: AWS::Serverless::Function
-    Properties:
-      Runtime: python3.10
-      Role: !GetAtt LambdaExecutionRole.Arn
-      CodeUri:
-        Bucket: !Ref DeploymentBucket
-        Key:
-          Fn::If:
-            - IsProd
-            - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
-            - Fn::If:
-              - IsStage
-              - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
-              - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
-      MemorySize: 3009
-      Handler: app.lambda_handler
-      Timeout: 60
-      Events:
-        ApiEvent:
-          Type: Api
-          Properties:
-            RestApiId: !Ref RestApi
-            Path: /image-processor
-            Method: any
-      Layers:
-        - arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p310-Pillow:7
-        - arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p310-requests:11
-
   KeepCollectionsWarmScheduleRule:
     Type: AWS::Events::Rule
     Properties:
@@ -1974,9 +1945,8 @@ Resources:
         Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
       EndpointConfiguration:
         Type: REGIONAL
-      OpenApiVersion: "2.0"  
+      OpenApiVersion: "2.0"
       StageName: live
-      BinaryMediaTypes: ["*/*"]
       DefinitionBody:
         swagger: "2.0"
         info:
@@ -2869,58 +2839,6 @@ Resources:
                         responseParameters:
                           method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
                           method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                          method.response.header.Access-Control-Allow-Origin: "'*'"
-                    requestTemplates:
-                      application/json: "{\"statusCode\": 200}"
-                    passthroughBehavior: "when_no_match"
-                    type: "mock"
-          /image-processor:
-                get:
-                  consumes:
-                  - "application/json"
-                  produces:
-                  - "application/json"
-                  responses:
-                    "200":
-                      description: "200 response"
-                      schema:
-                        $ref: "#/definitions/Empty"
-                      headers:
-                        Access-Control-Allow-Origin:
-                          type: "string"
-                  x-amazon-apigateway-integration:
-                    uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaImageProcessor}/invocations"
-                    httpMethod: "POST"
-                    responses:
-                      default:
-                        statusCode: "200"
-                        responseParameters:
-                          method.response.header.Access-Control-Allow-Origin: "'*'"
-                    type: "aws_proxy"
-                options:
-                  consumes:
-                  - "application/json"
-                  produces:
-                  - "application/json"
-                  responses:
-                    "200":
-                      description: "200 response"
-                      schema:
-                        $ref: "#/definitions/Empty"
-                      headers:
-                        Access-Control-Allow-Origin:
-                          type: "string"
-                        Access-Control-Allow-Methods:
-                          type: "string"
-                        Access-Control-Allow-Headers:
-                          type: "string"
-                  x-amazon-apigateway-integration:
-                    responses:
-                      default:
-                        statusCode: "200"
-                        responseParameters:
-                          method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
-                          method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
                           method.response.header.Access-Control-Allow-Origin: "'*'"
                     requestTemplates:
                       application/json: "{\"statusCode\": 200}"
