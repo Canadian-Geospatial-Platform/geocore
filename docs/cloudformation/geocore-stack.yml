@@ -7,6 +7,10 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/environment
     Description: SSM parameter name for environment
+  CreateDynamoDb:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/dynamodb_creation
+    Description: Parameter Store value to determine if DynamoDB tables need to be created
   DeploymentBucket:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/deployment-bucket
@@ -21,9 +25,16 @@ Parameters:
   SecHeadersLambdaEdgeArn:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+  OSDomain:
+    Type: String
+    Description: Open Search Domain Endpoint
+
 
 Conditions: 
   IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+  CreateDynamoDb: !Equals [true, !Ref CreateDynamoDb]
 
 Resources:
 
@@ -78,6 +89,7 @@ Resources:
 
   DynamoDb:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: tag
       BillingMode: PAY_PER_REQUEST
@@ -100,6 +112,7 @@ Resources:
 
   DynamoDbFoundational:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: foundational
       BillingMode: PAY_PER_REQUEST
@@ -122,6 +135,7 @@ Resources:
 
   DynamoDbTheme:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: theme
       BillingMode: PAY_PER_REQUEST
@@ -144,6 +158,7 @@ Resources:
 
   DynamoDbAnalytics:
     Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
     Properties: 
       TableName: analytics
       BillingMode: PAY_PER_REQUEST
@@ -161,6 +176,7 @@ Resources:
 
   DynamoDbAnnouncements:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: announcements
         BillingMode: PAY_PER_REQUEST
@@ -180,9 +196,10 @@ Resources:
           - 
             AttributeName: datetime
             KeyType: RANGE
-
+  
   DynamoDbCommunity:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community
         BillingMode: PAY_PER_REQUEST
@@ -199,6 +216,7 @@ Resources:
 
   DynamoDbCommunityannouncement:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_announcement
         BillingMode: PAY_PER_REQUEST
@@ -221,6 +239,7 @@ Resources:
 
   DynamoDbCommunitydata:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_data
         BillingMode: PAY_PER_REQUEST
@@ -243,6 +262,7 @@ Resources:
 
   DynamoDbCommunityresource:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_resource
         BillingMode: PAY_PER_REQUEST
@@ -265,6 +285,7 @@ Resources:
 
   DynamoDbCommunityroles:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: community_roles
         BillingMode: PAY_PER_REQUEST
@@ -287,6 +308,7 @@ Resources:
 
   DynamoDbSavedrecords:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: saved_records
         BillingMode: PAY_PER_REQUEST
@@ -309,7 +331,8 @@ Resources:
 
   DynamoDbSavedsearches:
       Type: AWS::DynamoDB::Table
-      Properties: 
+      Condition: CreateDynamoDb
+      Properties:
         TableName: saved_searches
         BillingMode: PAY_PER_REQUEST
         PointInTimeRecoverySpecification: 
@@ -331,6 +354,7 @@ Resources:
 
   DynamoDbUsers:
       Type: AWS::DynamoDB::Table
+      Condition: CreateDynamoDb
       Properties: 
         TableName: users
         BillingMode: PAY_PER_REQUEST
@@ -345,6 +369,46 @@ Resources:
             AttributeName: userId
             KeyType: HASH
 
+  DynamoDbPopularity:
+    Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
+    Properties: 
+      TableName: analytics_popularity
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification: 
+         PointInTimeRecoveryEnabled: true
+      AttributeDefinitions: 
+        - 
+          AttributeName: uuid
+          AttributeType: S
+        - 
+          AttributeName: popularity
+          AttributeType: N
+      KeySchema: 
+        - 
+          AttributeName: uuid
+          KeyType: HASH
+        - 
+          AttributeName: popularity
+          KeyType: RANGE
+
+  DynamoDbGeoviewConfigService:
+    Type: AWS::DynamoDB::Table
+    Condition: CreateDynamoDb
+    Properties: 
+      TableName: geoview_config_service
+      BillingMode: PAY_PER_REQUEST
+      PointInTimeRecoverySpecification: 
+         PointInTimeRecoveryEnabled: true
+      AttributeDefinitions: 
+        - 
+          AttributeName: uuid
+          AttributeType: S
+      KeySchema: 
+        - 
+          AttributeName: uuid
+          KeyType: HASH
+
   GeoCoreDatabase:
     Type: AWS::Glue::Database
     Properties:
@@ -357,7 +421,7 @@ Resources:
     Properties: 
       Database: !Ref GeoCoreDatabase
       WorkGroup: !Ref GeoCoreAthenaWorkGroup
-      QueryString: 
+      QueryString:
         !Sub "CREATE EXTERNAL TABLE `metadata`(
           `features_type` string, 
           `features_geometry_type` string, 
@@ -422,7 +486,10 @@ Resources:
           `features_properties_distributor` string, 
           `features_properties_options` string, 
           `features_properties_plugins` string, 
-          `features_popularity` string)
+          `features_properties_sourcesystemname` string, 
+          `features_popularity` int,
+          `features_properties_eocollection` string,
+          `features_properties_eofilters` string)
           ROW FORMAT SERDE 
             'org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe' 
           STORED AS INPUTFORMAT 
@@ -441,7 +508,18 @@ Resources:
             'rawDataSize'='-1', 
             'totalSize'='6676041', 
             'transient_lastDdlTime'='1647981845', 
-            'typeOfData'='file')
+            'typeOfData'='file');
+
+        -- To add a new column(s) update below and run each manually. This named query is for documentation purpose only.
+
+        ALTER EXTERNAL TABLE `metadata`
+        ADD COLUMN `features_popularity` int;
+        
+        ALTER EXTERNAL TABLE `metadata`
+        ADD COLUMN `features_properties_eocollection` string;
+        
+        ALTER EXTERNAL TABLE `metadata`
+        ADD COLUMN `features_properties_eofilters` string;
         "
         
   GeoCoreAthenaWorkGroup:
@@ -452,14 +530,122 @@ Resources:
         ResultConfiguration:
           OutputLocation: !Sub 's3://${GeoCoreAthenaOutputBucket}'
 
+#  LambdaProcessIndex:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Runtime: python3.8
+#      # AutoPublishAlias: live
+#      CodeUri:
+#        Bucket: !Ref DeploymentBucket
+#        Key:
+#          Fn::If:
+#            - IsProd
+#            - cloudformation-templates/lambda/search-repo/add-to-os.zip
+#            - Fn::If:
+#              - IsStage
+#              - cloudformation-templates/lambda/search-repo/add-to-os.zip
+#              - cloudformation-templates/lambda/search-repo/add-to-os.zip
+#      Handler: index.handler
+#      Role: !GetAtt LambdaExecutionRole.Arn
+#      MemorySize: 512
+#      Timeout: 60
+#      Environment:
+#        Variables:
+#          #ES_HOST:
+#          #  !Ref OSdomain
+#          #ES_INDEX:
+#          #  !Ref search
+#          API_KEY:
+#            !Ref RestApiKey
+#          API:
+#            !Ref RestApi    
+#      Events:
+#        ApiEvent:
+#          Type: Api
+#          Properties:
+#            RestApiId: !Ref RestApi
+#            Path: /*
+#            Method: any
+  
+#  LambdaResourceIndex:
+#    Type: AWS::Serverless::Function
+#    Properties:
+#      Runtime: nodejs16.x
+#      # AutoPublishAlias: live
+#      CodeUri:
+#        Bucket: !Ref DeploymentBucket
+#        Key:
+#          Fn::If:
+#            - IsProd
+#            - cloudformation-templates/lambda/search-repo/resource-parser.zip
+#            - Fn::If:
+#              - IsStage
+#              - cloudformation-templates/lambda/search-repo/resource-parser.zip
+#              - cloudformation-templates/lambda/search-repo/resource-parser.zip
+#      Handler: index.handler
+#      Role: !GetAtt LambdaExecutionRole.Arn
+#      MemorySize: 512
+#      Timeout: 60
+#      Environment:
+#        Variables:
+#          bucket: !Sub 's3-documentparser-documents-${Environment}'
+#      Events:
+#        ApiEvent:
+#          Type: Api
+#          Properties:
+#            RestApiId: !Ref RestApi
+#            Path: /*
+#            Method: any
+
   LambdaId:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.9
+      # AutoPublishAlias: live
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: 
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/id/id-20240612-1600.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/id/id-20240612-1600.zip
+              - cloudformation-templates/lambda/id/id-20240612-1600.zip
+      Handler: app.lambda_handler
+      Role: !GetAtt LambdaExecutionRole.Arn
+      MemorySize: 3009
+      Timeout: 60
+      Environment:
+        Variables:
+          CACHE_EXPIRY_IN_DAYS: '2'
+          PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+
+  LambdaIdV1:
     Type: AWS::Serverless::Function
     Properties:
       Runtime: nodejs16.x
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/id/id.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/id/idv1-20230926-1100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/id/idv1-20230926-1100.zip
+              - cloudformation-templates/lambda/id/idv1-20230926-1100.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -471,6 +657,30 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /*
             Method: any
+  
+  KeepLambdaIdWarmScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: KeepLambdaIdWarm
+      ScheduleExpression: rate(2 minutes)
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - LambdaId
+              - Arn
+          Id: TargetFunctionV1
+  
+  PermissionToInvokeLambdaId:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref LambdaId
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - KeepLambdaIdWarmScheduleRule
+        - Arn
 
   LambdaGeo:
     Type: AWS::Serverless::Function
@@ -479,7 +689,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geo/geo.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geo/geo-20240627-2300.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geo/geo-20240627-2300.zip
+              - cloudformation-templates/lambda/geo/geocore-LambdaGeo-20240315.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -499,7 +716,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/featured/featured.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/featured/featured-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/featured/featured-220323.zip
+              - cloudformation-templates/lambda/featured/featured-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -519,7 +743,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/foundation/foundation_layer.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
+              - cloudformation-templates/lambda/foundation/foundation_layer-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -539,7 +770,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/analytics/analytics.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/analytics/analytics-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/analytics/analytics-220323.zip
+              - cloudformation-templates/lambda/analytics/analytics-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -559,7 +797,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/get_analytics/get_analytics.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
+              - cloudformation-templates/lambda/get_analytics/get_analytics-220323.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -579,7 +824,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/announcements/announcement_add.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -599,7 +851,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/announcements/announcement_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -619,7 +878,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/announcements/announcement_get.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
+              - cloudformation-templates/lambda/announcements/announcement_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -639,7 +905,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_record/saved_record.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/saved_record-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -659,7 +932,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_record/get_saved_record.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/get_saved_record-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -679,7 +959,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_record/delete_saved_record.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
+              - cloudformation-templates/lambda/saved_record/delete_saved_record-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -699,7 +986,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_search/saved_search.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
+              - cloudformation-templates/lambda/saved_search/saved_search-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -719,7 +1013,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_search/get_saved_searches.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip    
+              - cloudformation-templates/lambda/saved_search/get_saved_searches-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -739,7 +1040,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/saved_search/delete_saved_search.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
+              - cloudformation-templates/lambda/saved_search/delete_saved_search-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -759,7 +1067,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_add_member.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_add_member-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_add_member-230201.zip
+              - cloudformation-templates/lambda/community/community_add_member-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -779,7 +1094,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_add.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_add-230201.zip
+              - cloudformation-templates/lambda/community/community_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -799,7 +1121,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_add.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -819,7 +1148,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -839,7 +1175,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_edit.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_edit-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -859,7 +1202,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_announcement_get.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
+              - cloudformation-templates/lambda/community/community_announcement_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -879,7 +1229,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_data_add.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_data_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_data_add-230201.zip
+              - cloudformation-templates/lambda/community/community_data_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -899,7 +1256,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_data_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_data_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_data_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_data_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -919,7 +1283,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_data_get.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_data_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_data_get-230201.zip
+              - cloudformation-templates/lambda/community/community_data_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -939,7 +1310,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_add.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_add-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_add-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_add-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -959,7 +1337,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_delete.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_delete-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -979,7 +1364,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_edit.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_edit-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -999,7 +1391,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_resource_get.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_resource_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_resource_get-230201.zip
+              - cloudformation-templates/lambda/community/community_resource_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1019,7 +1418,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_delete_member.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_delete_member-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_delete_member-230201.zip
+              - cloudformation-templates/lambda/community/community_delete_member-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1039,7 +1445,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_edit_member.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_edit_member-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_edit_member-230201.zip
+              - cloudformation-templates/lambda/community/community_edit_member-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1059,7 +1472,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_edit.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_edit-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_edit-230201.zip
+              - cloudformation-templates/lambda/community/community_edit-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1079,7 +1499,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_get_members.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_get_members-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_get_members-230201.zip
+              - cloudformation-templates/lambda/community/community_get_members-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1099,7 +1526,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/community_get.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/community_get-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/community_get-230201.zip
+              - cloudformation-templates/lambda/community/community_get-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1119,7 +1553,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/my_community_announcements.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
+              - cloudformation-templates/lambda/community/my_community_announcements-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1139,7 +1580,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/my_community_data.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/my_community_data-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/my_community_data-230201.zip
+              - cloudformation-templates/lambda/community/my_community_data-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1159,7 +1607,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/community/my_community_resources.zip
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/community/my_community_resources-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/community/my_community_resources-230201.zip
+              - cloudformation-templates/lambda/community/my_community_resources-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1179,7 +1634,14 @@ Resources:
       # AutoPublishAlias: live
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/translate/translate.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/translate/translate-230201.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/translate/translate-230201.zip
+              - cloudformation-templates/lambda/translate/translate-230201.zip
       Handler: index.handler
       Role: !GetAtt LambdaExecutionRole.Arn
       MemorySize: 512
@@ -1195,17 +1657,25 @@ Resources:
   LambdaCollections:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.7
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/collections/collections.zip
-      MemorySize: 1024
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/collections/collections-20240612-1600.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/collections/collections-20240612-1600.zip
+              - cloudformation-templates/lambda/collections/collections-20240612-1600.zip
+      MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 60
       Environment:
         Variables:
           PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}'
+          MAX_CHILD_OR_SIBLING_LENGTH: 5000
       Events:
         ApiEvent:
           Type: Api
@@ -1213,6 +1683,93 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /collections
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+
+  KeepCollectionsWarmScheduleRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: KeepCollectionsWarm
+      ScheduleExpression: rate(2 minutes)
+      State: ENABLED
+      Targets: 
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - LambdaCollections
+              - Arn
+          Id: TargetFunctionV1
+  
+  PermissionToInvokeLambdaId:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref LambdaCollections
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - KeepCollectionsWarmScheduleRule
+        - Arn
+
+  LambdaPopularity:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.8
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+              - cloudformation-templates/lambda/geocore-filters/popularity-20230330-0800.zip
+      MemorySize: 4096
+      Handler: lambda_function.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          DYNAMODB_TABLE: 'analytics_popularity'
+          GEOJSON_BUCKET_NAME: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+          GEONETWORK_POPULARITY_PATH: ''
+          PARQUET_BUCKET_NAME: !Sub 's3://webpresence-geocore-geojson-to-parquet-${Environment}/'
+          REGION_NAME: 'ca-central-1'
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python38:4
+
+  LambdaViewerConfigService:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.9
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
+              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 15
+      Environment:
+        Variables:
+          GCS_TABLE: 'geoview_config_service'
+          GEOCORE_ID_API: 'https://geocore.api.geo.ca/id/v2'
+          RCS_CONFIG_PATH: 'https://maps.canada.ca/geonetwork/srv/api/v2/docs/'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /vcs
+            Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:11
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -1388,7 +1945,7 @@ Resources:
         Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
       EndpointConfiguration:
         Type: REGIONAL
-      OpenApiVersion: "2.0"  
+      OpenApiVersion: "2.0"
       StageName: live
       DefinitionBody:
         swagger: "2.0"
@@ -2086,7 +2643,7 @@ Resources:
                       Access-Control-Allow-Origin:
                         type: "string"
                 x-amazon-apigateway-integration:
-                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsget}/invocations"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsget}/invocations"
                   httpMethod: "POST"
                   responses:
                     default:
@@ -2140,7 +2697,7 @@ Resources:
                       Access-Control-Allow-Origin:
                         type: "string"
                 x-amazon-apigateway-integration:
-                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsadd}/invocations"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsadd}/invocations"
                   httpMethod: "POST"
                   responses:
                     default:
@@ -2192,7 +2749,7 @@ Resources:
                       Access-Control-Allow-Origin:
                         type: "string"
                 x-amazon-apigateway-integration:
-                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsdelete}/invocations"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaAnnouncementsdelete}/invocations"
                   httpMethod: "POST"
                   responses:
                     default:
@@ -2246,7 +2803,7 @@ Resources:
                         Access-Control-Allow-Origin:
                           type: "string"
                   x-amazon-apigateway-integration:
-                    uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
+                    uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaCollections}/invocations"
                     httpMethod: "POST"
                     responses:
                       default:
@@ -2286,7 +2843,7 @@ Resources:
                     requestTemplates:
                       application/json: "{\"statusCode\": 200}"
                     passthroughBehavior: "when_no_match"
-                    type: "mock"            
+                    type: "mock"
           /community/add:
               post:
                 produces:
@@ -3581,7 +4138,12 @@ Resources:
                       ,\r\n    \"lang\" : \"$input.params('lang')\",\r\n    \"theme\" : \"$input.params('theme')\"\
                       ,\r\n    \"type\": \"$input.params('type')\",\r\n    \"org\": \"$input.params('org')\"\
                       ,\r\n    \"min\": \"$input.params('min')\",\r\n    \"max\": \"$input.params('max')\"\
-                      ,\r\n    \"foundational\": \"$input.params('foundational')\"\r\n}"
+                      ,\r\n    \"foundational\": \"$input.params('foundational')\"
+                      ,\r\n     \"sort\": \"$input.params('sort')\"
+                      ,\r\n    \"source_system\": \"$input.params('sourcesystemname')\"
+                      ,\r\n    \"eo_collection\": \"$input.params('eocollection')\"
+                      ,\r\n    \"polarization\": \"$input.params('polarization')\"
+                      ,\r\n    \"orbit_direction\": \"$input.params('orbit')\"}"
                   passthroughBehavior: "when_no_templates"
                   contentHandling: "CONVERT_TO_TEXT"
               options:
@@ -3630,6 +4192,120 @@ Resources:
                 x-amazon-apigateway-integration:
                   type: "aws"
                   httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaIdV1}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
+                      \  \"id\" : \"$input.params('id')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+          /id/v1:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaIdV1}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
+                      \  \"id\" : \"$input.params('id')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+          /id/v2:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
                   uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaId}/invocations"
                   responses:
                     default:
@@ -3640,6 +4316,95 @@ Resources:
                     application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
                       \  \"id\" : \"$input.params('id')\"\r\n}"
                   passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "mock"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+          /vcs:
+              get:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaViewerConfigService}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\r\n    \"method\" : \"GET\",\r\n  \
+                      \  \"lang\" : \"$input.params('lang')\",\r\n  \
+                      \  \"metadata\" : \"$input.params('metadata')\",\r\n  \
+                      \  \"id\" : \"$input.params('id')\"\r\n}"
+                  passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaViewerConfigService}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: |
+                      {
+                        "method" : "POST",
+                        "body" : "$util.base64Encode($input.body)"
+                      }
+                  passthroughBehavior: "when_no_match"
                   contentHandling: "CONVERT_TO_TEXT"
               options:
                 consumes:
@@ -4056,6 +4821,62 @@ Resources:
                     application/json: "{\"statusCode\": 200}"
                   passthroughBehavior: "when_no_match"
                   type: "mock"
+          /resourceindex:
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  uri: "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaResourceIndex}/invocations"
+                  httpMethod: "POST"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  passthroughBehavior: "when_no_match"
+                  contentHandling: "CONVERT_TO_TEXT"
+                  type: "aws"
+              options:
+                consumes:
+                - "application/json"
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                      Access-Control-Allow-Methods:
+                        type: "string"
+                      Access-Control-Allow-Headers:
+                        type: "string"
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS,POST'"
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: "{\"statusCode\": 200}"
+                  passthroughBehavior: "when_no_match"
+                  type: "mock"
+          
+          
           securityDefinitions:
             api_key:
               type: "apiKey"

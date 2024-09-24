@@ -1,0 +1,23 @@
+code,en,fr
+aerialway,Aerialway,Voie aérienne
+aeroway,Aeroway,Aéroparc
+amenity,Amenity,Commodité
+boundary,Boundary,Limite
+building,Building,Bâtiment
+city,City,Ville
+highway,Highway,Autoroute
+intersection,Intersection,Intersection
+landuse,Land use,Utilisation des terres
+leisure,Leisure,Loisirs
+man_made,Man made,Élément anthropique
+natural,Natural,Naturel
+nts,NTS,NTS
+office,Office,Bureau
+place,Place,Lieu
+postalcode,Postal Code,Code postal
+shop,Shop,Magasin
+street,Street,Rue
+tourism,Tourism,Tourisme
+town,Town,Ville
+village,Village,Village
+waterway,Waterway,Voie navigable

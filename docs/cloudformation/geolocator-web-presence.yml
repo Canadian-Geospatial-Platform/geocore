@@ -1,0 +1,226 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys geolocator for web presence
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/geolocator/ssl-cert-arn
+    Description: SSM parameter name for geolocator ACM SSL Cert ARN
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:          
+  Geolocator:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.7
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/geolocator-commit-15b0de5722c2362d49cdfdbdfd2cb9f97c94059e.zip
+      MemorySize: 3009
+      Handler: index.handler
+      Timeout: 900
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Sub 'webpresence-geolocator-${Environment}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+      Policies:
+        - PolicyName: GeolocatorS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket]]
+                  - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket, '/*']]
+
+  VerificationHeaderSecret: 
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: Verification header secret value used to identify request coming from CloudFront to API Gateway
+      Name: /webpresence/geolocator/verification-header-secret
+      GenerateSecretString: 
+        ExcludePunctuation: true
+        PasswordLength: 32
+
+  OriginRequestPolicy: 
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties: 
+      OriginRequestPolicyConfig: 
+        CookiesConfig: 
+          CookieBehavior: none 
+        HeadersConfig: 
+          HeaderBehavior: whitelist
+          Headers: ["Accept"]
+        Name: geolocator-cloudfront-to-api-gateway
+        QueryStringsConfig: 
+          QueryStringBehavior: all
+
+  GeolocatorDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      DistributionConfig:
+        Enabled: 'true'
+        Origins:
+        - Id: ApiOrigin
+          DomainName: !Sub ${RestApi}.execute-api.${AWS::Region}.amazonaws.com
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only    
+            OriginSSLProtocols: 
+              - TLSv1.2  
+          OriginPath: /live   
+          OriginCustomHeaders:
+            - HeaderName: x-origin-verify
+              HeaderValue: '{{resolve:secretsmanager:/webpresence/geolocator/verification-header-secret}}'   
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: ApiOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          OriginRequestPolicyId: !GetAtt OriginRequestPolicy.Id
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: geolocator
+        Aliases:
+          - !If 
+            - IsProd
+            - geolocator.api.geo.ca
+            - !Sub 'geolocator-${Environment}.api.geo.ca'
+          - !If 
+            - IsProd
+            - www.geolocator.api.geo.ca
+            - !Sub 'www.geolocator-${Environment}.api.geo.ca'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+
+  RestApiWebAcl:
+    Type: AWS::WAFv2::WebACL
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      Name: webpresence-geolocator-cloudfront
+      Scope: REGIONAL
+      Description: "Restrict access to CloudFront"
+      DefaultAction: 
+        Block: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-geolocator-cloudfront    
+      Rules: 
+        - Name: webpresence-geolocator-cloudfront-header-verification
+          Priority: 0
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-geolocator-cloudfront-header-verification
+          Statement:
+            ByteMatchStatement:
+              FieldToMatch:
+                SingleHeader:
+                  Name: x-origin-verify
+              PositionalConstraint: EXACTLY
+              SearchString: '{{resolve:secretsmanager:/webpresence/geolocator/verification-header-secret}}'
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+
+  RestApiWebAclAssociations:
+    Type: AWS::WAFv2::WebACLAssociation
+    DependsOn:
+      - RestApiliveStage
+    Properties:
+      ResourceArn: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${RestApi}/stages/live'
+      WebACLArn: !GetAtt RestApiWebAcl.Arn
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: geolocator
+      AccessLogSetting:
+        DestinationArn: !GetAtt LogGroup.Arn
+        Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
+      EndpointConfiguration:
+        Type: REGIONAL
+      OpenApiVersion: '2.0'
+      StageName: live
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: 'geolocator'
+        schemes:
+          - 'https'
+        paths:
+          /:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Geolocator.Arn}/invocations'
+              responses: {}
+  geolocatorS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "webpresence-geolocator-${Environment}"
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/geolocator'
+      RetentionInDays: 3653

@@ -12,8 +12,12 @@ Metadata:
           - GeocoreSslCertArn
           - GeocoreMetadataSslCertArn
           - GeocoreHarvestSslCertArn
+          - GeocorePygeoapiSslCertArn
+          - GeolocatorSslCertArn
+          - TiTilerSslCertArn
           - GeoCaSslCertArn
           - AppGeoCaSslCertArn
+          - SearchSslCertArn
           - GithubUsername
           - GithubKey
 
@@ -26,6 +30,13 @@ Parameters:
       - prod
     Default: dev
     Description: Type of App Environment - dev stage prod
+  DynamoDBCreationBool:
+    Type: String
+    AllowedValues:
+      - true
+      - false
+    Default: false
+    Description: True or false to recreate all dynamodb tables
   DeploymentBucket:
     Description: S3 bucket where all the deployment related files are
     Type: String
@@ -38,12 +49,24 @@ Parameters:
     Type: String    
   GeocoreHarvestSslCertArn:
     Description: ARN of the SSL cert stored in ACM to be used for Geocore HNAP JSON Harvester
-    Type: String    
+    Type: String
+  GeocorePygeoapiSslCertArn:
+    Description: ARN of the SSL cert stored in ACM to be used for Geocore pygeoapi
+    Type: String
+  GeolocatorSslCertArn:
+    Description: ARN of the SSL cert stored in ACM to be used for Geolocator
+    Type: String
+  TiTilerSslCertArn:
+    Description: ARN of the SSL cert stored in ACM to be used for TiTiler
+    Type: String
   GeoCaSslCertArn:
     Description: ARN of the SSL cert stored in ACM to be used for geo.ca
     Type: String    
   AppGeoCaSslCertArn:
     Description: ARN of the SSL cert stored in ACM to be used for app.geo.ca
+    Type: String    
+  SearchSslCertArn:
+    Description: ARN of the SSL cert stored in ACM to be used for search-recherche.geocore.api.geo.ca
     Type: String    
   GithubUsername: 
     Description: Github Username for accessing Canadian Geospatial Platform
@@ -52,6 +75,10 @@ Parameters:
     Description: Github Key for accessing Canadian Geospatial Platform 
     Type: String  
 
+Conditions: 
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
 
 Resources:
 
@@ -145,6 +172,14 @@ Resources:
       Type: String
       Value: !Ref Environment
 
+  DynamoDBCreationParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: True or false to recreate all dynamodb tables
+      Name: /webpresence/dynamodb_creation
+      Type: String
+      Value: !Ref DynamoDBCreationBool
+
   GeocoreHarvestSslCertArnParam:
     Type: AWS::SSM::Parameter
     Properties:
@@ -152,6 +187,31 @@ Resources:
       Name: /webpresence/geocore-hnap-harvest/ssl-cert-arn
       Type: String
       Value: !Ref GeocoreHarvestSslCertArn
+  
+  GeocorePygeoapiSslCertArnParam:
+    Condition: IsDev
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: ARN of the SSL cert stored in ACM to be used for Geocore pygeoapi
+      Name: /webpresence/geocore-pygeoapi/ssl-cert-arn
+      Type: String
+      Value: !Ref GeocorePygeoapiSslCertArn
+      
+  GeolocatorSslCertArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: ARN of the SSL cert stored in ACM to be used for Geolocator
+      Name: /webpresence/geolocator/ssl-cert-arn
+      Type: String
+      Value: !Ref GeolocatorSslCertArn
+
+  TiTilerSslCertArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: ARN of the SSL cert stored in ACM to be used for TiTiler
+      Name: /webpresence/titiler/ssl-cert-arn
+      Type: String
+      Value: !Ref TiTilerSslCertArn
 
   GeocoreSslCertArnParam:
     Type: AWS::SSM::Parameter
@@ -184,6 +244,14 @@ Resources:
       Name: /webpresence/app-geo-ca/ssl-cert-arn
       Type: String
       Value: !Ref AppGeoCaSslCertArn
+
+  SearchSslCertArnParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Description: ARN of the SSL cert stored in ACM to be used for search-recherche.geocore.api.geo.ca 
+      Name: /webpresence/search-geocore-api-geo-ca/ssl-cert-arn
+      Type: String
+      Value: !Ref SearchSslCertArn
 
   GithubUsernameParam:
     Type: AWS::SecretsManager::Secret
