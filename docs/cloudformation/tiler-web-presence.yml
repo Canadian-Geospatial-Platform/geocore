@@ -44,8 +44,10 @@ Parameters:
       - "true"
       - "false"
 
-Conditions:
+Conditions: 
   IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
 
 Resources:          
   TiTiler:
@@ -108,6 +110,51 @@ Resources:
             Method: any
       Layers:
         - arn:aws:lambda:ca-central-1:552819999234:layer:titiler:8
+        
+  LambdaImageProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
+              - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /image-processor
+            Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p310-Pillow:7
+        - arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p310-requests:11
+
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
 
   VerificationHeaderSecret: 
     Type: AWS::SecretsManager::Secret
@@ -231,7 +278,7 @@ Resources:
         Type: REGIONAL
       OpenApiVersion: '2.0'
       StageName: live
-      BinaryMediaTypes: ["image/*","application/vnd.oai.openapi+json"]
+      BinaryMediaTypes: ["*/*","application/vnd.oai.openapi+json"]
       DefinitionBody:
         swagger: '2.0'
         info:
@@ -265,6 +312,58 @@ Resources:
                 httpMethod: POST
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
               responses: {}
+          /image-processor:
+                get:
+                  consumes:
+                  - "application/json"
+                  produces:
+                  - "application/json"
+                  responses:
+                    "200":
+                      description: "200 response"
+                      schema:
+                        $ref: "#/definitions/Empty"
+                      headers:
+                        Access-Control-Allow-Origin:
+                          type: "string"
+                  x-amazon-apigateway-integration:
+                    uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaImageProcessor}/invocations"
+                    httpMethod: "POST"
+                    responses:
+                      default:
+                        statusCode: "200"
+                        responseParameters:
+                          method.response.header.Access-Control-Allow-Origin: "'*'"
+                    type: "aws_proxy"
+                options:
+                  consumes:
+                  - "application/json"
+                  produces:
+                  - "application/json"
+                  responses:
+                    "200":
+                      description: "200 response"
+                      schema:
+                        $ref: "#/definitions/Empty"
+                      headers:
+                        Access-Control-Allow-Origin:
+                          type: "string"
+                        Access-Control-Allow-Methods:
+                          type: "string"
+                        Access-Control-Allow-Headers:
+                          type: "string"
+                  x-amazon-apigateway-integration:
+                    responses:
+                      default:
+                        statusCode: "200"
+                        responseParameters:
+                          method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                          method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                          method.response.header.Access-Control-Allow-Origin: "'*'"
+                    requestTemplates:
+                      application/json: "{\"statusCode\": 200}"
+                    passthroughBehavior: "when_no_match"
+                    type: "mock"
 
   LogGroup:
     Type: Custom::LogGroup
