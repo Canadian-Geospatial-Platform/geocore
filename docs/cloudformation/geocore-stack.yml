@@ -1748,11 +1748,11 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20231218-1200.zip
+            - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20231218-1200.zip
-              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20231218-1200.zip
+              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
+              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
       MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 15
@@ -4370,10 +4370,41 @@ Resources:
                       responseParameters:
                         method.response.header.Access-Control-Allow-Origin: "'*'"
                   requestTemplates:
-                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
+                    application/json: "{\r\n    \"method\" : \"GET\",\r\n  \
+                      \  \"lang\" : \"$input.params('lang')\",\r\n  \
                       \  \"metadata\" : \"$input.params('metadata')\",\r\n  \
                       \  \"id\" : \"$input.params('id')\"\r\n}"
                   passthroughBehavior: "when_no_templates"
+                  contentHandling: "CONVERT_TO_TEXT"
+              post:
+                produces:
+                - "application/json"
+                responses:
+                  "200":
+                    description: "200 response"
+                    schema:
+                      $ref: "#/definitions/Empty"
+                    headers:
+                      Access-Control-Allow-Origin:
+                        type: "string"
+                security:
+                - api_key: []
+                x-amazon-apigateway-integration:
+                  type: "aws"
+                  httpMethod: "POST"
+                  uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaViewerConfigService}/invocations"
+                  responses:
+                    default:
+                      statusCode: "200"
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  requestTemplates:
+                    application/json: |
+                      {
+                        "method" : "POST",
+                        "body" : "$util.base64Encode($input.body)"
+                      }
+                  passthroughBehavior: "when_no_match"
                   contentHandling: "CONVERT_TO_TEXT"
               options:
                 consumes:
