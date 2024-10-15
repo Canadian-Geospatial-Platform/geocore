@@ -135,7 +135,7 @@ Resources:
       FunctionName: !Ref CollectorFunction
       Action: 'lambda:InvokeFunction'
       Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt CollectorFunction.Arn
+      SourceArn: !GetAtt CollectorFunctionRule.Arn
 
 
 

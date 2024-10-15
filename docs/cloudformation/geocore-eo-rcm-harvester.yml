@@ -122,7 +122,7 @@ Resources:
     Properties:
       Name: !Sub 'eo-sg-rcm-collector-every-60mins-${Environment}'
       Description: rcm API links collector on every 60mins interval
-      State: ENABLED
+      State: DISABLED
       ScheduleExpression: 'rate(60 minutes)'
       Targets:
         - Arn: !GetAtt [CollectorFunction, Arn]
@@ -135,7 +135,7 @@ Resources:
       FunctionName: !Ref CollectorFunction
       Action: 'lambda:InvokeFunction'
       Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt CollectorFunction.Arn
+      SourceArn: !GetAtt CollectorFunctionRule.Arn
 
 
 
@@ -267,9 +267,9 @@ Resources:
   ScatterFunctionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: !Sub 'eo-sg-scatter-every-monday-${Environment}'
+      Name: !Sub 'eo-rcm-sg-scatter-every-monday-${Environment}'
       Description: scatter on once per week on Monday interval
-      State: ENABLED
+      State: DISABLED
       ScheduleExpression: 'cron(0 8 ? * MON *)'
       Targets:
         - Arn: !GetAtt [ScatterFunction, Arn]
@@ -448,7 +448,7 @@ Resources:
     Properties:
       Name: !Sub 'eo-sg-rcm-parquet-every-tuesday-${Environment}'
       Description: geocore to parquet on once per week on every Tuesday interval
-      State: ENABLED
+      State: DISABLED
       ScheduleExpression: 'cron(0 8 ? * TUE *)'
       Targets:
         - Arn: !GetAtt [GeocoretoParquetFunction, Arn]
