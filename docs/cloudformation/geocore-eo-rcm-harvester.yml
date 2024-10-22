@@ -24,18 +24,28 @@ Parameters:
     Type: AWS::SSM::Parameter::Value<String>
     Default: /webpresence/deployment-bucket
     Description: S3 bucket where all deployment files are store
+  CreateProcessedBucket:
+    Type: String
+    Default: 'true'
+    Description: Parameter Store value to determine if ProcessedDataS3Bucket need to be created
+  CreateLinksBucket:
+    Type: String
+    Default: 'true'
+    Description: Parameter Store value to determine if EOItemLinksS3Bucket need to be created
 
 Conditions:
   IsProd: !Equals [prod, !Ref Environment]
   IsStage: !Equals [stage, !Ref Environment]
   IsDev: !Equals [dev, !Ref Environment]
-
+  CreateProcessedBucket: !Equals [true, !Ref CreateProcessedBucket]
+  CreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
 
 Resources:
   ProcessedDatarcmS3Bucket:
     Type: 'AWS::S3::Bucket'
+    Condition: CreateProcessedBucket
     Properties:
-      BucketName: !Sub 'eo-sg-processed-data-rcm-${Environment}'
+      BucketName: !Sub 'eo-sg-processed-data-${Environment}'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -49,6 +59,7 @@ Resources:
 
   EOItemLinksS3Bucket:
     Type: 'AWS::S3::Bucket'
+    Condition: CreateLinksBucket
     Properties:
       BucketName: !Sub 'eo-sg-datacube-item-links-${Environment}'
       BucketEncryption:
@@ -107,7 +118,7 @@ Resources:
           GEOCORE_TEMPLATE_BUCKET_NAME:  !Sub 'webpresence-geocore-template-${Environment}'
           GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
           ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
-          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDatarcmS3Bucket
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
           API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
           ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
           SOURCE: 'eodms'
@@ -166,7 +177,7 @@ Resources:
         Variables:
           GEOCORE_TEMPLATE_BUCKET_NAME: !Sub 'webpresence-geocore-template-${Environment}'
           GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
-          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDatarcmS3Bucket
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
           API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
           ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
           SOURCE: 'eodms'
@@ -208,9 +219,7 @@ Resources:
           AttributeType: S
         - AttributeName: process_id
           AttributeType: S
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
+      BillingMode: PAY_PER_REQUEST
       StreamSpecification:
         StreamViewType: NEW_IMAGE
 
@@ -224,9 +233,7 @@ Resources:
       AttributeDefinitions:
         - AttributeName: scatter_gather_id
           AttributeType: S
-      ProvisionedThroughput:
-        ReadCapacityUnits: 1
-        WriteCapacityUnits: 1
+      BillingMode: PAY_PER_REQUEST
       StreamSpecification:
         StreamViewType: NEW_IMAGE
 
@@ -400,7 +407,7 @@ Resources:
       Timeout: 900
       Environment:
         Variables:
-          GEOJSON_BUCKET_NAME: !Ref ProcessedDatarcmS3Bucket
+          GEOJSON_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
           PARQUET_BUCKET_NAME:  !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
           DYNAMODB_TABLE: 'analytics_popularity'
           PARQUET_FILENAME: 'rcm.parquet'
@@ -432,8 +439,8 @@ Resources:
                 Action:
                   - 's3:*'
                 Resource:
-                  - !Sub arn:aws:s3:::eo-sg-processed-data-rcm-${Environment}/*
-                  - !Sub arn:aws:s3:::eo-sg-processed-data-rcm-${Environment}
+                  - !Sub arn:aws:s3:::eo-sg-processed-data-${Environment}/*
+                  - !Sub arn:aws:s3:::eo-sg-processed-data-${Environment}
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
                   - !Sub arn:aws:s3:::webpresence-geocore-hnap-json-${Environment}/*
