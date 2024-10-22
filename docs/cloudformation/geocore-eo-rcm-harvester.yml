@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: Sentinel-1 collection harvestor using serverless Scatter Gather pattern 
+Description: rcm collection harvestor using serverless Scatter Gather pattern 
 
 
 Parameters:
@@ -8,13 +8,13 @@ Parameters:
     Type: String
     Default: 'ca-central-1'
     Description: Default region for deployment.
-  SGSentinel1ProcessesTableName:
+  SGrcmProcessesTableName:
     Type: String
-    Default: eo_sg_sentinel1_processes
+    Default: eo_sg_rcm_processes
     Description: DynamoDB table name to store information by process triggered
-  SGSentinel1AggregateTableName:
+  SGrcmAggregateTableName:
     Type: String
-    Default: eo_sg_sentinel1_aggregate
+    Default: eo_sg_rcm_aggregate
     Description: DynamoDB table name to store information by scatter_gatter aggregated
   Environment:
     Type: AWS::SSM::Parameter::Value<String>
@@ -41,11 +41,11 @@ Conditions:
   CreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
 
 Resources:
-  ProcessedDataSentinel1S3Bucket:
+  ProcessedDatarcmS3Bucket:
     Type: 'AWS::S3::Bucket'
     Condition: CreateProcessedBucket
     Properties:
-      BucketName: !Sub 'eo-sg-processed-data-sentinel1-${Environment}'
+      BucketName: !Sub 'eo-sg-processed-data-${Environment}'
       BucketEncryption:
         ServerSideEncryptionConfiguration:
           - ServerSideEncryptionByDefault:
@@ -102,11 +102,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-collector-20240610-2100.zip
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-collector-20240610-2100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-collector-20240610-2100.zip
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-collector-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-collector-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-collector-20240610-2100.zip
       Runtime: python3.9
       MemorySize: 4096
       Timeout: 900
@@ -118,12 +118,12 @@ Resources:
           GEOCORE_TEMPLATE_BUCKET_NAME:  !Sub 'webpresence-geocore-template-${Environment}'
           GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
           ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
-          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataSentinel1S3Bucket
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
           API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
           ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
           SOURCE: 'eodms'
           SOURCESYSTEMNAME: 'ccmeo-eodms'
-          COLLECTION: 'sentinel-1'
+          COLLECTION: 'rcm'
       Layers: 
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
         - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
@@ -131,9 +131,9 @@ Resources:
   CollectorFunctionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: !Sub 'eo-sg-sentinel1-collector-every-60mins-${Environment}'
-      Description: sentinel-1 API links collector on every 60mins interval
-      State: ENABLED
+      Name: !Sub 'eo-sg-rcm-collector-every-60mins-${Environment}'
+      Description: rcm API links collector on every 60mins interval
+      State: DISABLED
       ScheduleExpression: 'rate(60 minutes)'
       Targets:
         - Arn: !GetAtt [CollectorFunction, Arn]
@@ -146,7 +146,7 @@ Resources:
       FunctionName: !Ref CollectorFunction
       Action: 'lambda:InvokeFunction'
       Principal: 'events.amazonaws.com'
-      SourceArn: !GetAtt CollectorFunction.Arn
+      SourceArn: !GetAtt CollectorFunctionRule.Arn
 
 
 
@@ -162,11 +162,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-processor-20240610-2100.zip
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-processor-20240610-2100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-processor-20240610-2100.zip
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-processor-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-processor-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-processor-20240610-2100.zip
       Role: !GetAtt EOSGLambdaExecutionRole.Arn     
       MemorySize: 4096
       Timeout: 900
@@ -177,13 +177,13 @@ Resources:
         Variables:
           GEOCORE_TEMPLATE_BUCKET_NAME: !Sub 'webpresence-geocore-template-${Environment}'
           GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
-          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataSentinel1S3Bucket
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
           API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
           ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
           SOURCE: 'eodms'
           SOURCESYSTEMNAME: 'ccmeo-eodms'
-          COLLECTION: 'sentinel-1'
-          SG_PROCESSES_TABLE_NAME: !Ref SGSentinel1ProcessesTableName
+          COLLECTION: 'rcm'
+          SG_PROCESSES_TABLE_NAME: !Ref SGrcmProcessesTableName
       Layers:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
         - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
@@ -200,7 +200,7 @@ Resources:
     Type: AWS::SQS::Queue
     Properties:
       VisibilityTimeout: 901
-      QueueName: "eo_processor_q_sentinel1"
+      QueueName: "eo_processor_q_rcm"
 
 ########################################################
 # DynamoDB tables
@@ -208,7 +208,7 @@ Resources:
   SGProcessesDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref SGSentinel1ProcessesTableName
+      TableName: !Ref SGrcmProcessesTableName
       KeySchema:
         - AttributeName: scatter_gather_id
           KeyType: HASH
@@ -226,7 +226,7 @@ Resources:
   SGAggregateDBTable:
     Type: AWS::DynamoDB::Table
     Properties:
-      TableName: !Ref SGSentinel1AggregateTableName
+      TableName: !Ref SGrcmAggregateTableName
       KeySchema:
         - AttributeName: scatter_gather_id
           KeyType: HASH
@@ -248,11 +248,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240610-2100.zip
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-scatter-20240610-2100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240610-2100.zip
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-scatter-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-scatter-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-scatter-20240610-2100.zip
       Role: !GetAtt EOSGLambdaExecutionRole.Arn 
       Handler: app.lambda_handler
       Runtime: python3.9
@@ -263,9 +263,9 @@ Resources:
       Environment:
         Variables:
           ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
-          JSON_FILENAME: 'sentinel-1-item-api.json'
-          SG_PROCESSES_TABLE_NAME: !Ref SGSentinel1ProcessesTableName
-          SG_AGGREGATE_TABLE_NAME: !Ref SGSentinel1AggregateTableName
+          JSON_FILENAME: 'rcm-item-api.json'
+          SG_PROCESSES_TABLE_NAME: !Ref SGrcmProcessesTableName
+          SG_AGGREGATE_TABLE_NAME: !Ref SGrcmAggregateTableName
           QUEUE_URL: !GetAtt ProcessorSQSQueue.QueueUrl
       Layers:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
@@ -274,9 +274,9 @@ Resources:
   ScatterFunctionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: !Sub 'eo-sg-scatter-every-monday-${Environment}'
+      Name: !Sub 'eo-rcm-sg-scatter-every-monday-${Environment}'
       Description: scatter on once per week on Monday interval
-      State: ENABLED
+      State: DISABLED
       ScheduleExpression: 'cron(0 8 ? * MON *)'
       Targets:
         - Arn: !GetAtt [ScatterFunction, Arn]
@@ -303,11 +303,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-aggregator-20240610-2100.zip
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-aggregator-20240610-2100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-aggregator-20240610-2100.zip
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-aggregator-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-aggregator-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-aggregator-20240610-2100.zip
       Role: !GetAtt EOSGLambdaExecutionRole.Arn 
       Handler: app.lambda_handler
       Runtime: python3.9
@@ -317,7 +317,7 @@ Resources:
       MemorySize: 4096
       Environment:
         Variables:
-          SG_AGGREGATE_TABLE_NAME: !Ref SGSentinel1AggregateTableName
+          SG_AGGREGATE_TABLE_NAME: !Ref SGrcmAggregateTableName
       Layers:
         - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
 
@@ -345,11 +345,11 @@ Resources:
         Key:
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-gather-20240610-2100.zip
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-gather-20240610-2100.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-gather-20240610-2100.zip
-              - cloudformation-templates/lambda/geocore-eo-harvester/sentinel-1/sentinel1-sg-gather-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-gather-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-gather-20240610-2100.zip
       Role: !GetAtt EOSGLambdaExecutionRole.Arn 
       Handler: app.lambda_handler
       Runtime: python3.9
@@ -359,7 +359,7 @@ Resources:
       MemorySize: 4096
       Environment:
         Variables:
-          SG_AGGREGATE_TABLE_NAME: !Ref SGSentinel1AggregateTableName
+          SG_AGGREGATE_TABLE_NAME: !Ref SGrcmAggregateTableName
       Layers:
         - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
 
@@ -380,7 +380,7 @@ Resources:
     Type: Custom::LogGroup
     Properties:
       ServiceToken: !ImportValue LogGroupHelperLambdaArn
-      LogGroupName: !Sub '/${Environment}/webpresence/eo_sg_sentinel1_harvester'
+      LogGroupName: !Sub '/${Environment}/webpresence/eo_sg_rcm_harvester'
       RetentionInDays: 3653 
 
 
@@ -407,10 +407,10 @@ Resources:
       Timeout: 900
       Environment:
         Variables:
-          GEOJSON_BUCKET_NAME: !Ref ProcessedDataSentinel1S3Bucket
+          GEOJSON_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
           PARQUET_BUCKET_NAME:  !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
           DYNAMODB_TABLE: 'analytics_popularity'
-          PARQUET_FILENAME: 'sentinel1.parquet'
+          PARQUET_FILENAME: 'rcm.parquet'
           REGION_NAME: 'ca-central-1'
       Layers:
         - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
@@ -439,8 +439,8 @@ Resources:
                 Action:
                   - 's3:*'
                 Resource:
-                  - !Sub arn:aws:s3:::eo-sg-processed-data-sentinel1-${Environment}/*
-                  - !Sub arn:aws:s3:::eo-sg-processed-data-sentinel1-${Environment}
+                  - !Sub arn:aws:s3:::eo-sg-processed-data-${Environment}/*
+                  - !Sub arn:aws:s3:::eo-sg-processed-data-${Environment}
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
                   - !Sub arn:aws:s3:::webpresence-geocore-hnap-json-${Environment}/*
@@ -450,14 +450,12 @@ Resources:
                   - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}/*
                   - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}  
             
-
-
   GeocoretoParquetFunctionRule:
     Type: AWS::Events::Rule
     Properties:
-      Name: !Sub 'eo-sg-sentinel1-parquet-every-tuesday-${Environment}'
+      Name: !Sub 'eo-sg-rcm-parquet-every-tuesday-${Environment}'
       Description: geocore to parquet on once per week on every Tuesday interval
-      State: ENABLED
+      State: DISABLED
       ScheduleExpression: 'cron(0 8 ? * TUE *)'
       Targets:
         - Arn: !GetAtt [GeocoretoParquetFunction, Arn]
