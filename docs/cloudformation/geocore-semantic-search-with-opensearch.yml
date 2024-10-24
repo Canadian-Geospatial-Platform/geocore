@@ -1,0 +1,495 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys semantic search with OpenSearch on geo.ca 
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/search-geocore-api-geo-ca/ssl-cert-arn
+    Description: SSM parameter name for search-recherche.geocore.api.geo.ca ACM SSL Cert ARN
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+ #Todo: change SagemakerEndpoint to a resource that can be referenced 
+  SagemakerEndpoint:
+    Type: String
+    Default: semantic-search-model-1709665975
+    Description: sagamaker endpoint for the pretrained/finetuned models 
+  OSDomainName:
+    Type: String
+    Default: semantic-search
+    Description: OpenSearch domain name 
+  OpenSearchUsername:
+    AllowedPattern: '^[a-zA-Z0-9]+$'
+    Default: admin
+    Description: User name for the account that will be added to the OpenSearch cluster.
+    MaxLength: '25'
+    MinLength: '5'
+    Type: String
+  OpenSearchPassword:
+    AllowedPattern: '(?=^.{8,32}$)((?=.*\d)(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[^A-Za-z0-9])(?=.*[a-z])|(?=.*[^A-Za-z0-9])(?=.*[A-Z])(?=.*[a-z])|(?=.*\d)(?=.*[A-Z])(?=.*[^A-Za-z0-9]))^.*'
+    Description: Password for the account named above. Must be at least 8 characters containing letters, numbers and symbols
+    MaxLength: '32'
+    MinLength: '8'
+    NoEcho: 'true'
+    Type: String
+    Default: Semantic123!
+#Todo: change OSEndpoint to a resource that can be referenced 
+  OSEndpoint:
+    Type: String
+    Default: search-semantic-search-dfcizxxxuj62dusl5skmeu3czu.ca-central-1.es.amazonaws.com
+    Description: OpenSearch endpoint 
+  OSSecretID:
+    Type: String
+    Default: dev/OpenSearch/SemanticSearch
+    Description: SSM parameter name for OpenSearch user name and password   
+
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+
+
+Resources:
+########################################################
+# Set up OpenSearch instance  
+########################################################
+  OpenSearchServiceDomain:
+    Type: AWS::OpenSearchService::Domain
+    Properties:
+      AccessPolicies:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action: 'es:*'
+            Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*/*
+      EngineVersion: 'OpenSearch_2.11'
+      DomainName: semantic-search
+      ClusterConfig:
+        #InstanceType: "r6g.2xlarge.search"
+        InstanceType: "t3.medium.search"
+      EBSOptions:
+        EBSEnabled: True
+        VolumeSize: 20
+        VolumeType: 'gp3'
+      AdvancedSecurityOptions:
+        AnonymousAuthEnabled: False
+        Enabled: True
+        InternalUserDatabaseEnabled: True
+        MasterUserOptions:
+          MasterUserName: !Sub ${OpenSearchUsername}
+          MasterUserPassword: !Sub ${OpenSearchPassword}
+      NodeToNodeEncryptionOptions:
+        Enabled: True
+      EncryptionAtRestOptions:
+        Enabled: True
+        KmsKeyId: alias/aws/es
+      DomainEndpointOptions:
+        EnforceHTTPS: True
+
+  OpenSearchSecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub OpenSearchSecret-${AWS::StackName}
+      Description: OpenSearch username and password
+      SecretString: !Sub '{ "username" : "${OpenSearchUsername}", "password" : "${OpenSearchPassword}" }'
+
+
+########################################################
+# Set up SageMaker notebook instance   
+########################################################
+  CodeRepository:
+    Type: AWS::SageMaker::CodeRepository
+    Properties:
+      GitConfig:
+        RepositoryUrl: https://github.com/Canadian-Geospatial-Platform/semantic-search-with-amazon-opensearch
+        
+#Create a SageMaker Notebook Instance 
+  NotebookInstance:
+    Type: AWS::SageMaker::NotebookInstance
+    Properties:
+      NotebookInstanceName: semantic-search-nb
+      InstanceType: ml.t3.2xlarge
+      RoleArn: !GetAtt NBRole.Arn
+      DefaultCodeRepository: !GetAtt CodeRepository.CodeRepositoryName
+
+#Defines an IAM role with permissions to interact with OpenSearch 
+  OpenSearchSagemakerRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: opensearch-sagemaker-role
+      Policies:
+        - PolicyName: SageMakerAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "sagemaker:InvokeEndpointAsync"
+                  - "sagemaker:InvokeEndpoint"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "bedrock:*"
+                Resource:
+                  - "*"
+      AssumeRolePolicyDocument: # allows the OpenSearch service to assume this role
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - opensearchservice.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+
+#Create an IAM role specifically for the SageMaker Notebook
+#S3, DynamoDB, Secrets Manager, and passing the opensearch-sagemaker-role
+  NBRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyName: CustomSagemakerNotebookAccess
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - "es:ESHttp*"
+                Resource:
+                  - !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*
+              - Effect: Allow
+                Action:
+                  - "s3:*"
+                  - "dynamodb:*"
+                Resource:
+                  - "*"
+              - Effect: Allow
+                Action:
+                  - "secretsmanager:GetSecretValue"
+                Resource:
+                  - !Sub arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:*
+              - Effect: Allow
+                Action:
+                  - "iam:PassRole"
+                Resource:
+                  - !Sub arn:aws:iam::${AWS::AccountId}:role/opensearch-sagemaker-role
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonSageMakerFullAccess
+        - arn:aws:iam::aws:policy/AWSCloudFormationReadOnlyAccess
+        - arn:aws:iam::aws:policy/TranslateReadOnly
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+              - sagemaker.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+
+########################################################
+# Lambda Function: invoke sagemaker model endpoints
+# and perfrom KNN search in the OpenSearch domain 
+########################################################
+  InvokeSagemakerEndpointPretrain:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/Invoke-sagemaker-pretrain-20240508-2200.zip
+
+      MemorySize: 512
+      Timeout: 900
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          MY_AWS_REGION: ca-central-1
+          OS_ENDPOINT:  !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OSSecretID
+          SAGEMAKER_ENDPOINT: !Ref SagemakerEndpoint
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  InvokeSagemakerLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: InvokeSagemakerLambdaExecutionPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - sagemaker:InvokeEndpoint
+                Resource: !Sub "arn:aws:sagemaker:${AWS::Region}:${AWS::AccountId}:endpoint/${SagemakerEndpoint}"
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Sub "arn:aws:secretsmanager:${AWS::Region}:${AWS::AccountId}:secret:${OSSecretID}*"
+              - Effect: Allow
+                Action: es:*
+                Resource: !Sub "arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/${OSDomainName}/*"
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+########################################################
+# Verification header SSM secret value 
+########################################################
+  VerificationHeaderSecret: 
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: Verification header secret value used to identify request coming from CloudFront to API Gateway
+      Name: /webpresence/search/verification-header-secret
+      GenerateSecretString: 
+        ExcludePunctuation: true
+        PasswordLength: 32
+########################################################
+# CloudFront Origin Request Policy
+# Specify how CloudFront handle cookies, headers, and query strings from the origin
+########################################################
+  OriginRequestPolicy: 
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties: 
+      OriginRequestPolicyConfig: 
+        CookiesConfig: 
+          CookieBehavior: none #ignore cookies
+        HeadersConfig: 
+          HeaderBehavior: whitelist
+          Headers: ["Accept"]
+        Name: search-cloudfront-to-api-gateway
+        QueryStringsConfig: 
+          QueryStringBehavior: all
+########################################################
+# CloudFront Distribution 
+# It will be referenced by the two A name in the Route53 
+########################################################
+  SearchDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      DistributionConfig:
+        Enabled: 'true'
+        Origins:
+        - Id: ApiOrigin
+          DomainName: !Sub ${RestApi}.execute-api.${AWS::Region}.amazonaws.com
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only    
+            OriginSSLProtocols: 
+              - TLSv1.2  
+          OriginPath: /live   
+          OriginCustomHeaders:
+            - HeaderName: x-origin-verify
+              HeaderValue: '{{resolve:secretsmanager:/webpresence/search/verification-header-secret}}'   
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: ApiOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          OriginRequestPolicyId: !GetAtt OriginRequestPolicy.Id
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: search
+        Aliases:
+          - !If 
+            - IsProd
+            - search-recherche.geocore.api.geo.ca
+            - !Sub 'search-recherche.geocore-${Environment}.api.geo.ca'
+          - !If 
+            - IsProd
+            - www.search-recherche.geocore.api.geo.ca
+            - !Sub 'www.search-recherche.geocore-${Environment}.api.geo.ca'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+########################################################
+# Web Application Firewall Access Control List (WebACL) 
+# Protect against common web exploits
+########################################################
+  RestApiWebAcl:
+    Type: AWS::WAFv2::WebACL
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      Name: webpresence-search-cloudfront
+      Scope: REGIONAL
+      Description: "Restrict access to CloudFront"
+      DefaultAction: 
+        Block: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-search-cloudfront    
+      Rules: 
+        - Name: webpresence-search-cloudfront-header-verification
+          Priority: 0
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-search-cloudfront-header-verification
+          Statement:
+            ByteMatchStatement:
+              FieldToMatch:
+                SingleHeader:
+                  Name: x-origin-verify
+              PositionalConstraint: EXACTLY
+              SearchString: '{{resolve:secretsmanager:/webpresence/search/verification-header-secret}}'
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+########################################################
+# Assocaite WAF ACL and an API Gateway stage  
+########################################################
+  RestApiWebAclAssociations:
+    Type: AWS::WAFv2::WebACLAssociation
+    DependsOn:
+      - RestApiliveStage
+    Properties:
+      ResourceArn: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${RestApi}/stages/live'
+      WebACLArn: !GetAtt RestApiWebAcl.Arn
+########################################################
+# The API definitions used for search API and lambda invokation   
+########################################################
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: search-opensearch
+      AccessLogSetting:
+        DestinationArn: !GetAtt LogGroup.Arn
+        Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
+      EndpointConfiguration:
+        Type: REGIONAL
+      OpenApiVersion: '2.0'
+      StageName: live
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: 'search-opensearch'
+        schemes:
+          - 'https'
+        paths:
+          /search-opensearch:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${InvokeSagemakerEndpointPretrain.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: "{\r\n    \"method\" : \"$input.params('method')\",\r\n\
+                    \    \"searchString\" : \"$input.params('searchString')\"}"
+                  #passthroughBehavior: "when_no_templates"
+                  #contentHandling: "CONVERT_TO_TEXT"
+            options:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses:
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+                    Access-Control-Allow-Methods:
+                      type: "string"
+                    Access-Control-Allow-Headers:
+                      type: "string"    
+              x-amazon-apigateway-integration:
+                type: "mock"
+                responses:
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                      method.response.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                      method.response.header.Access-Control-Allow-Origin: "'*'"
+                requestTemplates:
+                  application/json: "{\"statusCode\": 200}"
+                # passthroughBehavior: "when_no_match"       
+          # definitions:
+          #   Empty:
+          #     type: "object"
+          #     title: "Empty Schema"
+          x-amazon-apigateway-gateway-responses:                 
+            DEFAULT_4XX:
+              responseParameters:
+                gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+            DEFAULT_5XX:
+              responseParameters:
+                gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+                gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+                           
+
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/search'
+      RetentionInDays: 3653

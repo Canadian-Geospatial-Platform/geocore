@@ -1,0 +1,373 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys titiler for web presence
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/titiler/ssl-cert-arn
+    Description: SSM parameter name for titiler ACM SSL Cert ARN
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+  Bucket:
+    Type: CommaDelimitedList
+    Default: "datacube-prod-data-public"
+    Description: Specific S3 Buckets containing COGS that we want to tiled
+  DisableCOG:
+    Type: String
+    Default: "false"
+    AllowedValues:
+      - "true"
+      - "false"
+  DisableMosaic:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+  DisableSTAC:
+    Type: String
+    Default: "true"
+    AllowedValues:
+      - "true"
+      - "false"
+
+Conditions: 
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+
+Resources:          
+  TiTiler:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.10
+      Policies:
+        - AWSLambdaExecute # Managed Policy
+        - Version: '2012-10-17' # Policy Document
+          Statement:
+            - Effect: Allow
+              Action:
+                - s3:GetObject
+                - s3:HeadObject
+              Resource:
+                !Split
+                  - ','
+                  - !Join
+                      - ''
+                      - - 'arn:aws:s3:::'
+                        - !Join
+                            - '/*,arn:aws:s3:::'
+                            - !Ref Bucket
+                        - '/*'
+
+      InlineCode: |
+        import logging
+        from mangum import Mangum
+        from titiler.application.main import app
+
+        logging.getLogger("mangum.lifespan").setLevel(logging.ERROR)
+        logging.getLogger("mangum.http").setLevel(logging.ERROR)
+
+        handler = Mangum(app, lifespan="auto")
+
+      MemorySize: 3009
+      Handler: index.handler
+      Timeout: 90
+      Environment:
+        Variables:
+          CPL_VSIL_CURL_ALLOWED_EXTENSIONS: '.tif,.TIF,.tiff'
+          GDAL_CACHEMAX: 200
+          GDAL_DISABLE_READDIR_ON_OPEN: EMPTY_DIR
+          GDAL_HTTP_MERGE_CONSECUTIVE_RANGES: YES
+          GDAL_HTTP_MULTIPLEX: YES
+          GDAL_HTTP_VERSION: 2
+          VSI_CACHE: TRUE
+          VSI_CACHE_SIZE: 536870912
+          CPL_VSIL_CURL_CACHE_SIZE: 200000000
+          GDAL_INGESTED_BYTES_AT_OPEN: 32768
+          TITILER_API_DISABLE_COG: !Ref DisableCOG
+          TITILER_API_DISABLE_STAC: !Ref DisableSTAC
+          TITILER_API_DISABLE_MOSAIC: !Ref DisableMosaic
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:552819999234:layer:titiler:8
+        
+  LambdaImageProcessor:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.10
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
+              - cloudformation-templates/lambda/image-processor/image-processor-20240619-1400.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 60
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /image-processor
+            Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p310-Pillow:7
+        - arn:aws:lambda:ca-central-1:770693421928:layer:Klayers-p310-requests:11
+
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  VerificationHeaderSecret: 
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: Verification header secret value used to identify request coming from CloudFront to API Gateway
+      Name: /webpresence/titiler/verification-header-secret
+      GenerateSecretString: 
+        ExcludePunctuation: true
+        PasswordLength: 32
+
+  OriginRequestPolicy: 
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties: 
+      OriginRequestPolicyConfig: 
+        CookiesConfig: 
+          CookieBehavior: none 
+        HeadersConfig: 
+          HeaderBehavior: whitelist
+          Headers: ["Accept"]
+        Name: titiler-cloudfront-to-api-gateway
+        QueryStringsConfig: 
+          QueryStringBehavior: all
+
+  TiTilerDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      DistributionConfig:
+        Enabled: 'true'
+        Origins:
+        - Id: ApiOrigin
+          DomainName: !Sub ${RestApi}.execute-api.${AWS::Region}.amazonaws.com
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only    
+            OriginSSLProtocols: 
+              - TLSv1.2  
+          OriginPath: /live   
+          OriginCustomHeaders:
+            - HeaderName: X-Origin-Verify
+              HeaderValue: '{{resolve:secretsmanager:/webpresence/titiler/verification-header-secret}}'   
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: ApiOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          OriginRequestPolicyId: !GetAtt OriginRequestPolicy.Id
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: titiler
+        Aliases:
+          - !If 
+            - IsProd
+            - tiler.api.geo.ca
+            - !Sub 'tiler-${Environment}.api.geo.ca'
+          - !If 
+            - IsProd
+            - www.tiler.api.geo.ca
+            - !Sub 'www.tiler-${Environment}.api.geo.ca'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+
+  RestApiWebAcl:
+    Type: AWS::WAFv2::WebACL
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      Name: webpresence-titiler-cloudfront
+      Scope: REGIONAL
+      Description: "Restrict access to CloudFront"
+      DefaultAction: 
+        Block: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-titiler-cloudfront    
+      Rules: 
+        - Name: webpresence-titiler-cloudfront-header-verification
+          Priority: 0
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-titiler-cloudfront-header-verification
+          Statement:
+            ByteMatchStatement:
+              FieldToMatch:
+                SingleHeader:
+                  Name: X-Origin-Verify
+              PositionalConstraint: EXACTLY
+              SearchString: '{{resolve:secretsmanager:/webpresence/titiler/verification-header-secret}}'
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+
+  RestApiWebAclAssociations:
+    Type: AWS::WAFv2::WebACLAssociation
+    DependsOn:
+      - RestApiliveStage
+    Properties:
+      ResourceArn: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${RestApi}/stages/live'
+      WebACLArn: !GetAtt RestApiWebAcl.Arn
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: titiler
+      AccessLogSetting:
+        DestinationArn: !GetAtt LogGroup.Arn
+        Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
+      EndpointConfiguration:
+        Type: REGIONAL
+      OpenApiVersion: '2.0'
+      StageName: live
+      BinaryMediaTypes: ["*/*","application/vnd.oai.openapi+json"]
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: 'titiler'
+        schemes:
+          - 'https'
+        paths:
+          /:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+          /{proxy+}:
+            get:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+            post:
+              x-amazon-apigateway-integration:
+                type: aws_proxy
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${TiTiler.Arn}/invocations'
+              responses: {}
+          /image-processor:
+                get:
+                  consumes:
+                  - "application/json"
+                  produces:
+                  - "application/json"
+                  responses:
+                    "200":
+                      description: "200 response"
+                      schema:
+                        $ref: "#/definitions/Empty"
+                      headers:
+                        Access-Control-Allow-Origin:
+                          type: "string"
+                  x-amazon-apigateway-integration:
+                    uri: !Sub "arn:aws:apigateway:ca-central-1:lambda:path/2015-03-31/functions/arn:aws:lambda:ca-central-1:${AWS::AccountId}:function:${LambdaImageProcessor}/invocations"
+                    httpMethod: "POST"
+                    responses:
+                      default:
+                        statusCode: "200"
+                        responseParameters:
+                          method.response.header.Access-Control-Allow-Origin: "'*'"
+                    type: "aws_proxy"
+                options:
+                  consumes:
+                  - "application/json"
+                  produces:
+                  - "application/json"
+                  responses:
+                    "200":
+                      description: "200 response"
+                      schema:
+                        $ref: "#/definitions/Empty"
+                      headers:
+                        Access-Control-Allow-Origin:
+                          type: "string"
+                        Access-Control-Allow-Methods:
+                          type: "string"
+                        Access-Control-Allow-Headers:
+                          type: "string"
+                  x-amazon-apigateway-integration:
+                    responses:
+                      default:
+                        statusCode: "200"
+                        responseParameters:
+                          method.response.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
+                          method.response.header.Access-Control-Allow-Headers: "'Content-Type,Authorization,X-Amz-Date,X-Api-Key,X-Amz-Security-Token'"
+                          method.response.header.Access-Control-Allow-Origin: "'*'"
+                    requestTemplates:
+                      application/json: "{\"statusCode\": 200}"
+                    passthroughBehavior: "when_no_match"
+                    type: "mock"
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/titiler'
+      RetentionInDays: 3653

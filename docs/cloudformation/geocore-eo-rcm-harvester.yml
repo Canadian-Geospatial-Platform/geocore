@@ -1,0 +1,471 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: rcm collection harvestor using serverless Scatter Gather pattern 
+
+
+Parameters:
+  RegionName:
+    Type: String
+    Default: 'ca-central-1'
+    Description: Default region for deployment.
+  SGrcmProcessesTableName:
+    Type: String
+    Default: eo_sg_rcm_processes
+    Description: DynamoDB table name to store information by process triggered
+  SGrcmAggregateTableName:
+    Type: String
+    Default: eo_sg_rcm_aggregate
+    Description: DynamoDB table name to store information by scatter_gatter aggregated
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are store
+  CreateProcessedBucket:
+    Type: String
+    Default: 'true'
+    Description: Parameter Store value to determine if ProcessedDataS3Bucket need to be created
+  CreateLinksBucket:
+    Type: String
+    Default: 'true'
+    Description: Parameter Store value to determine if EOItemLinksS3Bucket need to be created
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+  CreateProcessedBucket: !Equals [true, !Ref CreateProcessedBucket]
+  CreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
+
+Resources:
+  ProcessedDatarcmS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Condition: CreateProcessedBucket
+    Properties:
+      BucketName: !Sub 'eo-sg-processed-data-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  EOItemLinksS3Bucket:
+    Type: 'AWS::S3::Bucket'
+    Condition: CreateLinksBucket
+    Properties:
+      BucketName: !Sub 'eo-sg-datacube-item-links-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  EOSGLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess 
+        - arn:aws:iam::aws:policy/AmazonSQSFullAccess
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+
+# ########################################################
+# # Lambda Function api links collector 
+# ########################################################
+  CollectorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: app.lambda_handler
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-collector-20240610-2100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-collector-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-collector-20240610-2100.zip
+      Runtime: python3.9
+      MemorySize: 4096
+      Timeout: 900
+      Architectures:
+      - x86_64
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Environment:
+        Variables:
+          GEOCORE_TEMPLATE_BUCKET_NAME:  !Sub 'webpresence-geocore-template-${Environment}'
+          GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
+          ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
+          API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
+          ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
+          SOURCE: 'eodms'
+          SOURCESYSTEMNAME: 'ccmeo-eodms'
+          COLLECTION: 'rcm'
+      Layers: 
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  CollectorFunctionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'eo-sg-rcm-collector-every-60mins-${Environment}'
+      Description: rcm API links collector on every 60mins interval
+      State: DISABLED
+      ScheduleExpression: 'rate(60 minutes)'
+      Targets:
+        - Arn: !GetAtt [CollectorFunction, Arn]
+          Id: !Ref CollectorFunction
+
+
+  PermissionForEventsToInvokeCollectorLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref CollectorFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt CollectorFunctionRule.Arn
+
+
+
+########################################################
+# Lambda Function processor
+########################################################
+  ProcessorFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      Handler: app.lambda_handler
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-processor-20240610-2100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-processor-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-processor-20240610-2100.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn     
+      MemorySize: 4096
+      Timeout: 900
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Environment:
+        Variables:
+          GEOCORE_TEMPLATE_BUCKET_NAME: !Sub 'webpresence-geocore-template-${Environment}'
+          GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
+          PROCESSED_DATA_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
+          API_ROOT: 'https://www.eodms-sgdot.nrcan-rncan.gc.ca/stac'
+          ROOT_NAME: 'EODMS Datacube API / EODMS Cube de données API'
+          SOURCE: 'eodms'
+          SOURCESYSTEMNAME: 'ccmeo-eodms'
+          COLLECTION: 'rcm'
+          SG_PROCESSES_TABLE_NAME: !Ref SGrcmProcessesTableName
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+      Events: 
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue: !GetAtt ProcessorSQSQueue.Arn
+            BatchSize: 1
+########################################################
+# SQS to trigger the Lambda Function processor
+########################################################
+  ProcessorSQSQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 901
+      QueueName: "eo_processor_q_rcm"
+
+########################################################
+# DynamoDB tables
+########################################################
+  SGProcessesDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref SGrcmProcessesTableName
+      KeySchema:
+        - AttributeName: scatter_gather_id
+          KeyType: HASH
+        - AttributeName: process_id
+          KeyType: RANGE
+      AttributeDefinitions:
+        - AttributeName: scatter_gather_id
+          AttributeType: S
+        - AttributeName: process_id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+  SGAggregateDBTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Ref SGrcmAggregateTableName
+      KeySchema:
+        - AttributeName: scatter_gather_id
+          KeyType: HASH
+      AttributeDefinitions:
+        - AttributeName: scatter_gather_id
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      StreamSpecification:
+        StreamViewType: NEW_IMAGE
+
+########################################################
+# Lambda Function Scatter
+########################################################
+  ScatterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-scatter-20240610-2100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-scatter-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-scatter-20240610-2100.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 4096
+      Environment:
+        Variables:
+          ITEM_LINK_BUCKET_NAME: !Ref EOItemLinksS3Bucket
+          JSON_FILENAME: 'rcm-item-api.json'
+          SG_PROCESSES_TABLE_NAME: !Ref SGrcmProcessesTableName
+          SG_AGGREGATE_TABLE_NAME: !Ref SGrcmAggregateTableName
+          QUEUE_URL: !GetAtt ProcessorSQSQueue.QueueUrl
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  ScatterFunctionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'eo-rcm-sg-scatter-every-monday-${Environment}'
+      Description: scatter on once per week on Monday interval
+      State: DISABLED
+      ScheduleExpression: 'cron(0 8 ? * MON *)'
+      Targets:
+        - Arn: !GetAtt [ScatterFunction, Arn]
+          Id: !Ref ScatterFunction
+
+
+  PermissionForEventsToInvokeScatterLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref ScatterFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt ScatterFunctionRule.Arn
+
+
+########################################################
+# Lambda Function Aggregator
+########################################################
+  AggregatorFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-aggregator-20240610-2100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-aggregator-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-aggregator-20240610-2100.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 4096
+      Environment:
+        Variables:
+          SG_AGGREGATE_TABLE_NAME: !Ref SGrcmAggregateTableName
+      Layers:
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  EventSourceSGProcessesDBTableStream:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 100
+      MaximumBatchingWindowInSeconds: 30
+      Enabled: True
+      FilterCriteria:
+        Filters:
+          - Pattern: '{"eventName":["MODIFY"]}'
+      EventSourceArn: !GetAtt SGProcessesDBTable.StreamArn
+      FunctionName: !GetAtt AggregatorFunction.Arn
+      StartingPosition: LATEST
+
+########################################################
+# Lambda Function Gather
+########################################################
+  GatherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-gather-20240610-2100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-gather-20240610-2100.zip
+              - cloudformation-templates/lambda/geocore-eo-harvester/rcm/rcm-sg-gather-20240610-2100.zip
+      Role: !GetAtt EOSGLambdaExecutionRole.Arn 
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Timeout: 900
+      MemorySize: 4096
+      Environment:
+        Variables:
+          SG_AGGREGATE_TABLE_NAME: !Ref SGrcmAggregateTableName
+      Layers:
+        - arn:aws:lambda:ca-central-1:017000801446:layer:AWSLambdaPowertoolsPythonV2:46
+
+  EventSourceSGAggregateDBTableStream:
+    Type: AWS::Lambda::EventSourceMapping
+    Properties:
+      BatchSize: 100
+      MaximumBatchingWindowInSeconds: 30
+      Enabled: True
+      FilterCriteria:
+        Filters:
+          - Pattern: '{"eventName":["MODIFY"]}'
+      EventSourceArn: !GetAtt SGAggregateDBTable.StreamArn
+      FunctionName: !GetAtt GatherFunction.Arn
+      StartingPosition: LATEST
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/eo_sg_rcm_harvester'
+      RetentionInDays: 3653 
+
+
+########################################################
+# Lambda Function Geocore to Parquet 
+########################################################
+  GeocoretoParquetFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.9
+      Role: !GetAtt ParquetLambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+      MemorySize: 10240
+      Handler: app.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          GEOJSON_BUCKET_NAME: !Ref ProcessedDataRCMS3Bucket
+          PARQUET_BUCKET_NAME:  !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
+          DYNAMODB_TABLE: 'analytics_popularity'
+          PARQUET_FILENAME: 'rcm.parquet'
+          REGION_NAME: 'ca-central-1'
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
+
+  ParquetLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess        
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:*'
+                Resource:
+                  - !Sub arn:aws:s3:::eo-sg-processed-data-${Environment}/*
+                  - !Sub arn:aws:s3:::eo-sg-processed-data-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-hnap-json-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-hnap-json-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}
+                  - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}  
+            
+  GeocoretoParquetFunctionRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'eo-sg-rcm-parquet-every-tuesday-${Environment}'
+      Description: geocore to parquet on once per week on every Tuesday interval
+      State: DISABLED
+      ScheduleExpression: 'cron(0 8 ? * TUE *)'
+      Targets:
+        - Arn: !GetAtt [GeocoretoParquetFunction, Arn]
+          Id: !Ref GeocoretoParquetFunction
+
+          
+  PermissionForEventsToInvokeGeocoretoParquetLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref GeocoretoParquetFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt GeocoretoParquetFunctionRule.Arn
