@@ -8,7 +8,7 @@ Parameters:
     Type: String
     Default: 'ca-central-1'
     Description: Default region for deployment.
-  SGrcm-ardProcessesTableName:
+  SGRCMARDProcessesTableName:
     Type: String
     Default: eo_sg_rcm-ard_processes
     Description: DynamoDB table name to store information by process triggered
