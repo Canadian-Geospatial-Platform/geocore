@@ -37,13 +37,13 @@ Conditions:
   IsProd: !Equals [prod, !Ref Environment]
   IsStage: !Equals [stage, !Ref Environment]
   IsDev: !Equals [dev, !Ref Environment]
-  CreateProcessedBucket: !Equals [true, !Ref CreateProcessedBucket]
-  CreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
+  ShouldCreateProcessedBucket: !Equals [true, !Ref CreateProcessedBucket]
+  ShouldCreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
 
 Resources:
   ProcessedDataS3Bucket:
     Type: 'AWS::S3::Bucket'
-    Condition: CreateProcessedBucket
+    Condition: ShouldCreateProcessedBucket
     Properties:
       BucketName: !Sub 'eo-sg-processed-data-rcm-ard-${Environment}'
       BucketEncryption:
@@ -59,7 +59,7 @@ Resources:
 
   EOItemLinksS3Bucket:
     Type: 'AWS::S3::Bucket'
-    Condition: CreateLinksBucket
+    Condition: ShouldCreateLinksBucket
     Properties:
       BucketName: !Sub 'eo-sg-datacube-item-links-${Environment}'
       BucketEncryption:

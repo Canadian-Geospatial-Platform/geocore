@@ -2,7 +2,6 @@ AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
 Description: Sentinel-1 collection harvestor using serverless Scatter Gather pattern 
 
-
 Parameters:
   RegionName:
     Type: String
@@ -37,13 +36,13 @@ Conditions:
   IsProd: !Equals [prod, !Ref Environment]
   IsStage: !Equals [stage, !Ref Environment]
   IsDev: !Equals [dev, !Ref Environment]
-  CreateProcessedBucket: !Equals [true, !Ref CreateProcessedBucket]
-  CreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
+  ShouldCreateProcessedBucket: !Equals [true, !Ref CreateProcessedBucket]
+  ShouldCreateLinksBucket: !Equals [true, !Ref CreateLinksBucket]
 
 Resources:
   ProcessedDataSentinel1S3Bucket:
     Type: 'AWS::S3::Bucket'
-    Condition: CreateProcessedBucket
+    Condition: ShouldCreateProcessedBucket
     Properties:
       BucketName: !Sub 'eo-sg-processed-data-sentinel1-${Environment}'
       BucketEncryption:
@@ -59,7 +58,7 @@ Resources:
 
   EOItemLinksS3Bucket:
     Type: 'AWS::S3::Bucket'
-    Condition: CreateLinksBucket
+    Condition: ShouldCreateLinksBucket
     Properties:
       BucketName: !Sub 'eo-sg-datacube-item-links-${Environment}'
       BucketEncryption:
