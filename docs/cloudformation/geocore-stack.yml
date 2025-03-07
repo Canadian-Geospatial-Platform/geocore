@@ -1748,11 +1748,11 @@ Resources:
         Key: 
           Fn::If:
             - IsProd
-            - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
+            - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20250307-1500.zip
             - Fn::If:
               - IsStage
-              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
-              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20240924-1200.zip
+              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20250307-1500.zip
+              - cloudformation-templates/lambda/viewer-config-service/viewer-config-service-20250307-1500.zip
       MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 15

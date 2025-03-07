@@ -132,65 +132,94 @@ Resources:
       SecretString: !Sub '{ "username" : "${OpenSearchUsername}", "password" : "${OpenSearchPassword}" }'
 
 ########################################################
-# Post OpenSearch configurations  
+# Lambda to set custom OpenSearch configurations after creation
 ########################################################
 
   SlowLogConfigFunction:
-    Type: 'AWS::Lambda::Function'
+    Type: AWS::Serverless::Function
     Properties:
-      Handler: index.lambda_handler
-      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
-      FunctionName: "SlowLogConfigFunction"
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/OpenSearch-slow-log-config-20250304-1200.zip
+      MemorySize: 3009
+      Timeout: 900
+      Handler: app.lambda_handler
       Runtime: python3.9
-      Timeout: 60
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
       Environment:
         Variables:
-          OSEndpoint: !Ref OSEndpoint
           MODEL_NAME: !If 
             - IsProd
             - minilm-knn
             - minilm-pretrain-knn
-      Code:
-        ZipFile: |
-          import json
-          import boto3
-          import urllib.request
-          
-          from os import environ
+          MY_AWS_REGION: 
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OS_SECRET_ID
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
 
-          def lambda_handler(event, context):
-              endpoint = environ['OSEndpoint']
+########################################################
+# OpenSearch Proxy for dashboards (kibana)  
+########################################################
 
-              # The slow log settings to apply
-              settings = {
-                  "settings": {
-                      "index.search.slowlog.threshold.query.warn": "5ms",  # Capture all queries
-                      "index.search.slowlog.level": "TRACE",  # Capture detailed query information
-                      "index.search.slowlog.source": "1000"  # Capture the query source for up to 1000 characters
-                  }
-              }
+  OpenSearchDashboardProxy:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/OpenSearch-dashboard-proxy-20250304-1200.zip
+      MemorySize: 3009
+      Timeout: 900
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          MODEL_NAME: !If 
+            - IsProd
+            - minilm-knn
+            - minilm-pretrain-knn
+          MY_AWS_REGION: 
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OS_SECRET_ID
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
 
-              # Convert settings to JSON string
-              data = json.dumps(settings).encode('utf-8')
+########################################################
+# OpenSearch Proxy for dashboards (kibana)  
+########################################################
 
-              # Set headers for the request
-              req = urllib.request.Request(
-                  f"{endpoint}/_settings", data=data, headers={'Content-Type': 'application/json'}, method='PUT'
-              )
-
-              try:
-                  with urllib.request.urlopen(req) as response:
-                      response_body = response.read()
-                      return {
-                          'Status': 'SUCCESS',
-                          'Message': 'Slow logs settings applied successfully',
-                          'Data': json.loads(response_body)
-                      }
-              except Exception as e:
-                  return {
-                      'Status': 'FAILED',
-                      'Message': f"Failed to apply slow logs settings: {str(e)}"
-                  }
+  OpenSearchCloudWatchIndexer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/OpenSearch-cloudwatch-indexer-20250307-1500.zip
+      MemorySize: 3009
+      Timeout: 900
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          MODEL_NAME: !If 
+            - IsProd
+            - minilm-knn
+            - minilm-pretrain-knn
+          MY_AWS_REGION: 
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OS_SECRET_ID
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
 
 ########################################################
 # Set up SageMaker notebook instance   
