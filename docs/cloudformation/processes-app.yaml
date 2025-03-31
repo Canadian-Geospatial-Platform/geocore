@@ -1,0 +1,493 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  OGC API Processing Service Framework
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  Stage:
+    Type: String
+  SecurityGroupId:
+    Type: String
+  SubnetIds:
+    Type: String
+  BucketPrefix:
+    Type: String
+    Default: "processes-app"
+  EcrName:
+    Type: String
+
+Globals:
+  Function: 
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+
+Resources:
+  # ------------------------
+  # API  
+  # ------------------------
+  OpaProcessesRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-ProcessesApi
+      StageName: !Ref Stage
+  
+  OpaProcessesWebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-ProcessesWebSocketApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+      ApiKeySelectionExpression: $request.header.x-api-key
+
+  # ------------------------
+  # S3
+  # ------------------------
+  OpaProcessResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${BucketPrefix}-process-results
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false   # 🔹 Allow public policies
+        RestrictPublicBuckets: false  # 🔹 Allow public access
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders: []
+  # ------------------------
+  # ECS Cluster
+  # ------------------------
+  OpaProcessingCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${AWS::StackName}-OpaProcessingCluster
+
+  # ------------------------
+  # Lambdas
+  # ------------------------
+  ProcessLandingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ProcessLanding
+      CodeUri: ../lambda/
+      Handler: opa-process-landing.handler
+      Description: Fetches Processes Landing page to display all available processes.
+      Events:
+        GetLanding:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            RestApiId: !Ref OpaProcessesRestApi
+        OptionsLanding:
+          Type: Api
+          Properties:
+            Path: /
+            Method: OPTIONS
+            RestApiId: !Ref OpaProcessesRestApi
+
+  ProcessConformanceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ProcessConformance
+      CodeUri: ../lambda/
+      Handler: opa-process-conformance.handler
+      Description: Fetches supported available formats by the processes API.
+      Events:
+        GetConformance:
+          Type: Api
+          Properties:
+            Path: /conformance
+            Method: GET
+            RestApiId: !Ref OpaProcessesRestApi
+        OptionsConformance:
+          Type: Api
+          Properties:
+            Path: /conformance
+            Method: OPTIONS
+            RestApiId: !Ref OpaProcessesRestApi
+
+  GetJobsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-GetJobs
+      CodeUri: ../lambda/
+      Handler: opa-get-jobs.handler
+      Description: Fetched the status of a Job, or it's result when completed
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref OpaJobs
+      - S3ReadPolicy:
+          BucketName: !Ref OpaProcessResultsBucket
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref OpaJobs
+          S3_BUCKET_NAME: !Ref OpaProcessResultsBucket
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}
+            Method: GET
+            RestApiId: !Ref OpaProcessesRestApi
+        ApiOptions:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}
+            Method: OPTIONS
+            RestApiId: !Ref OpaProcessesRestApi
+        ApiGetResults:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}/results
+            Method: GET
+            RestApiId: !Ref OpaProcessesRestApi
+        ApiOptionsResults:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}/results
+            Method: OPTIONS
+            RestApiId: !Ref OpaProcessesRestApi
+
+  UpdateJobStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-UpdateJobStatus
+      CodeUri: ../lambda/
+      Handler: opa-job-results.handler
+      Description: Updates the status of a Job
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref OpaJobs
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref OpaJobs
+
+  ExecuteProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ExecuteProcess
+      CodeUri: ../lambda/
+      Handler: opa-execute-process.handler
+      Description: Fetched the status of a Job, or it's result when completed
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OpaProcesses
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OpaJobs
+        - EcsRunTaskPolicy:
+            ClusterName: !Ref OpaProcessingCluster 
+            TaskDefinition: "*"
+        - S3CrudPolicy:
+            BucketName: !Ref OpaProcessResultsBucket
+        - Statement:
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt OpaEcsTaskExecutionRole.Arn
+              - Effect: Allow
+                Action:
+                  - ecs:RunTask
+                  - ecs:DescribeTasks
+                Resource: "*" # TODO
+        
+      Environment:
+        Variables:
+          CLUSTER_NAME: !Ref OpaProcessingCluster
+          JOBS_TABLE: !Ref OpaJobs
+          PROCESSES_TABLE: !Ref OpaProcesses
+          S3_BUCKET_NAME: !Ref OpaProcessResultsBucket
+          SECURITY_GROUP: !Ref SecurityGroupId
+          SUBNETS: !Ref SubnetIds
+          WS_STATUS_URL: !Sub  wss://${OpaProcessesWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
+          STAGE: !Ref Stage
+      Events:
+        GetAllProcesses:
+          Type: Api
+          Properties:
+            Path: /processes
+            Method: GET
+            RestApiId: !Ref  OpaProcessesRestApi
+        OptionsAllProcesses:
+          Type: Api
+          Properties:
+            Path: /processes
+            Method: OPTIONS
+            RestApiId: !Ref  OpaProcessesRestApi
+        GetProcess:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}
+            Method: GET
+            RestApiId: !Ref OpaProcessesRestApi
+        OptionsProcess:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}
+            Method: OPTIONS
+            RestApiId: !Ref OpaProcessesRestApi
+        GetProcessExecution:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}/execution
+            Method: POST
+            RestApiId: !Ref OpaProcessesRestApi
+        OptionsProcessExecution:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}/execution
+            Method: OPTIONS
+            RestApiId: !Ref OpaProcessesRestApi
+
+  OnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Disconnect
+      CodeUri: ../lambda/
+      Handler: opa-disconnect.handler
+      MemorySize: 256
+      Runtime: nodejs22.x
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OpaJobs
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OpaJobs
+
+  # ------------------------
+  # WebSocket Routes/Integration
+  # ------------------------
+  UpdateRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref OpaProcessesWebSocketApi
+      RouteKey: update
+      AuthorizationType: NONE
+      OperationName: Update
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref UpdateIntegration
+
+  UpdateIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref OpaProcessesWebSocketApi
+      Description: Update Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateJobStatusFunction.Arn}/invocations
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref OpaProcessesWebSocketApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref DisconnectIntegration
+
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref OpaProcessesWebSocketApi
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+  
+  # ------------------------
+  # Deployment/Stages
+  # ------------------------
+  ProcessDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - UpdateRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref OpaProcessesWebSocketApi
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: !Ref Stage
+      Description: Prod Stage
+      DeploymentId: !Ref ProcessDeployment
+      ApiId: !Ref OpaProcessesWebSocketApi
+
+  # ------------------------
+  # DynamoDB tables
+  # ------------------------
+
+  OpaJobs:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-Jobs"
+      AttributeDefinitions:
+        - AttributeName: JobId
+          AttributeType: S
+        - AttributeName: JobStatus
+          AttributeType: S
+        - AttributeName: ConnectionId
+          AttributeType: S
+        - AttributeName: Updated
+          AttributeType: N
+      KeySchema:
+        - AttributeName: JobId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: JobStatusIndex
+          KeySchema:
+            - AttributeName: JobStatus
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ConnectionIdIndex
+          KeySchema:
+            - AttributeName: ConnectionId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: UpdatedIndex
+          KeySchema:
+            - AttributeName: Updated
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+         
+  OpaProcesses:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Sub "${AWS::StackName}-Processes"
+      PrimaryKey:
+        Name: Id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  # ------------------------
+  # Roles
+  # ------------------------
+  OpaEcsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-OpaEcsTaskExecutionRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-OpaApiGatewayAccessPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - execute-api:Invoke
+                  - execute-api:ManageConnections
+                Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
+        - PolicyName: !Sub "${AWS::StackName}-OpaEcrAccessPolicy"
+          PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: Allow
+                  Action:
+                    - s3:GetObject
+                  Resource: !GetAtt OpaProcessResultsBucket.Arn
+                -
+                  Effect: Allow
+                  Action:
+                    - ecr:GetAuthorizationToken
+                    - ecr:BatchCheckLayerAvailability
+                    - ecr:GetDownloadUrlForLayer
+                    - ecr:DescribeRepositories
+                    - ecr:ListImages
+                    - ecr:BatchGetImage
+                  Resource: !Sub "arn:aws:ecr:region:account-id:repository/${EcrName}"
+
+  # ------------------------
+  # Events
+  # ------------------------
+  JobCleanupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-JobCleanup
+      CodeUri: ../lambda/
+      Handler: opa-job-cleanup.handler
+      Description: Removes all old jobs from the database jobs table.
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref OpaJobs
+          S3_BUCKET_NAME: !Ref OpaProcessResultsBucket
+      
+  JobCleanupScheduledEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${AWS::StackName}-JobCleanupScheduled
+      ScheduleExpression: rate(30 minutes)
+      State: ENABLED
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${JobCleanupFunction}
+          Id: LambdaTarget
+
+  JobCleanupInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${JobCleanupFunction}
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt JobCleanupScheduledEvent.Arn
+
+  # ------------------------
+  # Permissions
+  # ------------------------
+  OnUpdateWsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - OpaProcessesWebSocketApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UpdateJobStatusFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
+
+  OnDisconnectWsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - OpaProcessesWebSocketApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref OnDisconnectFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
+
+Outputs:
+  WebEndpoint:
+    Description: API Gateway endpoint URL for Processes
+    Value: !Sub "https://${AWS::StackName}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+  EcsTaskRoleArn:
+    Description: The OPA Docker Repository
+    Value: !GetAtt OpaEcsTaskExecutionRole.Arn

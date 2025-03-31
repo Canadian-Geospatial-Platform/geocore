@@ -1,0 +1,42 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Flood Mapping Process
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  EcrName:
+    Type: String
+  EcsTaskRoleArn:
+    Type: String
+
+Resources:
+  # ------------------------
+  # ECS Service & Task Definition
+  # ------------------------
+  FloodMappingTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-FloodMappingProcess-TaskDefinition
+      Cpu: 4096
+      # 8192
+      Memory: 8192
+      # 16384
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref EcsTaskRoleArn
+      TaskRoleArn: !Ref EcsTaskRoleArn
+      ContainerDefinitions:
+        - Name: FloodMappingContainer
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrName}:flood-mapping"
+          Cpu: 1024
+          Memory: 2048
+          # Cpu: 512
+          # Memory: 1024
+          # Cpu: 2048
+          # Memory: 4096
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80

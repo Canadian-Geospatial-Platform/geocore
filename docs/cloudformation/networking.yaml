@@ -1,0 +1,189 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  OPA and V3D Networking Resources
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  EcrPrefix:
+    Type: String
+    Default: "opa"
+
+# ------------------------
+# VPC & Networking Setup
+# ------------------------
+Resources:
+  OpaVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.8.0/22
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaVpc
+
+  OpaPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.8.0/26
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPrivateSubnet1
+
+  OpaPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.8.64/26
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPrivateSubnet2
+
+  OpaPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.9.0/26
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPublicSubnet1
+
+  OpaPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.9.64/26
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPublicSubnet2
+
+  # Create Internet Gateway for Public Subnets
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaInternetGateway
+
+  # Attach Internet Gateway to VPC
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref OpaVpc
+      InternetGatewayId: !Ref InternetGateway
+
+  # Allocate an Elastic IP for the NAT Gateway
+  NatElasticIP:
+    Type: AWS::EC2::EIP
+
+  # Create a NAT Gateway in the Public Subnet
+  OpaNATGateway:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      SubnetId: !Ref OpaPublicSubnet1  # The NAT must be in a Public Subnet
+      AllocationId: !GetAtt NatElasticIP.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaNatGateway
+    DependsOn: AttachInternetGateway
+
+  # Update the Private Subnet Route Table to use the NAT Gateway
+  # Route Tables
+  OpaPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref OpaVpc
+
+  OpaPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref OpaVpc
+
+  # Routes
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref OpaPrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0 
+      NatGatewayId: !Ref OpaNATGateway
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref OpaPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0 
+      GatewayId: !Ref InternetGateway
+
+  # Route Associations
+  OpaPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref OpaPrivateSubnet1
+      RouteTableId: !Ref OpaPrivateRouteTable
+
+  OpaPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref OpaPrivateSubnet2
+      RouteTableId: !Ref OpaPrivateRouteTable
+
+  OpaPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref OpaPublicSubnet1
+      RouteTableId: !Ref OpaPublicRouteTable
+
+  OpaPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref OpaPublicSubnet2
+      RouteTableId: !Ref OpaPublicRouteTable
+
+  # ------------------------
+  # Security Group for ECS
+  # ------------------------
+  OpaSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group for OPA Resources"
+      VpcId: !Ref OpaVpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0  # Allowing inbound traffic
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0  # Allowing outbound traffic
+
+  # ------------------------
+  # ECR Repository
+  # ------------------------
+  OpaRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${EcrPrefix}-ecr
+
+Outputs:
+  SecurityGroupId:
+    Description: The OPA Security Group
+    Value: !Ref OpaSecurityGroup
+  VpcId:
+    Description: The OPA VPC
+    Value: !Ref OpaVpc
+  SubnetIds:
+    Description: Comma-separated list of Private Subnet IDs
+    Value: !Join [",", [!Ref OpaPrivateSubnet1, !Ref OpaPrivateSubnet2]]
+  EcrId:
+    Description: The OPA Docker Repository
+    Value: !Ref OpaRepository

@@ -1,0 +1,521 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  3D Visualization
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  Stage:
+    Type: String
+  BucketPrefix:
+    Type: String
+    Default: "3d-app"
+
+Globals:
+  Function: 
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+
+Resources:
+
+  # ------------------------
+  # API
+  # ------------------------
+  3dWebSocketsApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-3dWebSocketsApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+      ApiKeySelectionExpression: $request.header.x-api-key
+
+  3dRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-3dRestApi
+      StageName: !Ref Stage
+
+  # ------------------------
+  # WebSocket Routes/Integrations
+  # ------------------------
+  ConnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref 3dWebSocketsApi
+      RouteKey: $connect
+      AuthorizationType: NONE
+      OperationName: ConnectRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref ConnectIntegration
+
+  ConnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref 3dWebSocketsApi
+      Description: Connect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnConnectFunction.Arn}/invocations
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref 3dWebSocketsApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref DisconnectIntegration
+
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref 3dWebSocketsApi
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        !Sub arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+  
+  # ------------------------
+  # Deployment/Stages
+  # ------------------------
+  3dDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - ConnectRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref 3dWebSocketsApi
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: Prod
+      Description: Prod Stage
+      DeploymentId: !Ref 3dDeployment
+      ApiId: !Ref 3dWebSocketsApi
+
+  # ------------------------
+  # S3
+  # ------------------------
+  3dClientBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${BucketPrefix}-3d-client
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false   # 🔹 Allow public policies
+        RestrictPublicBuckets: false  # 🔹 Allow public access if the poli
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+
+  # ------------------------
+  # Lambda
+  # ------------------------
+  3dSendMessagesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-3d-SendMessages
+      CodeUri: ../lambda/
+      Handler: 3d-sendmessages.handler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Sends queued messages to the 3d Client
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref 3dMessagesTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+                - execute-api:Invoke
+              Resource:
+                - !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${3dWebSocketsApi}/*
+      Environment:
+        Variables:
+          MESSAGES_TABLE: !Ref 3dMessagesTable
+          API_URI: !Sub "https://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com"
+          STAGE: !Ref Stage
+          REGION: !Sub ${AWS::Region}
+
+  AddLayer3dFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-3d-AddLayer
+      CodeUri: ../lambda/
+      Handler: 3d-addlayer.handler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Adds layer(s) to the 3d Client
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref 3dMessagesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref 3dWebSocketsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - execute-api:ManageConnections
+                - execute-api:Invoke
+              Resource:
+                - !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${3dWebSocketsApi}/*
+      Environment:
+        Variables:
+          SOCKETS_TABLE: !Ref 3dWebSocketsTable
+          MESSAGES_TABLE: !Ref 3dMessagesTable
+          API_URI: !Sub "https://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com"
+          STAGE: !Ref Stage
+          REGION: !Sub ${AWS::Region}
+      Events:
+       AddLayer:
+          Type: Api
+          Properties:
+            Path: /addlayer
+            Method: POST
+            RestApiId: !Ref 3dRestApi
+
+  Shapefile3dFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-3d-Shapefile
+      CodeUri: ../lambda/
+      Handler: 3d-shapefile.handler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Transcodes shapefile(s) and sends result to 3d Client
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref 3dWebSocketsTable
+      Environment:
+        Variables:
+          # Make table name accessible as environment variable from function code during execution
+          SOCKETS_TABLE: !Ref 3dWebSocketsTable
+          API_URI: !Sub "https://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com"
+          STAGE: !Ref Stage
+          REGION: !Sub ${AWS::Region}
+      Events:
+        AddShapefile:
+          Type: Api
+          Properties:
+            Path: /shapefile
+            Method: POST
+            RestApiId: !Ref 3dRestApi
+
+  Geopackage3dFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-3d-Geopackage
+      CodeUri: ../lambda/
+      Handler: 3d-geopackage.handler
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+      Description: Transcodes geopackages and sends result to 3d Client
+      Policies:
+      - DynamoDBCrudPolicy:
+          TableName: !Ref 3dWebSocketsTable
+      Environment:
+        Variables:
+          SOCKETS_TABLE: !Ref 3dWebSocketsTable
+          API_URI: !Sub "https://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com"
+          STAGE: !Ref Stage
+          REGION: !Sub ${AWS::Region}
+      Events:
+        AddGeopackage:
+          Type: Api
+          Properties:
+            Path: /geopackage
+            Method: POST
+            RestApiId: !Ref 3dRestApi
+
+  OnConnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-3d-Connect
+      CodeUri: ../lambda/
+      Handler: 3d-connect.handler
+      MemorySize: 256
+      Runtime: nodejs22.x
+      Environment:
+        Variables:
+          SOCKETS_TABLE: !Ref 3dWebSocketsTable
+          SM_ARN: !GetAtt 3dStepFunction.Arn
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref 3dWebSocketsTable
+        - Statement:
+            - Effect: Allow
+              Action: states:StartExecution
+              Resource: !GetAtt 3dStepFunction.Arn
+
+  OnConnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - 3dWebSocketsApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref OnConnectFunction
+      Principal: apigateway.amazonaws.com
+
+  OnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-3d-Disconnect
+      CodeUri: ../lambda/
+      Handler: 3d-disconnect.handler
+      MemorySize: 256
+      Runtime: nodejs22.x
+      Environment:
+        Variables:
+          SOCKETS_TABLE: !Ref 3dWebSocketsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref 3dWebSocketsTable
+
+  OnDisconnectPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - 3dWebSocketsApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref OnDisconnectFunction
+      Principal: apigateway.amazonaws.com
+
+  # ------------------------
+  # DynamoDB tables
+  # ------------------------
+  3dWebSocketsTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      PrimaryKey:
+        Name: session
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+  
+  3dMessagesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: sessionID
+          AttributeType: S
+        - AttributeName: timestamp
+          AttributeType: S
+      KeySchema:
+        - AttributeName: sessionID
+          KeyType: HASH
+        - AttributeName: timestamp
+          KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  # ------------------------
+  # Policies
+  # ------------------------
+  3dClientBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref 3dClientBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: "*" # Public bucket through cloudfront
+            Action: "s3:GetObject"
+            Resource: !Sub "arn:aws:s3:::${3dClientBucket}/*"
+
+  3dWebSocketGatewayInvokeLambdaPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref AddLayer3dFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${3dWebSocketsApi}/*
+
+  # ------------------------
+  # Cloud Front
+  # ------------------------
+  CloudFrontOAC:
+    Type: AWS::CloudFront::OriginAccessControl
+    Properties:
+      OriginAccessControlConfig:
+        Name: !Sub "${AWS::StackName}-CloudFrontOAC"
+        OriginAccessControlOriginType: s3
+        SigningBehavior: always
+        SigningProtocol: sigv4
+
+  CloudFrontDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Enabled: true
+        DefaultRootObject: index.html
+        Origins:
+          - Id: S3Origin
+            DomainName: !GetAtt 3dClientBucket.RegionalDomainName
+            OriginAccessControlId: !Ref CloudFrontOAC
+            S3OriginConfig: {}
+        DefaultCacheBehavior:
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: redirect-to-https
+          AllowedMethods: 
+            - GET
+            - HEAD
+            - OPTIONS
+          CachedMethods: 
+            - GET
+            - HEAD
+          ForwardedValues:
+            QueryString: false
+          Compress: true
+        ViewerCertificate:
+          CloudFrontDefaultCertificate: true  # Uses default CloudFront SSL
+
+  # ------------------------
+  # Step Function (Web Socket)
+  # ------------------------
+  StepFunctionExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-3dStepFunctionRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: 
+                - states.amazonaws.com
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-3dStepFunctionInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - "lambda:InvokeFunction"
+                Resource:
+                  - !GetAtt 3dSendMessagesFunction.Arn
+
+  # Step Functions State Machine
+  3dStepFunction:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: !Sub ${AWS::StackName}-3dStepFunction
+      RoleArn: !GetAtt StepFunctionExecutionRole.Arn
+      DefinitionString: 
+        !Sub |
+          {
+            "StartAt": "Invoke Send Messages Lambda",
+            "States": {
+              "Invoke Send Messages Lambda": {
+                "Type": "Task",
+                "Resource": "${3dSendMessagesFunction.Arn}",
+                "End": true
+              }
+            }
+          }
+  # ------------------------
+  # Code Build
+  # ------------------------
+  # V3dCodeBuildProject:
+  #   Type: AWS::CodeBuild::Project
+  #   Properties:
+  #     Name: ${AWS::StackName}-V3dClientCodebuild
+  #     Description: "Build V3D Client"
+  #     Source:
+  #       Type: GITHUB
+  #       Location: "https://github.com/joshahussey/v3d-client.git"
+  #       BuildSpec: "buildspec.yml"
+  #     Environment:
+  #       ComputeType: BUILD_GENERAL1_SMALL
+  #       Image: aws/codebuild/standard:5.0
+  #       Type: LINUX_CONTAINER
+  #       EnvironmentVariables:
+  #         - Name: AWS_SOCKET
+  #           Value: !Sub  "wss://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+  #     ServiceRole: !GetAtt V3dCodeBuildServiceRole.Arn
+  #     LogsConfig:
+  #       CloudWatchLogs:
+  #           Status: ENABLED
+  #           GroupName: /aws/codebuild/V3dCodeBuildProject
+  #           StreamName: V3dCodeBuildProject-logs
+  #     Artifacts:
+  #       Type: S3
+  #       Location: !Ref 3dClientBucket
+  #       Packaging: NONE
+  #       Name: "/"
+  #       Path: "./"
+
+  # V3dCodeBuildServiceRole:
+  #   Type: AWS::IAM::Role
+  #   Properties:
+  #     AssumeRolePolicyDocument:
+  #       Version: "2012-10-17"Resource handler returned message: "The policy failed legacy parsing (Service: Iam, Status Code: 400, Request ID: cb634c56-cb6f-4b5f-9571-491e3e8e43dc) (SDK Attempt Count: 1)" (RequestToken: 1c2cc639-c42f-f789-8b10-60e600aa6a79, HandlerErrorCode: InvalidRequest)
+  #       Statement:
+  #         - Effect: Allow
+  #           Principal:
+  #             Service:
+  #               - codebuild.amazonaws.com
+  #           Action:
+  #             - sts:AssumeRole
+  #     Policies:
+  #       - PolicyName: !Sub ${AWS::StackName}-V3dCodeBuildAccessPolicy
+  #         PolicyDocument:
+  #           Version: "2012-10-17"
+  #           Statement:
+  #             - Effect: Allow
+  #               Action:
+  #                 - s3:PutObject
+  #                 - s3:GetObject
+  #                 - s3:GetObjectVersion
+  #               Resource: !Sub "arn:aws:s3:::${3dClientBucket}/*" 
+  #             - Effect: Allow
+  #               Action:
+  #                 - cloudfront:CreateInvalidation
+  #               Resource: "*"
+  #             - Effect: Allow
+  #               Action:
+  #                 - logs:CreateLogGroup
+  #                 - logs:CreateLogStream
+  #                 - logs:PutLogEvents
+  #                 - logs:DescribeLogStreams
+  #               Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+  #             - Effect: Allow
+  #               Action:
+  #                 - codestar-connections:UseConnection
+  #               Resource: !Sub "arn:aws:codeconnections:${AWS::Region}:${AWS::AccountId}:connection/*"
+
+
+Outputs:
+  WebSocketEndpoint:
+    Description: API WebSocket Gateway endpoint URL for handling 3D client layers
+    Value: !Sub "https://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+  RestEndpoint:
+    Description: Rest API Gateway endpoint URL adding layers to 3D clients
+    Value: !Sub "https://${3dRestApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+  S3BucketName:
+    Description: The bucket hosting the 3D Client
+    Value: !Ref 3dClientBucket
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON
