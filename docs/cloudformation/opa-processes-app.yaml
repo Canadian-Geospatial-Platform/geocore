@@ -18,7 +18,7 @@ Parameters:
     Type: String
 
 Globals:
-  Function: 
+  Function:
       Runtime: nodejs22.x
       Architectures:
       - x86_64
@@ -64,6 +64,7 @@ Resources:
             AllowedOrigins:
               - '*'
             ExposedHeaders: []
+  
   # ------------------------
   # ECS Cluster
   # ------------------------
@@ -79,7 +80,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-ProcessLanding
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-process-landing.handler
       Description: Fetches Processes Landing page to display all available processes.
       Events:
@@ -100,7 +101,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-ProcessConformance
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-process-conformance.handler
       Description: Fetches supported available formats by the processes API.
       Events:
@@ -121,7 +122,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-GetJobs
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-get-jobs.handler
       Description: Fetched the status of a Job, or it's result when completed
       Policies:
@@ -163,7 +164,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-UpdateJobStatus
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-job-results.handler
       Description: Updates the status of a Job
       Policies:
@@ -177,7 +178,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-ExecuteProcess
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-execute-process.handler
       Description: Fetched the status of a Job, or it's result when completed
       Policies:
@@ -252,10 +253,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-Disconnect
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-disconnect.handler
-      MemorySize: 256
-      Runtime: nodejs22.x
       Environment:
         Variables:
           TABLE_NAME: !Ref OpaJobs
@@ -263,6 +262,36 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !Ref OpaJobs
 
+  DeployProcess:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-DeployProcess
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-process-deployment.handler
+      MemorySize: 512
+      Timeout: 900
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref OpaProcesses
+          PROCESS_CODEBUILD_NAME: !Ref DeployProcessDockerCodeBuild
+          GITHUB_BRANCH: master
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref OpaProcesses
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - codebuild:StartBuild
+              Resource:
+                - !GetAtt DeployProcessDockerCodeBuild.Arn
+  
   # ------------------------
   # WebSocket Routes/Integration
   # ------------------------
@@ -435,7 +464,7 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-JobCleanup
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-job-cleanup.handler
       Description: Removes all old jobs from the database jobs table.
       Environment:
@@ -461,6 +490,8 @@ Resources:
       Principal: events.amazonaws.com
       SourceArn: !GetAtt JobCleanupScheduledEvent.Arn
 
+ 
+
   # ------------------------
   # Permissions
   # ------------------------
@@ -484,10 +515,80 @@ Resources:
       Principal: apigateway.amazonaws.com
       SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
 
+
+  # ------------------------
+  # Docker Code Build
+  # ------------------------
+  ProcessDockerCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ProcessDockerCodeBuildRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: deployer-permissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:*
+                  - s3:GetObject
+                Resource: "*"
+
+  DeployProcessDockerCodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${AWS::StackName}-ProcessDockerCodeBuild"
+      ServiceRole: !GetAtt ProcessDockerCodeBuildRole.Arn
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: |
+          version: 0.2
+
+          phases:
+            pre_build:
+              commands:
+                - echo "Logging into ECR."
+                - aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_REPO_URI
+
+            build:
+              commands:
+                - echo "Cloning $GITHUB_REPO"
+                - git clone -b $GITHUB_BRANCH $GITHUB_REPO process/
+                - cd process
+                - echo "Building docker image..."
+                - docker build -t $ECR_REPO_URI:$IMAGE_TAG .
+                - docker push $ECR_REPO_URI:$IMAGE_TAG
+
 Outputs:
   WebEndpoint:
     Description: API Gateway endpoint URL for Processes
     Value: !Sub "https://${AWS::StackName}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
   EcsTaskRoleArn:
-    Description: The OPA Docker Repository
+    Description: The ECS Task Role ARN
     Value: !GetAtt OpaEcsTaskExecutionRole.Arn
+  ProcessInsertLambdaArn:
+    Value: !GetAtt DeployProcess.Arn
+  ProcessesTableId:
+    Value: !Ref OpaProcesses

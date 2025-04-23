@@ -18,6 +18,8 @@ Globals:
       - x86_64
       MemorySize: 128
       Timeout: 100
+      LoggingConfig:
+        LogFormat: JSON
 
 Resources:
 
@@ -122,13 +124,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-3d-SendMessages
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/3d/3d-20250331.zip
       Handler: 3d-sendmessages.handler
-      Runtime: nodejs22.x
-      Architectures:
-      - x86_64
-      MemorySize: 128
-      Timeout: 100
       Description: Sends queued messages to the 3d Client
       Policies:
         - DynamoDBCrudPolicy:
@@ -151,13 +148,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-3d-AddLayer
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/3d/3d-20250331.zip
       Handler: 3d-addlayer.handler
-      Runtime: nodejs22.x
-      Architectures:
-      - x86_64
-      MemorySize: 128
-      Timeout: 100
       Description: Adds layer(s) to the 3d Client
       Policies:
         - DynamoDBCrudPolicy:
@@ -179,24 +171,25 @@ Resources:
           STAGE: !Ref Stage
           REGION: !Sub ${AWS::Region}
       Events:
-       AddLayer:
+        AddLayerPost:
           Type: Api
           Properties:
             Path: /addlayer
             Method: POST
+            RestApiId: !Ref 3dRestApi
+        AddLayerOptions:
+          Type: Api
+          Properties:
+            Path: /addlayer
+            Method: OPTIONS
             RestApiId: !Ref 3dRestApi
 
   Shapefile3dFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-3d-Shapefile
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/3d/3d-20250331.zip
       Handler: 3d-shapefile.handler
-      Runtime: nodejs22.x
-      Architectures:
-      - x86_64
-      MemorySize: 128
-      Timeout: 100
       Description: Transcodes shapefile(s) and sends result to 3d Client
       Policies:
       - DynamoDBCrudPolicy:
@@ -209,24 +202,25 @@ Resources:
           STAGE: !Ref Stage
           REGION: !Sub ${AWS::Region}
       Events:
-        AddShapefile:
+        AddShapefilePost:
           Type: Api
           Properties:
             Path: /shapefile
             Method: POST
+            RestApiId: !Ref 3dRestApi
+        AddShapefileOptions:
+          Type: Api
+          Properties:
+            Path: /shapefile
+            Method: OPTIONS
             RestApiId: !Ref 3dRestApi
 
   Geopackage3dFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-3d-Geopackage
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/3d/3d-20250331.zip
       Handler: 3d-geopackage.handler
-      Runtime: nodejs22.x
-      Architectures:
-      - x86_64
-      MemorySize: 128
-      Timeout: 100
       Description: Transcodes geopackages and sends result to 3d Client
       Policies:
       - DynamoDBCrudPolicy:
@@ -238,21 +232,25 @@ Resources:
           STAGE: !Ref Stage
           REGION: !Sub ${AWS::Region}
       Events:
-        AddGeopackage:
+        AddGeopackagePost:
           Type: Api
           Properties:
             Path: /geopackage
             Method: POST
+            RestApiId: !Ref 3dRestApi
+        AddGeopackageOptions:
+          Type: Api
+          Properties:
+            Path: /geopackage
+            Method: OPTIONS
             RestApiId: !Ref 3dRestApi
 
   OnConnectFunction:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-3d-Connect
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/3d/3d-20250331.zip
       Handler: 3d-connect.handler
-      MemorySize: 256
-      Runtime: nodejs22.x
       Environment:
         Variables:
           SOCKETS_TABLE: !Ref 3dWebSocketsTable
@@ -278,10 +276,8 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       FunctionName: !Sub ${AWS::StackName}-3d-Disconnect
-      CodeUri: ../lambda/
+      CodeUri: ../lambda/3d/3d-20250331.zip
       Handler: 3d-disconnect.handler
-      MemorySize: 256
-      Runtime: nodejs22.x
       Environment:
         Variables:
           SOCKETS_TABLE: !Ref 3dWebSocketsTable
@@ -436,73 +432,78 @@ Resources:
   # ------------------------
   # Code Build
   # ------------------------
-  # V3dCodeBuildProject:
-  #   Type: AWS::CodeBuild::Project
-  #   Properties:
-  #     Name: ${AWS::StackName}-V3dClientCodebuild
-  #     Description: "Build V3D Client"
-  #     Source:
-  #       Type: GITHUB
-  #       Location: "https://github.com/joshahussey/v3d-client.git"
-  #       BuildSpec: "buildspec.yml"
-  #     Environment:
-  #       ComputeType: BUILD_GENERAL1_SMALL
-  #       Image: aws/codebuild/standard:5.0
-  #       Type: LINUX_CONTAINER
-  #       EnvironmentVariables:
-  #         - Name: AWS_SOCKET
-  #           Value: !Sub  "wss://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
-  #     ServiceRole: !GetAtt V3dCodeBuildServiceRole.Arn
-  #     LogsConfig:
-  #       CloudWatchLogs:
-  #           Status: ENABLED
-  #           GroupName: /aws/codebuild/V3dCodeBuildProject
-  #           StreamName: V3dCodeBuildProject-logs
-  #     Artifacts:
-  #       Type: S3
-  #       Location: !Ref 3dClientBucket
-  #       Packaging: NONE
-  #       Name: "/"
-  #       Path: "./"
+  V3dCodeBuildProject:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub ${AWS::StackName}-V3dClientCodebuild
+      Description: "Build V3D Client"
+      Source:
+        Type: GITHUB
+        # Location: "https://github.com/Canadian-Geospatial-Platform/3d-client-cesium.git"
+        # Location: "https://github.com/joshahussey/v3d-client.git"
+        Location: "https://github.com/aws-cslt/3d-client-cesium.git"
+        BuildSpec: "buildspec.yml"
+      Environment:
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:5.0
+        Type: LINUX_CONTAINER
+        EnvironmentVariables:
+          - Name: AWS_SOCKET
+            Value: !Sub  "wss://${3dWebSocketsApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+      ServiceRole: !GetAtt V3dCodeBuildServiceRole.Arn
+      LogsConfig:
+        CloudWatchLogs:
+            Status: ENABLED
+            GroupName: /aws/codebuild/V3dCodeBuildProject
+            StreamName: V3dCodeBuildProject-logs
+      Artifacts:
+        Type: S3
+        Location: !Ref 3dClientBucket
+        Packaging: NONE
+        Name: "/"
+        Path: "./"
 
-  # V3dCodeBuildServiceRole:
-  #   Type: AWS::IAM::Role
-  #   Properties:
-  #     AssumeRolePolicyDocument:
-  #       Version: "2012-10-17"Resource handler returned message: "The policy failed legacy parsing (Service: Iam, Status Code: 400, Request ID: cb634c56-cb6f-4b5f-9571-491e3e8e43dc) (SDK Attempt Count: 1)" (RequestToken: 1c2cc639-c42f-f789-8b10-60e600aa6a79, HandlerErrorCode: InvalidRequest)
-  #       Statement:
-  #         - Effect: Allow
-  #           Principal:
-  #             Service:
-  #               - codebuild.amazonaws.com
-  #           Action:
-  #             - sts:AssumeRole
-  #     Policies:
-  #       - PolicyName: !Sub ${AWS::StackName}-V3dCodeBuildAccessPolicy
-  #         PolicyDocument:
-  #           Version: "2012-10-17"
-  #           Statement:
-  #             - Effect: Allow
-  #               Action:
-  #                 - s3:PutObject
-  #                 - s3:GetObject
-  #                 - s3:GetObjectVersion
-  #               Resource: !Sub "arn:aws:s3:::${3dClientBucket}/*" 
-  #             - Effect: Allow
-  #               Action:
-  #                 - cloudfront:CreateInvalidation
-  #               Resource: "*"
-  #             - Effect: Allow
-  #               Action:
-  #                 - logs:CreateLogGroup
-  #                 - logs:CreateLogStream
-  #                 - logs:PutLogEvents
-  #                 - logs:DescribeLogStreams
-  #               Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
-  #             - Effect: Allow
-  #               Action:
-  #                 - codestar-connections:UseConnection
-  #               Resource: !Sub "arn:aws:codeconnections:${AWS::Region}:${AWS::AccountId}:connection/*"
+  V3dCodeBuildServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - codebuild.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Policies:
+        - PolicyName: !Sub ${AWS::StackName}-V3dCodeBuildAccessPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:GetObjectVersion
+                Resource: !Sub "arn:aws:s3:::${3dClientBucket}/*" 
+              - Effect: Allow
+                Action:
+                  - logs:CreateLogGroup
+                  - logs:CreateLogStream
+                  - logs:PutLogEvents
+                  - logs:DescribeLogStreams
+                Resource: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/aws/codebuild/*"
+              - Effect: Allow
+                Action:
+                  - codestar-connections:UseConnection
+                  - codestar-connections:GetConnectionToken
+                  - codestar-connections:GetConnection
+                  - codeconnections:GetConnectionToken
+                  - codeconnections:GetConnection
+                  - codeconnections:UseConnection
+                Resource: 
+                  - !Sub "arn:aws:codestar-connections:${AWS::Region}:${AWS::AccountId}:connection/*"
+                  - !Sub "arn:aws:codeconnections:${AWS::Region}:${AWS::AccountId}:connection/*"
 
 
 Outputs:
@@ -515,7 +516,3 @@ Outputs:
   S3BucketName:
     Description: The bucket hosting the 3D Client
     Value: !Ref 3dClientBucket
-Globals:
-  Function:
-    LoggingConfig:
-      LogFormat: JSON

@@ -1,50 +1,59 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  OGC API Processing Service Framework with a Flood Mapping Process and a 3D Visualization application.
+  OGC API Processing Service Framework with a Flood Mapping Process.
 Transform:
 - AWS::Serverless-2016-10-31
 
 # Sample deploy
 # aws s3 mb s3://opa-3d-templates
 # aws cloudformation package --s3-bucket opa-3d-templates --template-file opa-3d.yaml --output-template-file opa-3d-generated.yaml
-# aws cloudformation deploy  --stack-name OPA-3D --template-file opa-3d-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+# aws cloudformation deploy  --stack-name OPA-3D --parameter-overrides LowercaseStackPrefix=opa-3d --template-file opa-3d-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON
 
 Parameters:
   LowercaseStackPrefix:
     Type: String
     Default: opa-3d
+  Stage: 
+    Type: String
+    Default: Prod
+  
+Conditions:
+  UseNGW: true
 
 Resources:
   Networking:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: networking.yaml
+      TemplateURL: opa-3d-networking.yaml
       Tags:
         - Key: ApplicationName
           Value: OpaV3dNetworking
       Parameters:
         EcrPrefix: !Sub ${LowercaseStackPrefix}-opa
 
-  3dApp:
-    Type: AWS::Serverless::Application
-    DependsOn:
-      - Networking
-    Properties:
-      Location: 3d-app.yaml
-      Parameters:
-        Stage: Prod
-        BucketPrefix: !Sub ${LowercaseStackPrefix}-3d-app
-      Tags:
-        ApplicationName: V3dApp
+  # 3dApp:
+  #   Type: AWS::Serverless::Application
+  #   DependsOn:
+  #     - Networking
+  #   Properties:
+  #     Location: 3d-app.yaml
+  #     Parameters:
+  #       Stage: !Ref Stage
+  #       BucketPrefix: !Sub ${LowercaseStackPrefix}-3d-app
+  #     Tags:
+  #       ApplicationName: V3dApp
 
   ProcessesApp:
     Type: AWS::Serverless::Application
-    DependsOn:
-      - Networking
     Properties:
-      Location: processes-app.yaml
+      Location: opa-processes-app.yaml
       Parameters:
-        Stage: Prod
+        Stage: !Ref Stage
         BucketPrefix: !Sub ${LowercaseStackPrefix}-processes-app
         SecurityGroupId: !GetAtt Networking.Outputs.SecurityGroupId
         SubnetIds: !GetAtt Networking.Outputs.SubnetIds
@@ -54,9 +63,6 @@ Resources:
 
   FloodMappingProcess:
     Type: AWS::CloudFormation::Stack
-    DependsOn:
-      - Networking
-      - ProcessesApp
     Properties:
       TemplateURL: flood-mapping-process.yaml
       Tags:
@@ -65,8 +71,5 @@ Resources:
       Parameters:
         EcrName : !GetAtt Networking.Outputs.EcrId
         EcsTaskRoleArn: !GetAtt ProcessesApp.Outputs.EcsTaskRoleArn
-
-Globals:
-  Function:
-    LoggingConfig:
-      LogFormat: JSON
+        ProcessInsertLambda: !GetAtt ProcessesApp.Outputs.ProcessInsertLambdaArn
+        ProcessesTable: !GetAtt ProcessesApp.Outputs.ProcessesTableId
