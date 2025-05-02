@@ -7,7 +7,7 @@ Transform:
 Parameters:
   Stage:
     Type: String
-  SecurityGroupId:
+  EcsSecurityGroupId:
     Type: String
   SubnetIds:
     Type: String
@@ -16,6 +16,12 @@ Parameters:
     Default: "processes-app"
   EcrName:
     Type: String
+  UseNatGW:
+    Type: String
+    AllowedValues: ["true","false"]  
+
+Conditions:
+  UsingNatGW: !Equals [!Ref UseNatGW, "true"]
 
 Globals:
   Function:
@@ -29,13 +35,13 @@ Resources:
   # ------------------------
   # API  
   # ------------------------
-  OpaProcessesRestApi:
+  ProcessesRestApi:
     Type: AWS::Serverless::Api
     Properties:
       Name: !Sub ${AWS::StackName}-ProcessesApi
       StageName: !Ref Stage
   
-  OpaProcessesWebSocketApi:
+  ProcessesWebSocketApi:
     Type: AWS::ApiGatewayV2::Api
     Properties:
       Name: !Sub ${AWS::StackName}-ProcessesWebSocketApi
@@ -46,7 +52,7 @@ Resources:
   # ------------------------
   # S3
   # ------------------------
-  OpaProcessResultsBucket:
+  ProcessResultsBucket:
     Type: AWS::S3::Bucket
     Properties:
       BucketName: !Sub ${BucketPrefix}-process-results
@@ -68,10 +74,11 @@ Resources:
   # ------------------------
   # ECS Cluster
   # ------------------------
-  OpaProcessingCluster:
+  ProcessingCluster:
     Type: AWS::ECS::Cluster
     Properties:
-      ClusterName: !Sub ${AWS::StackName}-OpaProcessingCluster
+      ClusterName: !Sub ${AWS::StackName}-ProcessingCluster
+      
 
   # ------------------------
   # Lambdas
@@ -89,13 +96,13 @@ Resources:
           Properties:
             Path: /
             Method: GET
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         OptionsLanding:
           Type: Api
           Properties:
             Path: /
             Method: OPTIONS
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
 
   ProcessConformanceFunction:
     Type: AWS::Serverless::Function
@@ -110,13 +117,13 @@ Resources:
           Properties:
             Path: /conformance
             Method: GET
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         OptionsConformance:
           Type: Api
           Properties:
             Path: /conformance
             Method: OPTIONS
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
 
   GetJobsFunction:
     Type: AWS::Serverless::Function
@@ -126,39 +133,39 @@ Resources:
       Handler: opa-get-jobs.handler
       Description: Fetched the status of a Job, or it's result when completed
       Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref OpaJobs
-      - S3ReadPolicy:
-          BucketName: !Ref OpaProcessResultsBucket
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
+        - S3ReadPolicy:
+            BucketName: !Ref ProcessResultsBucket
       Environment:
         Variables:
-          JOBS_TABLE: !Ref OpaJobs
-          S3_BUCKET_NAME: !Ref OpaProcessResultsBucket
+          JOBS_TABLE: !Ref JobsTable
+          S3_BUCKET_NAME: !Ref ProcessResultsBucket
       Events:
         ApiGet:
           Type: Api
           Properties:
             Path: /jobs/{jobId}
             Method: GET
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         ApiOptions:
           Type: Api
           Properties:
             Path: /jobs/{jobId}
             Method: OPTIONS
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         ApiGetResults:
           Type: Api
           Properties:
             Path: /jobs/{jobId}/results
             Method: GET
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         ApiOptionsResults:
           Type: Api
           Properties:
             Path: /jobs/{jobId}/results
             Method: OPTIONS
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
 
   UpdateJobStatusFunction:
     Type: AWS::Serverless::Function
@@ -168,11 +175,11 @@ Resources:
       Handler: opa-job-results.handler
       Description: Updates the status of a Job
       Policies:
-      - DynamoDBCrudPolicy:
-          TableName: !Ref OpaJobs
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
       Environment:
         Variables:
-          JOBS_TABLE: !Ref OpaJobs
+          JOBS_TABLE: !Ref JobsTable
 
   ExecuteProcessFunction:
     Type: AWS::Serverless::Function
@@ -183,71 +190,76 @@ Resources:
       Description: Fetched the status of a Job, or it's result when completed
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref OpaProcesses
+            TableName: !Ref ProcessesTable
         - DynamoDBCrudPolicy:
-            TableName: !Ref OpaJobs
+            TableName: !Ref JobsTable
         - EcsRunTaskPolicy:
-            ClusterName: !Ref OpaProcessingCluster 
+            ClusterName: !Ref ProcessingCluster 
             TaskDefinition: "*"
         - S3CrudPolicy:
-            BucketName: !Ref OpaProcessResultsBucket
+            BucketName: !Ref ProcessResultsBucket
         - Statement:
               - Effect: Allow
                 Action: iam:PassRole
-                Resource: !GetAtt OpaEcsTaskExecutionRole.Arn
+                Resource: !GetAtt EcsTaskExecutionRole.Arn
               - Effect: Allow
                 Action:
                   - ecs:RunTask
                   - ecs:DescribeTasks
-                Resource: "*" # TODO
+                Resource: !GetAtt ProcessingCluster.Arn
+                # Resource: "*" # TODO
         
       Environment:
         Variables:
-          CLUSTER_NAME: !Ref OpaProcessingCluster
-          JOBS_TABLE: !Ref OpaJobs
-          PROCESSES_TABLE: !Ref OpaProcesses
-          S3_BUCKET_NAME: !Ref OpaProcessResultsBucket
-          SECURITY_GROUP: !Ref SecurityGroupId
+          CLUSTER_NAME: !Ref ProcessingCluster
+          JOBS_TABLE: !Ref JobsTable
+          PROCESSES_TABLE: !Ref ProcessesTable
+          S3_BUCKET_NAME: !Ref ProcessResultsBucket
+          SECURITY_GROUP: !Ref EcsSecurityGroupId
           SUBNETS: !Ref SubnetIds
-          WS_STATUS_URL: !Sub  wss://${OpaProcessesWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
+          WS_STATUS_URL: !Sub  wss://${ProcessesWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
           STAGE: !Ref Stage
+          ENABLE_PUBLIC_IP: !If 
+            - UsingNatGW
+            - "false"
+            - "true"
       Events:
         GetAllProcesses:
           Type: Api
           Properties:
             Path: /processes
             Method: GET
-            RestApiId: !Ref  OpaProcessesRestApi
+            RestApiId: !Ref  ProcessesRestApi
         OptionsAllProcesses:
           Type: Api
           Properties:
             Path: /processes
             Method: OPTIONS
-            RestApiId: !Ref  OpaProcessesRestApi
+            RestApiId: !Ref  ProcessesRestApi
         GetProcess:
           Type: Api
           Properties:
             Path: /processes/{processId}
             Method: GET
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         OptionsProcess:
           Type: Api
           Properties:
             Path: /processes/{processId}
             Method: OPTIONS
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         GetProcessExecution:
           Type: Api
           Properties:
             Path: /processes/{processId}/execution
             Method: POST
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
         OptionsProcessExecution:
           Type: Api
           Properties:
             Path: /processes/{processId}/execution
             Method: OPTIONS
-            RestApiId: !Ref OpaProcessesRestApi
+            RestApiId: !Ref ProcessesRestApi
 
   OnDisconnectFunction:
     Type: AWS::Serverless::Function
@@ -257,10 +269,10 @@ Resources:
       Handler: opa-disconnect.handler
       Environment:
         Variables:
-          TABLE_NAME: !Ref OpaJobs
+          JOBS_TABLE: !Ref JobsTable
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref OpaJobs
+            TableName: !Ref JobsTable
 
   DeployProcess:
     Type: AWS::Serverless::Function
@@ -272,12 +284,12 @@ Resources:
       Timeout: 900
       Environment:
         Variables:
-          TABLE_NAME: !Ref OpaProcesses
+          TABLE_NAME: !Ref ProcessesTable
           PROCESS_CODEBUILD_NAME: !Ref DeployProcessDockerCodeBuild
           GITHUB_BRANCH: master
       Policies:
         - DynamoDBCrudPolicy:
-            TableName: !Ref OpaProcesses
+            TableName: !Ref ProcessesTable
         - Statement:
             - Effect: Allow
               Action:
@@ -298,7 +310,7 @@ Resources:
   UpdateRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref OpaProcessesWebSocketApi
+      ApiId: !Ref ProcessesWebSocketApi
       RouteKey: update
       AuthorizationType: NONE
       OperationName: Update
@@ -310,7 +322,7 @@ Resources:
   UpdateIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref OpaProcessesWebSocketApi
+      ApiId: !Ref ProcessesWebSocketApi
       Description: Update Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -319,7 +331,7 @@ Resources:
   DisconnectRoute:
     Type: AWS::ApiGatewayV2::Route
     Properties:
-      ApiId: !Ref OpaProcessesWebSocketApi
+      ApiId: !Ref ProcessesWebSocketApi
       RouteKey: $disconnect
       AuthorizationType: NONE
       OperationName: DisconnectRoute
@@ -331,7 +343,7 @@ Resources:
   DisconnectIntegration:
     Type: AWS::ApiGatewayV2::Integration
     Properties:
-      ApiId: !Ref OpaProcessesWebSocketApi
+      ApiId: !Ref ProcessesWebSocketApi
       Description: Disconnect Integration
       IntegrationType: AWS_PROXY
       IntegrationUri:
@@ -346,7 +358,7 @@ Resources:
       - UpdateRoute
       - DisconnectRoute
     Properties:
-      ApiId: !Ref OpaProcessesWebSocketApi
+      ApiId: !Ref ProcessesWebSocketApi
 
   ApiStage:
     Type: AWS::ApiGatewayV2::Stage
@@ -354,13 +366,13 @@ Resources:
       StageName: !Ref Stage
       Description: Prod Stage
       DeploymentId: !Ref ProcessDeployment
-      ApiId: !Ref OpaProcessesWebSocketApi
+      ApiId: !Ref ProcessesWebSocketApi
 
   # ------------------------
   # DynamoDB tables
   # ------------------------
 
-  OpaJobs:
+  JobsTable:
     Type: AWS::DynamoDB::Table
     Properties:
       TableName: !Sub "${AWS::StackName}-Jobs"
@@ -397,7 +409,7 @@ Resources:
           Projection:
             ProjectionType: ALL
          
-  OpaProcesses:
+  ProcessesTable:
     Type: AWS::Serverless::SimpleTable
     Properties:
       TableName: !Sub "${AWS::StackName}-Processes"
@@ -411,10 +423,10 @@ Resources:
   # ------------------------
   # Roles
   # ------------------------
-  OpaEcsTaskExecutionRole:
+  EcsTaskExecutionRole:
     Type: AWS::IAM::Role
     Properties:
-      RoleName: !Sub "${AWS::StackName}-OpaEcsTaskExecutionRole"
+      RoleName: !Sub "${AWS::StackName}-EcsTaskExecutionRole"
       AssumeRolePolicyDocument:
         Version: "2012-10-17"
         Statement:
@@ -436,7 +448,7 @@ Resources:
                 Action:
                   - execute-api:Invoke
                   - execute-api:ManageConnections
-                Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
+                Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProcessesWebSocketApi}/*
         - PolicyName: !Sub "${AWS::StackName}-OpaEcrAccessPolicy"
           PolicyDocument:
               Version: "2012-10-17"
@@ -445,7 +457,7 @@ Resources:
                   Effect: Allow
                   Action:
                     - s3:GetObject
-                  Resource: !GetAtt OpaProcessResultsBucket.Arn
+                  Resource: !GetAtt ProcessResultsBucket.Arn
                 -
                   Effect: Allow
                   Action:
@@ -467,10 +479,13 @@ Resources:
       CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
       Handler: opa-job-cleanup.handler
       Description: Removes all old jobs from the database jobs table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
       Environment:
         Variables:
-          JOBS_TABLE: !Ref OpaJobs
-          S3_BUCKET_NAME: !Ref OpaProcessResultsBucket
+          JOBS_TABLE: !Ref JobsTable
+          S3_BUCKET_NAME: !Ref ProcessResultsBucket
       
   JobCleanupScheduledEvent:
     Type: AWS::Events::Rule
@@ -498,22 +513,22 @@ Resources:
   OnUpdateWsLambdaPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - OpaProcessesWebSocketApi
+      - ProcessesWebSocketApi
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref UpdateJobStatusFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProcessesWebSocketApi}/*
 
   OnDisconnectWsLambdaPermission:
     Type: AWS::Lambda::Permission
     DependsOn:
-      - OpaProcessesWebSocketApi
+      - ProcessesWebSocketApi
     Properties:
       Action: lambda:InvokeFunction
       FunctionName: !Ref OnDisconnectFunction
       Principal: apigateway.amazonaws.com
-      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${OpaProcessesWebSocketApi}/*
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProcessesWebSocketApi}/*
 
 
   # ------------------------
@@ -587,8 +602,8 @@ Outputs:
     Value: !Sub "https://${AWS::StackName}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
   EcsTaskRoleArn:
     Description: The ECS Task Role ARN
-    Value: !GetAtt OpaEcsTaskExecutionRole.Arn
+    Value: !GetAtt EcsTaskExecutionRole.Arn
   ProcessInsertLambdaArn:
     Value: !GetAtt DeployProcess.Arn
   ProcessesTableId:
-    Value: !Ref OpaProcesses
+    Value: !Ref ProcessesTable

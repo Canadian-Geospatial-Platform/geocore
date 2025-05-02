@@ -5,9 +5,12 @@ Transform:
 - AWS::Serverless-2016-10-31
 
 # Sample deploy
-# aws s3 mb s3://opa-3d-templates
-# aws cloudformation package --s3-bucket opa-3d-templates --template-file opa-3d.yaml --output-template-file opa-3d-generated.yaml
-# aws cloudformation deploy  --stack-name OPA-3D --parameter-overrides LowercaseStackPrefix=opa-3d --template-file opa-3d-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+# aws s3 mb s3://opa-templates
+# aws cloudformation package --s3-bucket opa-templates --template-file opa.yaml --output-template-file opa-generated.yaml
+# aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+#
+# Or if using an existing Internet Gateway
+# aws cloudformation dploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa InternetGatewayId=igw-xxxxxxxxxxxxxxxxx UseNatGW=false --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
 Globals:
   Function:
@@ -17,24 +20,30 @@ Globals:
 Parameters:
   LowercaseStackPrefix:
     Type: String
-    Default: opa-3d
+    Default: opa
   Stage: 
     Type: String
     Default: Prod
-  
-Conditions:
-  UseNGW: true
+  UseNatGW:
+    Type: String
+    AllowedValues: ["true","false"]
+    Default: "false"
+  InternetGatewayId:
+    Type: String
+    Default: ""
 
 Resources:
   Networking:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: opa-3d-networking.yaml
+      TemplateURL: opa-networking.yaml
       Tags:
         - Key: ApplicationName
-          Value: OpaV3dNetworking
+          Value: OpaNetworking
       Parameters:
         EcrPrefix: !Sub ${LowercaseStackPrefix}-opa
+        UseNatGW: !Ref UseNatGW
+        InternetGatewayId: !Ref InternetGatewayId
 
   # 3dApp:
   #   Type: AWS::Serverless::Application
@@ -55,9 +64,10 @@ Resources:
       Parameters:
         Stage: !Ref Stage
         BucketPrefix: !Sub ${LowercaseStackPrefix}-processes-app
-        SecurityGroupId: !GetAtt Networking.Outputs.SecurityGroupId
+        EcsSecurityGroupId: !GetAtt Networking.Outputs.EcsSecurityGroupId
         SubnetIds: !GetAtt Networking.Outputs.SubnetIds
         EcrName : !GetAtt Networking.Outputs.EcrId
+        UseNatGW: !Ref UseNatGW
       Tags:
         ApplicationName: OpaApp
 

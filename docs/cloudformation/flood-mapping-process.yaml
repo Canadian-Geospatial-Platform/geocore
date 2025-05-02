@@ -54,7 +54,8 @@ Resources:
     Properties:
       ServiceToken: !Ref ProcessInsertLambda
       ProcessDeployNumber: !Ref ProcessDeployNumber
-      DockerGithubRepo: https://github.com/Canadian-Geospatial-Platform/opa-flood-mapping-process
+      # DockerGithubRepo: https://github.com/Canadian-Geospatial-Platform/opa-flood-mapping-process
+      DockerGithubRepo: https://github.com/aws-cslt/opa-flood-mapping-process
       DockerGithubBranch: main
       DockerEcrRepo: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrName}"
       DockerImageTag: !Sub ${FloodMappingEcrTag}

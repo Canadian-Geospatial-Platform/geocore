@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: >-
-  OPA and V3D Networking Resources
+  OPA Networking Resources
 Transform:
 - AWS::Serverless-2016-10-31
 
@@ -8,6 +8,18 @@ Parameters:
   EcrPrefix:
     Type: String
     Default: "opa"
+  UseNatGW:
+    Type: String
+    AllowedValues: ["true","false"]
+  InternetGatewayId:
+   Type: String
+   Default: ""
+
+Conditions:
+  UsingNatGW: !Equals [!Ref UseNatGW, "true"]
+  # NotUsingNatGW: !Not 
+  #   - !Condition UsingNatGW   
+  CreateInternetGateway: !Equals [!Ref InternetGatewayId, "" ]
 
 # ------------------------
 # VPC & Networking Setup
@@ -25,6 +37,7 @@ Resources:
 
   OpaPrivateSubnet1:
     Type: AWS::EC2::Subnet
+    Condition: UsingNatGW
     Properties:
       VpcId: !Ref OpaVpc
       CidrBlock: 10.0.8.0/26
@@ -36,6 +49,7 @@ Resources:
 
   OpaPrivateSubnet2:
     Type: AWS::EC2::Subnet
+    Condition: UsingNatGW
     Properties:
       VpcId: !Ref OpaVpc
       CidrBlock: 10.0.8.64/26
@@ -70,6 +84,7 @@ Resources:
   # Create Internet Gateway for Public Subnets
   InternetGateway:
     Type: AWS::EC2::InternetGateway
+    Condition: CreateInternetGateway
     Properties:
       Tags:
         - Key: Name
@@ -80,15 +95,20 @@ Resources:
     Type: AWS::EC2::VPCGatewayAttachment
     Properties:
       VpcId: !Ref OpaVpc
-      InternetGatewayId: !Ref InternetGateway
+      InternetGatewayId: !If 
+        - CreateInternetGateway
+        - !Ref InternetGateway
+        - !Ref InternetGatewayId
 
   # Allocate an Elastic IP for the NAT Gateway
   NatElasticIP:
     Type: AWS::EC2::EIP
+    Condition: UsingNatGW
 
   # Create a NAT Gateway in the Public Subnet
   OpaNATGateway:
     Type: AWS::EC2::NatGateway
+    Condition: UsingNatGW
     Properties:
       SubnetId: !Ref OpaPublicSubnet1  # The NAT must be in a Public Subnet
       AllocationId: !GetAtt NatElasticIP.AllocationId
@@ -101,6 +121,7 @@ Resources:
   # Route Tables
   OpaPrivateRouteTable:
     Type: AWS::EC2::RouteTable
+    Condition: UsingNatGW
     Properties:
       VpcId: !Ref OpaVpc
 
@@ -112,27 +133,44 @@ Resources:
   # Routes
   PrivateRoute:
     Type: AWS::EC2::Route
+    Condition: UsingNatGW
     Properties:
       RouteTableId: !Ref OpaPrivateRouteTable
       DestinationCidrBlock: 0.0.0.0/0 
       NatGatewayId: !Ref OpaNATGateway
+
+  # NoNatPublicRoute:
+  #   Type: AWS::EC2::Route
+  #   Condition: NotUsingNatGW
+  #   Properties:
+  #     RouteTableId: !Ref OpaPrivateRouteTable
+  #     DestinationCidrBlock: 0.0.0.0/0 
+  #     GatewayId: !If 
+  #       - CreateInternetGateway
+  #       - !Ref InternetGateway
+  #       - !Ref InternetGatewayId
 
   PublicRoute:
     Type: AWS::EC2::Route
     Properties:
       RouteTableId: !Ref OpaPublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0 
-      GatewayId: !Ref InternetGateway
+      GatewayId: !If 
+        - CreateInternetGateway
+        - !Ref InternetGateway
+        - !Ref InternetGatewayId
 
   # Route Associations
   OpaPrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: UsingNatGW
     Properties:
       SubnetId: !Ref OpaPrivateSubnet1
       RouteTableId: !Ref OpaPrivateRouteTable
 
   OpaPrivateSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: UsingNatGW
     Properties:
       SubnetId: !Ref OpaPrivateSubnet2
       RouteTableId: !Ref OpaPrivateRouteTable
@@ -152,16 +190,12 @@ Resources:
   # ------------------------
   # Security Group for ECS
   # ------------------------
-  OpaSecurityGroup:
+  EcsSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: "Security Group for OPA Resources"
+      GroupDescription: "Security Group for ECS Fargate tasks which need internet access"
       VpcId: !Ref OpaVpc
-      SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
-          CidrIp: 0.0.0.0/0  # Allowing inbound traffic
+      SecurityGroupIngress: [] # No inbound traffic allowed
       SecurityGroupEgress:
         - IpProtocol: -1
           CidrIp: 0.0.0.0/0  # Allowing outbound traffic
@@ -175,15 +209,18 @@ Resources:
       RepositoryName: !Sub ${EcrPrefix}-ecr
 
 Outputs:
-  SecurityGroupId:
-    Description: The OPA Security Group
-    Value: !Ref OpaSecurityGroup
+  EcsSecurityGroupId:
+    Description: The OPA Security Group for ECS Fargate tasks
+    Value: !Ref EcsSecurityGroup
   VpcId:
     Description: The OPA VPC
     Value: !Ref OpaVpc
   SubnetIds:
-    Description: Comma-separated list of Private Subnet IDs
-    Value: !Join [",", [!Ref OpaPrivateSubnet1, !Ref OpaPrivateSubnet2]]
+    Description: Comma-separated list of Subnet IDs
+    Value: !If
+      - UsingNatGW
+      - !Join [",", [!Ref OpaPrivateSubnet1, !Ref OpaPrivateSubnet2]]
+      - !Join [",", [!Ref OpaPublicSubnet1, !Ref OpaPublicSubnet2]]
   EcrId:
     Description: The OPA Docker Repository
     Value: !Ref OpaRepository
