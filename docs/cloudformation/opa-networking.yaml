@@ -14,12 +14,21 @@ Parameters:
   InternetGatewayId:
    Type: String
    Default: ""
+  TransitGatewayId:
+    Type: String
+    Default: ""
 
 Conditions:
-  UsingNatGW: !Equals [!Ref UseNatGW, "true"]
-  # NotUsingNatGW: !Not 
-  #   - !Condition UsingNatGW   
-  CreateInternetGateway: !Equals [!Ref InternetGatewayId, "" ]
+  UsingTransitGateway: !Not 
+    - !Equals [!Ref TransitGatewayId, "" ]
+  ## If using TransitGateway, don't create an internet or nat gateway
+  UsingInternetGateway: !Not [!Condition UsingTransitGateway]
+  CreateInternetGateway: !And 
+    - !Condition UsingInternetGateway
+    - !Equals [!Ref InternetGatewayId, "" ]
+  UsingNatGateway: !And 
+    - !Condition UsingInternetGateway
+    - !Equals [!Ref UseNatGW, "true"]
 
 # ------------------------
 # VPC & Networking Setup
@@ -37,7 +46,7 @@ Resources:
 
   OpaPrivateSubnet1:
     Type: AWS::EC2::Subnet
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       VpcId: !Ref OpaVpc
       CidrBlock: 10.0.8.0/26
@@ -49,7 +58,7 @@ Resources:
 
   OpaPrivateSubnet2:
     Type: AWS::EC2::Subnet
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       VpcId: !Ref OpaVpc
       CidrBlock: 10.0.8.64/26
@@ -93,6 +102,7 @@ Resources:
   # Attach Internet Gateway to VPC
   AttachInternetGateway:
     Type: AWS::EC2::VPCGatewayAttachment
+    Condition: UsingInternetGateway
     Properties:
       VpcId: !Ref OpaVpc
       InternetGatewayId: !If 
@@ -103,12 +113,12 @@ Resources:
   # Allocate an Elastic IP for the NAT Gateway
   NatElasticIP:
     Type: AWS::EC2::EIP
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
 
   # Create a NAT Gateway in the Public Subnet
   OpaNATGateway:
     Type: AWS::EC2::NatGateway
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       SubnetId: !Ref OpaPublicSubnet1  # The NAT must be in a Public Subnet
       AllocationId: !GetAtt NatElasticIP.AllocationId
@@ -117,11 +127,10 @@ Resources:
           Value: !Sub ${AWS::StackName}-OpaNatGateway
     DependsOn: AttachInternetGateway
 
-  # Update the Private Subnet Route Table to use the NAT Gateway
   # Route Tables
   OpaPrivateRouteTable:
     Type: AWS::EC2::RouteTable
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       VpcId: !Ref OpaVpc
 
@@ -133,25 +142,15 @@ Resources:
   # Routes
   PrivateRoute:
     Type: AWS::EC2::Route
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       RouteTableId: !Ref OpaPrivateRouteTable
       DestinationCidrBlock: 0.0.0.0/0 
       NatGatewayId: !Ref OpaNATGateway
 
-  # NoNatPublicRoute:
-  #   Type: AWS::EC2::Route
-  #   Condition: NotUsingNatGW
-  #   Properties:
-  #     RouteTableId: !Ref OpaPrivateRouteTable
-  #     DestinationCidrBlock: 0.0.0.0/0 
-  #     GatewayId: !If 
-  #       - CreateInternetGateway
-  #       - !Ref InternetGateway
-  #       - !Ref InternetGatewayId
-
   PublicRoute:
     Type: AWS::EC2::Route
+    Condition: UsingInternetGateway
     Properties:
       RouteTableId: !Ref OpaPublicRouteTable
       DestinationCidrBlock: 0.0.0.0/0 
@@ -163,14 +162,14 @@ Resources:
   # Route Associations
   OpaPrivateSubnet1RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       SubnetId: !Ref OpaPrivateSubnet1
       RouteTableId: !Ref OpaPrivateRouteTable
 
   OpaPrivateSubnet2RouteTableAssociation:
     Type: AWS::EC2::SubnetRouteTableAssociation
-    Condition: UsingNatGW
+    Condition: UsingNatGateway
     Properties:
       SubnetId: !Ref OpaPrivateSubnet2
       RouteTableId: !Ref OpaPrivateRouteTable
@@ -186,6 +185,28 @@ Resources:
     Properties:
       SubnetId: !Ref OpaPublicSubnet2
       RouteTableId: !Ref OpaPublicRouteTable
+
+  # ------------------------
+  # TransitGatewayAttachments
+  # ------------------------
+  TransitGatewayAttachment:
+    Type: AWS::EC2::TransitGatewayVpcAttachment
+    Condition: UsingTransitGateway
+    Properties:
+      TransitGatewayId: !Ref TransitGatewayId
+      VpcId: !Ref OpaVpc
+      SubnetIds:
+        - !If
+          - UsingNatGateway
+          - !Ref OpaPrivateSubnet1
+          - !Ref OpaPublicSubnet1
+        - !If
+          - UsingNatGateway
+          - !Ref OpaPrivateSubnet2
+          - !Ref OpaPublicSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-opa-tgw-attachment
 
   # ------------------------
   # Security Group for ECS
@@ -218,7 +239,7 @@ Outputs:
   SubnetIds:
     Description: Comma-separated list of Subnet IDs
     Value: !If
-      - UsingNatGW
+      - UsingNatGateway
       - !Join [",", [!Ref OpaPrivateSubnet1, !Ref OpaPrivateSubnet2]]
       - !Join [",", [!Ref OpaPublicSubnet1, !Ref OpaPublicSubnet2]]
   EcrId:

@@ -7,10 +7,15 @@ Transform:
 # Sample deploy
 # aws s3 mb s3://opa-templates
 # aws cloudformation package --s3-bucket opa-templates --template-file opa.yaml --output-template-file opa-generated.yaml
+#
+# default deploy (creates IGW):
 # aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 #
-# Or if using an existing Internet Gateway
-# aws cloudformation dploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa InternetGatewayId=igw-xxxxxxxxxxxxxxxxx UseNatGW=false --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+# Or if using an existing Internet Gateway:
+# aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa InternetGatewayId=igw-xxxxxxxxxxxxxxxxx --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+#
+# Or if using a Transit Gateway:
+# aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa TransitGatewayId=tgw-xxxxxxxxxxxxxxxxx --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
 
 Globals:
   Function:
@@ -31,6 +36,9 @@ Parameters:
   InternetGatewayId:
     Type: String
     Default: ""
+  TransitGatewayId:
+    Type: String
+    Default: ""
 
 Resources:
   Networking:
@@ -44,6 +52,7 @@ Resources:
         EcrPrefix: !Sub ${LowercaseStackPrefix}-opa
         UseNatGW: !Ref UseNatGW
         InternetGatewayId: !Ref InternetGatewayId
+        TransitGatewayId: !Ref TransitGatewayId
 
   # 3dApp:
   #   Type: AWS::Serverless::Application
