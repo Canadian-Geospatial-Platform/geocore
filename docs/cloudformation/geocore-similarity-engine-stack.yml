@@ -101,17 +101,17 @@ Resources:
       ImageUri:
         Fn::If:
           - IsProd
-          - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda-prod:1'
+          - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda-prod:2'
           - Fn::If:
             - IsStage
-            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda-stage:1'
-            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda:2'
+            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda-stage:2'
+            - !Sub '${AWS::AccountId}.dkr.ecr.ca-central-1.amazonaws.com/similarity-engine-word2vec-python39-lambda:7'
       Environment:
         Variables:
           BUCKET_NAME_NLP: !Ref NlpDataPreprocessingBucket
           BUCKET_NAME: !Sub 'webpresence-geocore-geojson-to-parquet-${Environment}'
           FILE_NAME: "Processed_records.parquet"
-          FILE_NAME_ORIGINAL: "records.parquet"       
+          FILE_NAME_ORIGINAL: "records.parquet"
 
 
 
