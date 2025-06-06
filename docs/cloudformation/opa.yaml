@@ -1,0 +1,94 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  OGC API Processing Service Framework with a Flood Mapping Process.
+Transform:
+- AWS::Serverless-2016-10-31
+
+# Sample deploy
+# aws s3 mb s3://opa-templates
+# aws cloudformation package --s3-bucket opa-templates --template-file opa.yaml --output-template-file opa-generated.yaml
+#
+# default deploy (creates IGW):
+# aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+#
+# Or if using an existing Internet Gateway:
+# aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa InternetGatewayId=igw-xxxxxxxxxxxxxxxxx --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+#
+# Or if using a Transit Gateway:
+# aws cloudformation deploy  --stack-name OPA --parameter-overrides LowercaseStackPrefix=opa TransitGatewayId=tgw-xxxxxxxxxxxxxxxxx --template-file opa-generated.yaml --capabilities CAPABILITY_NAMED_IAM CAPABILITY_AUTO_EXPAND
+
+Globals:
+  Function:
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  LowercaseStackPrefix:
+    Type: String
+    Default: opa
+  Stage: 
+    Type: String
+    Default: Prod
+  UseNatGW:
+    Type: String
+    AllowedValues: ["true","false"]
+    Default: "false"
+  InternetGatewayId:
+    Type: String
+    Default: ""
+  TransitGatewayId:
+    Type: String
+    Default: ""
+
+Resources:
+  Networking:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: opa-networking.yaml
+      Tags:
+        - Key: ApplicationName
+          Value: OpaNetworking
+      Parameters:
+        EcrPrefix: !Sub ${LowercaseStackPrefix}-opa
+        UseNatGW: !Ref UseNatGW
+        InternetGatewayId: !Ref InternetGatewayId
+        TransitGatewayId: !Ref TransitGatewayId
+
+  # 3dApp:
+  #   Type: AWS::Serverless::Application
+  #   DependsOn:
+  #     - Networking
+  #   Properties:
+  #     Location: 3d-app.yaml
+  #     Parameters:
+  #       Stage: !Ref Stage
+  #       BucketPrefix: !Sub ${LowercaseStackPrefix}-3d-app
+  #     Tags:
+  #       ApplicationName: V3dApp
+
+  ProcessesApp:
+    Type: AWS::Serverless::Application
+    Properties:
+      Location: opa-processes-app.yaml
+      Parameters:
+        Stage: !Ref Stage
+        BucketPrefix: !Sub ${LowercaseStackPrefix}-processes-app
+        EcsSecurityGroupId: !GetAtt Networking.Outputs.EcsSecurityGroupId
+        SubnetIds: !GetAtt Networking.Outputs.SubnetIds
+        EcrName : !GetAtt Networking.Outputs.EcrId
+        UseNatGW: !Ref UseNatGW
+      Tags:
+        ApplicationName: OpaApp
+
+  FloodMappingProcess:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: flood-mapping-process.yaml
+      Tags:
+        - Key: ApplicationName
+          Value: OpaFloodMappingProcess
+      Parameters:
+        EcrName : !GetAtt Networking.Outputs.EcrId
+        EcsTaskRoleArn: !GetAtt ProcessesApp.Outputs.EcsTaskRoleArn
+        ProcessInsertLambda: !GetAtt ProcessesApp.Outputs.ProcessInsertLambdaArn
+        ProcessesTable: !GetAtt ProcessesApp.Outputs.ProcessesTableId

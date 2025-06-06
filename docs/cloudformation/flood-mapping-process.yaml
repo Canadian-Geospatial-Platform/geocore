@@ -1,0 +1,91 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  Flood Mapping Process
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  EcrName:
+    Type: String
+  FloodMappingEcrTag:
+    Type: String
+    Default: flood-mapping
+  EcsTaskRoleArn:
+    Type: String
+  ProcessInsertLambda:
+    Type: String
+  ProcessesTable:
+    Type: String
+  FloodMappingContainerName:
+    Type: String
+    Default: FloodMappingContainer
+  FloodMappingTaskDefinitionName:
+    Type: String
+    Default: FloodMappingProcess-TaskDefinition
+  ProcessDeployNumber:
+    Type: String
+    Default: "1"
+
+Resources:
+  # ------------------------
+  # ECS Service & Task Definition
+  # ------------------------
+  FloodMappingTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-${FloodMappingTaskDefinitionName}
+      Cpu: 1024
+      Memory: 2048
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ExecutionRoleArn: !Ref EcsTaskRoleArn
+      TaskRoleArn: !Ref EcsTaskRoleArn
+      ContainerDefinitions:
+        - Name: !Sub ${FloodMappingContainerName}
+          Image: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrName}:${FloodMappingEcrTag}"
+          Essential: true
+          PortMappings:
+            - ContainerPort: 80
+              HostPort: 80
+
+  StackUpdateInvoke:
+    Type: Custom::StackChangeTrigger
+    Properties:
+      ServiceToken: !Ref ProcessInsertLambda
+      ProcessDeployNumber: !Ref ProcessDeployNumber
+      # DockerGithubRepo: https://github.com/Canadian-Geospatial-Platform/opa-flood-mapping-process
+      DockerGithubRepo: https://github.com/aws-cslt/opa-flood-mapping-process
+      DockerGithubBranch: main
+      DockerEcrRepo: !Sub "${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrName}"
+      DockerImageTag: !Sub ${FloodMappingEcrTag}
+      ProcessesTableName: !Ref ProcessesTable
+      ProcessName: FloodMappingProcess
+      ItemToUpsert: !Sub |
+        {
+          "Id": {
+            "S": "FloodMapping"
+          },
+          "Config": {
+            "S": "{\n    \"stac_api_link\":\"https://datacube.services.geo.ca/stac/api/search?collections\",\n    \"pixel_limit\":1000000\n}"
+          },
+          "Description": {
+            "S": "Flood Mapping Service"
+          },
+          "i18nStrings": {
+            "S": "{\n    \"MAIN_TITLE\": {\n        \"fr\": \"Cartographie des zones inondables\",\n        \"en\": \"Flood Mapping\"\n    },\n    \"MAIN_DESCRIPTION\": {\n        \"fr\": \"Ce processus permet à un utilisateur de spécifier une élévation attendue du niveau de la mer sur une zone d'intérêt spécifiée, en renvoyant une carte GeoTIFF, Shapefile, KML ou des données GeoJSON représentant des terres qui seraient inondées.\",\n        \"en\": \"This process allows a user to specify a expected sea level rise over a specified area of interest, returning a GeoTIFF, Shapefile, KML map, or GeoJSON data representing land that would be flooded.\"\n    },\n    \"AOI_DESCRIPTION\": {\n        \"fr\": \"Zone d'intérêt pour laquelle les données sont demandées. Les données actuelles couvrent l'est du Canada, y compris, mais sans s'y limiter, le sud du Québec.\",\n        \"en\": \"The area of interest that the data is being requested for. The current data is found over Eastern Canada, including but not limited to southern Quebec.\"\n    },\n    \"AOI\": {\n        \"fr\": \"Domaine d'intérêt\",\n        \"en\": \"Area of Interest\"\n    },\n    \"SOURCE_DATA_TITLE\": {\n        \"fr\": \"Source des données d'élévation\",\n        \"en\": \"Elevation Data Source\"\n    },\n    \"SOURCE_DATA_DESCRIPTION\": {\n        \"fr\": \"Quelle couche de mosaïque de modèle numérique d'élévation à haute résolution (mosaïque HRDEM) de la bibliothèque du catalogue d'actifs spatio-temporels (STAC) de RNCAN utiliser pour calculer les données de cartographie des inondations.\",\n        \"en\": \"Which High Resolution Digital Elevation Model Mosaic (HRDEM Mosaic) layer from the NRCAN SpatioTemporal Asset Catalog (STAC) library to use to calculate the flood mapping data.\"\n    },\n    \"SEA_LEVEL_RISE_DESCRIPTION\": {\n        \"fr\": \"L'élévation du niveau de la mer est une augmentation du niveau des océans due aux effets du réchauffement climatique. Les valeurs valides sont tout nombre positif.\",\n        \"en\": \"Sea level rise is an increase in the level of the worlds oceans due to the effects of global warming. Valid values are any positive number.\"\n    },\n    \"SEA_LEVEL_RISE_TITLE\": {\n        \"fr\": \"Élévation du niveau de la mer en mètres\",\n        \"en\": \"Sea Level Rise in Metres\"\n    },\n    \"INCLUDE_TIDE_DESCRIPTION\": {\n        \"fr\": \"Inclure ou non le niveau de marée accru dû à l'élévation donnée du niveau de la mer en tant que polygone distinct dans la sortie demandée.\",\n        \"en\": \"Whether or not to include the increased tide level from the given rise in sea level as separate data in the requested output.\"\n    },\n    \"INCLUDE_TIDE_TITLE\": {\n        \"fr\": \"Inclure les données de marée\",\n        \"en\": \"Include Tide Data\"\n    },\n    \"OUTPUT_TIFF_DESCRIPTION\": {\n        \"fr\": \"Un format GeoTIFF dans lequel chaque pixel représente une zone de terre qui sera bleue si la zone est couverte par le nouveau niveau de la mer ou (éventuellement) rouge si la zone est couverte par le nouveau niveau de marée.\",\n        \"en\": \"A GeoTIFF format with each pixel representing an area of land which will be blue if the area is covered by the new sea level or (optionally) red if the area is covered by the new tide level.\"\n    },\n    \"OUTPUT_TIFF_TITLE\": {\n        \"fr\": \"Cartographie des zones inondables GeoTIFF\",\n        \"en\": \"Flood Mapping GeoTIFF\"\n    },\n    \"OUTPUT_KML_DESCRIPTION\": {\n        \"fr\": \"Un format kml avec chaque polygone représentant une zone de terre qui sera bleue si la zone est couverte par le nouveau niveau de la mer ou (facultativement) rouge si la zone est couverte par le nouveau niveau de marée.\",\n        \"en\": \"A kml format with each polygon representing an area of land which will be blue if the area is covered by the new sea level or (optionally) red if the area is covered by the new tide level.\"\n    },\n    \"OUTPUT_KML_TITLE\": {\n        \"fr\": \"Cartographie des zones inondables KML\",\n        \"en\": \"Flood Mapping KML\"\n    },\n    \"OUTPUT_SHP_DESCRIPTION\": {\n        \"fr\": \"Un format de fichier de formes dans lequel chaque polygone représente une zone de terre qui sera bleue si la zone est couverte par le nouveau niveau de la mer ou (facultativement) rouge si la zone est couverte par le nouveau niveau de marée.\",\n        \"en\": \"A shapefile format with each polygon representing an area of land either covered by the new sea level or (optionally) covered by the new tide level.\"\n    },\n    \"OUTPUT_SHP_TITLE\": {\n        \"fr\": \"Cartographie des zones inondables Shapefile\",\n        \"en\": \"Flood Mapping Shapefile\"\n    },\n    \"OUTPUT_GEOJSON_DESCRIPTION\": {\n        \"fr\": \"Un format GeoJSON avec chaque polygone représentant une zone de terre qui sera bleue si la zone est couverte par le nouveau niveau de la mer ou (facultativement) rouge si la zone est couverte par le nouveau niveau de marée.\",\n        \"en\": \"A GeoJSON format with each polygon representing an area of land which will be blue if the area is covered by the new sea level or (optionally) red if the area is covered by the new tide level.\"\n    },\n    \"OUTPUT_GEOJSON_TITLE\": {\n        \"fr\": \"Cartographie des zones inondables GeoJSON\",\n        \"en\": \"Flood Mapping GeoJSON\"\n    },\n    \"START_MESSAGE\": {\n        \"fr\": \"Commence bientôt\",\n        \"en\": \"Starting Soon\"\n    },\n    \"TASK_ERROR\": {\n        \"fr\": \"Erreur lors du démarrage de la tâche\",\n        \"en\": \"Error starting task\"\n    },\n    \"DESCRIPTION_LINK_REL_EN\": {\n        \"fr\": \"alternate\",\n        \"en\": \"self\"\n    },\n    \"DESCRIPTION_LINK_REL_FR\": {\n        \"fr\": \"self\",\n        \"en\": \"alternate\"\n    }\n}"
+          },
+          "ServiceDefinition": {
+            "S": "{\n\t\"id\": \"FloodMapping\",\n\t\"version\": \"1.0.0\",\n\t\"title\": \"{MAIN_TITLE}\",\n\t\"description\": \"{MAIN_DESCRIPTION}\",\n\t\"inputs\": {\n\t\t\"bounding_box\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"format\": \"ogc-bbox\",\n\t\t\t\t\"type\": \"object\",\n\t\t\t\t\"required\": [\n\t\t\t\t\t\"bbox\"\n\t\t\t\t],\n\t\t\t\t\"properties\": {\n\t\t\t\t\t\"crs\": {\n\t\t\t\t\t\t\"default\": \"http://www.opengis.net/def/crs/OGC/1.3/CRS84\",\n\t\t\t\t\t\t\"format\": \"uri\",\n\t\t\t\t\t\t\"type\": \"string\",\n\t\t\t\t\t\t\"enum\": [\n\t\t\t\t\t\t\t\"http://www.opengis.net/def/crs/OGC/1.3/CRS84\",\n\t\t\t\t\t\t\t\"http://www.opengis.net/def/crs/OGC/0/CRS84h\"\n\t\t\t\t\t\t]\n\t\t\t\t\t},\n\t\t\t\t\t\"bbox\": {\n\t\t\t\t\t\t\"oneOf\": [\n\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\"minItems\": 4,\n\t\t\t\t\t\t\t\t\"maxItems\": 4\n\t\t\t\t\t\t\t},\n\t\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\t\"minItems\": 6,\n\t\t\t\t\t\t\t\t\"maxItems\": 6\n\t\t\t\t\t\t\t}\n\t\t\t\t\t\t],\n\t\t\t\t\t\t\"type\": \"array\",\n\t\t\t\t\t\t\"items\": {\n\t\t\t\t\t\t\t\"type\": \"number\"\n\t\t\t\t\t\t}\n\t\t\t\t\t}\n\t\t\t\t}\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{AOI_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{AOI}\",\n\t\t\t\"required\": true\n\t\t},\n\t\t\"source_data\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"type\": \"string\",\n\t\t\t\t\"enum\": [\n\t\t\t\t\t\"hrdem-mosaic-1m\",\n\t\t\t\t\t\"hrdem-mosaic-2m\"\n\t\t\t\t]\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{SOURCE_DATA_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{SOURCE_DATA_TITLE}\",\n\t\t\t\"required\": true\n\t\t},\n\t\t\"sea_level_rise\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"default\": 3,\n\t\t\t\t\"format\": \"double\",\n\t\t\t\t\"type\": \"number\",\n\t\t\t\t\"minimum\": 0\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{SEA_LEVEL_RISE_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{SEA_LEVEL_RISE_TITLE}\",\n\t\t\t\"required\": true\n\t\t},\n        \"include_tide\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"default\": \"true\",\n\t\t\t\t\"type\": \"string\",\n                \"enum\": [\n\t\t\t\t\t\"true\",\n\t\t\t\t\t\"false\"\n\t\t\t\t]\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{INCLUDE_TIDE_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{INCLUDE_TIDE_TITLE}\",\n\t\t\t\"required\": true\n\t\t}\n\t},\n\t\"outputs\": {\n\t\t\"flood_mapping_nrcan_tiff\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"contentMediaType\": \"image/tiff\",\n\t\t\t\t\"contentEncoding\": \"binary\",\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{OUTPUT_TIFF_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{OUTPUT_TIFF_TITLE}\",\n\t\t\t\"required\": true\n\t\t},\n\t\t\"flood_mapping_nrcan_shapefile\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"contentMediaType\": \"application/vnd.shp\",\n\t\t\t\t\"contentEncoding\": \"binary\",\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{OUTPUT_SHP_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{OUTPUT_SHP_TITLE}\",\n\t\t\t\"required\": true\n\t\t},\n\t\t\"flood_mapping_nrcan_geojson\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"contentMediaType\": \"application/geo+json\",\n\t\t\t\t\"contentEncoding\": \"binary\",\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{OUTPUT_GEOJSON_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{OUTPUT_GEOJSON_TITLE}\",\n\t\t\t\"required\": true\n\t\t},\n\t\t\"flood_mapping_nrcan_kml\": {\n\t\t\t\"schema\": {\n\t\t\t\t\"contentMediaType\": \"application/vnd.google-earth.kml+xml\",\n\t\t\t\t\"contentEncoding\": \"binary\",\n\t\t\t\t\"type\": \"string\"\n\t\t\t},\n\t\t\t\"minOccurs\": 1,\n\t\t\t\"description\": \"{OUTPUT_KML_DESCRIPTION}\",\n\t\t\t\"maxOccurs\": 1,\n\t\t\t\"title\": \"{OUTPUT_KML_TITLE}\",\n\t\t\t\"required\": true\n\t\t}\n\t},\n\t\"response\": [\n\t\t\"raw\"\n\t],\n\t\"links\": [\n\t\t{\n\t\t\t\"rel\": \"{DESCRIPTION_LINK_REL_EN}\",\n\t\t\t\"href\": \"https://{HOST}/Prod/processes/FloodMapping?lang=en\",\n\t\t\t\"type\": \"application/json\",\n\t\t\t\"title\": \"Process Description for Flood Mapping\",\n            \"hreflang\": \"en\"\n\t\t},\n        {\n\t\t\t\"rel\": \"{DESCRIPTION_LINK_REL_FR}\",\n\t\t\t\"href\": \"https://{HOST}/Prod/processes/FloodMapping?lang=fr\",\n\t\t\t\"type\": \"application/json\",\n\t\t\t\"title\": \"Description du processus de cartographie des inondations\",\n            \"hreflang\": \"fr\"\n\t\t},\n\t\t{\n\t\t\t\"rel\": \"http://www.opengis.net/def/rel/ogc/1.0/execute\",\n\t\t\t\"href\": \"https://{HOST}/Prod/processes/FloodMapping/execution?lang=en\",\n\t\t\t\"title\": \"Process Execution for Flood Mapping\",\n            \"hreflang\": \"en\"\n\t\t},\n        {\n\t\t\t\"rel\": \"http://www.opengis.net/def/rel/ogc/1.0/execute\",\n\t\t\t\"href\": \"https://{HOST}/Prod/processes/FloodMapping/execution?lang=fr\",\n\t\t\t\"title\": \"Exécution du processus pour la cartographie des inondations\",\n            \"hreflang\": \"fr\"\n\t\t}\n\t],\n\t\"outputTransmission\": [\n\t\t\"reference\"\n\t],\n\t\"jobControlOptions\": [\n\t\t\"async-execute\"\n\t]\n}"
+          },
+          "TaskContainerName": {
+            "S": "${FloodMappingContainerName}"
+          },
+          "TaskDefName": {
+            "S": "${AWS::StackName}-${FloodMappingTaskDefinitionName}"
+          },
+          "Title": {
+            "S": "Flood Mapping Service"
+          }
+        }
+

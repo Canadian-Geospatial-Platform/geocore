@@ -53,7 +53,7 @@ Parameters:
   OSSecretID:
     Type: String
     Default: dev/OpenSearch/SemanticSearch
-    Description: SSM parameter name for OpenSearch user name and password   
+    Description: SSM parameter name for OpenSearch user name and password
 
 
 Conditions:
@@ -74,9 +74,17 @@ Resources:
         Statement:
           - Effect: Allow
             Principal:
-              AWS: '*'
+              AWS: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
             Action: 'es:*'
             Resource: !Sub arn:aws:es:${AWS::Region}:${AWS::AccountId}:domain/*/*
+          - Effect: Allow
+            Principal:
+              Service: es.amazonaws.com
+            Action: logs:PutLogEvents
+            Resource:
+              - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-audit-logs:*
+              - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-slow-search-logs:*
+              - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-slow-index-logs:*
       EngineVersion: 'OpenSearch_2.11'
       DomainName: semantic-search
       ClusterConfig:
@@ -100,6 +108,21 @@ Resources:
         KmsKeyId: alias/aws/es
       DomainEndpointOptions:
         EnforceHTTPS: True
+      LogPublishingOptions:
+        SEARCH_SLOW_LOGS:
+          CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-audit-logs"
+          Enabled: True
+        INDEX_SLOW_LOGS:
+          CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-slow-search-logs"
+          Enabled: True
+        AUDIT_LOGS:
+          CloudWatchLogsLogGroupArn: !Sub "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-slow-index-logs"
+          Enabled: True
+    DependsOn:
+      - AuditLogsLogGroup
+      - SlowSearchLogsLogGroup
+      - SlowIndexLogsLogGroup
+      - OSLogGroupResourcePolicy
 
   OpenSearchSecret:
     Type: AWS::SecretsManager::Secret
@@ -108,6 +131,95 @@ Resources:
       Description: OpenSearch username and password
       SecretString: !Sub '{ "username" : "${OpenSearchUsername}", "password" : "${OpenSearchPassword}" }'
 
+########################################################
+# Lambda to set custom OpenSearch configurations after creation
+########################################################
+
+  SlowLogConfigFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/OpenSearch-slow-log-config-20250304-1200.zip
+      MemorySize: 3009
+      Timeout: 900
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          MODEL_NAME: !If 
+            - IsProd
+            - minilm-knn
+            - minilm-pretrain-knn
+          MY_AWS_REGION: 
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OS_SECRET_ID
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
+
+########################################################
+# OpenSearch Proxy for dashboards (kibana)  
+########################################################
+
+  OpenSearchDashboardProxy:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/OpenSearch-dashboard-proxy-20250304-1200.zip
+      MemorySize: 3009
+      Timeout: 900
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          MODEL_NAME: !If 
+            - IsProd
+            - minilm-knn
+            - minilm-pretrain-knn
+          MY_AWS_REGION: 
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OS_SECRET_ID
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
+
+########################################################
+# OpenSearch Proxy for dashboards (kibana)  
+########################################################
+
+  OpenSearchCloudWatchIndexer:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/semantic-search/OpenSearch-cloudwatch-indexer-20250307-1500.zip
+      MemorySize: 3009
+      Timeout: 900
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      EphemeralStorage:
+        Size: 512
+      Environment:
+        Variables:
+          MODEL_NAME: !If 
+            - IsProd
+            - minilm-knn
+            - minilm-pretrain-knn
+          MY_AWS_REGION: 
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OS_SECRET_ID
+      PackageType: Zip
+      Role: !GetAtt InvokeSagemakerLambdaExecutionRole.Arn
 
 ########################################################
 # Set up SageMaker notebook instance   
@@ -213,7 +325,6 @@ Resources:
       CodeUri: 
         Bucket: !Ref DeploymentBucket
         Key: cloudformation-templates/lambda/semantic-search/Invoke-sagemaker-pretrain-20241216-1700.zip
-
       MemorySize: 3009
       Timeout: 900
       Handler: app.lambda_handler
@@ -404,7 +515,25 @@ Resources:
       Name: search-opensearch
       AccessLogSetting:
         DestinationArn: !GetAtt LogGroup.Arn
-        Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
+        Format: >-
+          {
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "caller": "$context.identity.caller",
+            "user": "$context.identity.user",
+            "requestTime": "$context.requestTime",
+            "httpMethod": "$context.httpMethod",
+            "resourcePath": "$context.resourcePath",
+            "status": "$context.status",
+            "protocol": "$context.protocol",
+            "responseLength": "$context.responseLength",
+            "errorMessage": "$context.error.message",
+            "integrationLatency": "$context.integrationLatency",
+            "apiId": "$context.apiId",
+            "stage": "$context.stage",
+            "latency": "$context.latency",
+            "userAgent": "$context.identity.userAgent"
+          }
       EndpointConfiguration:
         Type: REGIONAL
       OpenApiVersion: '2.0'
@@ -458,8 +587,10 @@ Resources:
                       "orbit_direction": "$input.params('orbit_direction')",
                       "lang": "$input.params('lang')",
                       "sort": "$input.params('sort')",
+                      "order": "$input.params('order')",
                       "size": "$input.params('size')",
-                      "from": "$input.params('from')"
+                      "from": "$input.params('from')",
+                      "userAgent": "$input.params().header.get('User-Agent')"
                     }
             options:
               consumes:
@@ -505,12 +636,58 @@ Resources:
                 gatewayresponse.header.Access-Control-Allow-Methods: "'GET,OPTIONS'"
                 gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
                 gatewayresponse.header.Access-Control-Allow-Headers: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
-                           
 
+  OSLogGroupResourcePolicy:
+    Type: AWS::Logs::ResourcePolicy
+    Properties:
+      PolicyName: OpenSearchLogPolicy
+      PolicyDocument: 
+        Fn::Sub: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Principal": {
+                  "Service": "es.amazonaws.com"
+                },
+                "Action": [
+                  "logs:CreateLogStream",
+                  "logs:PutLogEvents"
+                ],
+                "Resource": [
+                  "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-audit-logs:*",
+                  "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-slow-search-logs:*",
+                  "arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:/${Environment}/webpresence/search-slow-index-logs:*"
+                ]
+              }
+            ]
+          }
 
   LogGroup:
     Type: Custom::LogGroup
     Properties:
       ServiceToken: !ImportValue LogGroupHelperLambdaArn
       LogGroupName: !Sub '/${Environment}/webpresence/search'
+      RetentionInDays: 3653
+
+  AuditLogsLogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/search-audit-logs'
+      RetentionInDays: 3653
+
+  SlowSearchLogsLogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/search-slow-search-logs'
+      RetentionInDays: 3653
+
+  SlowIndexLogsLogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/search-slow-index-logs'
       RetentionInDays: 3653

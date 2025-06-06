@@ -194,7 +194,24 @@ Resources:
       Name: geolocator
       AccessLogSetting:
         DestinationArn: !GetAtt LogGroup.Arn
-        Format: '<request id="$context.requestId"> <ip>$context.identity.sourceIp</ip> <caller>$context.identity.caller</caller> <user>$context.identity.user</user> <requestTime>$context.requestTime</requestTime> <httpMethod>$context.httpMethod</httpMethod> <resourcePath>$context.resourcePath</resourcePath> <status>$context.status</status> <protocol>$context.protocol</protocol> <responseLength>$context.responseLength</responseLength><errorMessage>$context.error.message</errorMessage></request>'
+        Format: >-
+          {
+            "requestId": "$context.requestId",
+            "ip": "$context.identity.sourceIp",
+            "caller": "$context.identity.caller",
+            "user": "$context.identity.user",
+            "requestTime": "$context.requestTime",
+            "httpMethod": "$context.httpMethod",
+            "resourcePath": "$context.resourcePath",
+            "status": "$context.status",
+            "protocol": "$context.protocol",
+            "responseLength": "$context.responseLength",
+            "errorMessage": "$context.error.message",
+            "integrationLatency": "$context.integrationLatency",
+            "apiId": "$context.apiId",
+            "stage": "$context.stage",
+            "latency": "$context.latency"
+          }
       EndpointConfiguration:
         Type: REGIONAL
       OpenApiVersion: '2.0'
