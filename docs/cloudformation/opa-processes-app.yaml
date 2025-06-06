@@ -1,0 +1,609 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  OGC API Processing Service Framework
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  Stage:
+    Type: String
+  EcsSecurityGroupId:
+    Type: String
+  SubnetIds:
+    Type: String
+  BucketPrefix:
+    Type: String
+    Default: "processes-app"
+  EcrName:
+    Type: String
+  UseNatGW:
+    Type: String
+    AllowedValues: ["true","false"]  
+
+Conditions:
+  UsingNatGW: !Equals [!Ref UseNatGW, "true"]
+
+Globals:
+  Function:
+      Runtime: nodejs22.x
+      Architectures:
+      - x86_64
+      MemorySize: 128
+      Timeout: 100
+
+Resources:
+  # ------------------------
+  # API  
+  # ------------------------
+  ProcessesRestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-ProcessesApi
+      StageName: !Ref Stage
+  
+  ProcessesWebSocketApi:
+    Type: AWS::ApiGatewayV2::Api
+    Properties:
+      Name: !Sub ${AWS::StackName}-ProcessesWebSocketApi
+      ProtocolType: WEBSOCKET
+      RouteSelectionExpression: $request.body.action
+      ApiKeySelectionExpression: $request.header.x-api-key
+
+  # ------------------------
+  # S3
+  # ------------------------
+  ProcessResultsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${BucketPrefix}-process-results
+      PublicAccessBlockConfiguration:
+        BlockPublicPolicy: false   # 🔹 Allow public policies
+        RestrictPublicBuckets: false  # 🔹 Allow public access
+        BlockPublicAcls: false
+        IgnorePublicAcls: false
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+            AllowedOrigins:
+              - '*'
+            ExposedHeaders: []
+  
+  # ------------------------
+  # ECS Cluster
+  # ------------------------
+  ProcessingCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub ${AWS::StackName}-ProcessingCluster
+      
+
+  # ------------------------
+  # Lambdas
+  # ------------------------
+  ProcessLandingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ProcessLanding
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-process-landing.handler
+      Description: Fetches Processes Landing page to display all available processes.
+      Events:
+        GetLanding:
+          Type: Api
+          Properties:
+            Path: /
+            Method: GET
+            RestApiId: !Ref ProcessesRestApi
+        OptionsLanding:
+          Type: Api
+          Properties:
+            Path: /
+            Method: OPTIONS
+            RestApiId: !Ref ProcessesRestApi
+
+  ProcessConformanceFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ProcessConformance
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-process-conformance.handler
+      Description: Fetches supported available formats by the processes API.
+      Events:
+        GetConformance:
+          Type: Api
+          Properties:
+            Path: /conformance
+            Method: GET
+            RestApiId: !Ref ProcessesRestApi
+        OptionsConformance:
+          Type: Api
+          Properties:
+            Path: /conformance
+            Method: OPTIONS
+            RestApiId: !Ref ProcessesRestApi
+
+  GetJobsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-GetJobs
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-get-jobs.handler
+      Description: Fetched the status of a Job, or it's result when completed
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
+        - S3ReadPolicy:
+            BucketName: !Ref ProcessResultsBucket
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref JobsTable
+          S3_BUCKET_NAME: !Ref ProcessResultsBucket
+      Events:
+        ApiGet:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}
+            Method: GET
+            RestApiId: !Ref ProcessesRestApi
+        ApiOptions:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}
+            Method: OPTIONS
+            RestApiId: !Ref ProcessesRestApi
+        ApiGetResults:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}/results
+            Method: GET
+            RestApiId: !Ref ProcessesRestApi
+        ApiOptionsResults:
+          Type: Api
+          Properties:
+            Path: /jobs/{jobId}/results
+            Method: OPTIONS
+            RestApiId: !Ref ProcessesRestApi
+
+  UpdateJobStatusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-UpdateJobStatus
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-job-results.handler
+      Description: Updates the status of a Job
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref JobsTable
+
+  ExecuteProcessFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-ExecuteProcess
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-execute-process.handler
+      Description: Fetched the status of a Job, or it's result when completed
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProcessesTable
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
+        - EcsRunTaskPolicy:
+            ClusterName: !Ref ProcessingCluster 
+            TaskDefinition: "*"
+        - S3CrudPolicy:
+            BucketName: !Ref ProcessResultsBucket
+        - Statement:
+              - Effect: Allow
+                Action: iam:PassRole
+                Resource: !GetAtt EcsTaskExecutionRole.Arn
+              - Effect: Allow
+                Action:
+                  - ecs:RunTask
+                  - ecs:DescribeTasks
+                Resource: !GetAtt ProcessingCluster.Arn
+                # Resource: "*" # TODO
+        
+      Environment:
+        Variables:
+          CLUSTER_NAME: !Ref ProcessingCluster
+          JOBS_TABLE: !Ref JobsTable
+          PROCESSES_TABLE: !Ref ProcessesTable
+          S3_BUCKET_NAME: !Ref ProcessResultsBucket
+          SECURITY_GROUP: !Ref EcsSecurityGroupId
+          SUBNETS: !Ref SubnetIds
+          WS_STATUS_URL: !Sub  wss://${ProcessesWebSocketApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/
+          STAGE: !Ref Stage
+          ENABLE_PUBLIC_IP: !If 
+            - UsingNatGW
+            - "false"
+            - "true"
+      Events:
+        GetAllProcesses:
+          Type: Api
+          Properties:
+            Path: /processes
+            Method: GET
+            RestApiId: !Ref  ProcessesRestApi
+        OptionsAllProcesses:
+          Type: Api
+          Properties:
+            Path: /processes
+            Method: OPTIONS
+            RestApiId: !Ref  ProcessesRestApi
+        GetProcess:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}
+            Method: GET
+            RestApiId: !Ref ProcessesRestApi
+        OptionsProcess:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}
+            Method: OPTIONS
+            RestApiId: !Ref ProcessesRestApi
+        GetProcessExecution:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}/execution
+            Method: POST
+            RestApiId: !Ref ProcessesRestApi
+        OptionsProcessExecution:
+          Type: Api
+          Properties:
+            Path: /processes/{processId}/execution
+            Method: OPTIONS
+            RestApiId: !Ref ProcessesRestApi
+
+  OnDisconnectFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-Disconnect
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-disconnect.handler
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref JobsTable
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
+
+  DeployProcess:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-DeployProcess
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-process-deployment.handler
+      MemorySize: 512
+      Timeout: 900
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref ProcessesTable
+          PROCESS_CODEBUILD_NAME: !Ref DeployProcessDockerCodeBuild
+          GITHUB_BRANCH: master
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ProcessesTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - logs:CreateLogGroup
+                - logs:CreateLogStream
+                - logs:PutLogEvents
+              Resource: "*"
+        - Statement:
+            - Effect: Allow
+              Action:
+                - codebuild:StartBuild
+              Resource:
+                - !GetAtt DeployProcessDockerCodeBuild.Arn
+  
+  # ------------------------
+  # WebSocket Routes/Integration
+  # ------------------------
+  UpdateRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ProcessesWebSocketApi
+      RouteKey: update
+      AuthorizationType: NONE
+      OperationName: Update
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref UpdateIntegration
+
+  UpdateIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ProcessesWebSocketApi
+      Description: Update Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${UpdateJobStatusFunction.Arn}/invocations
+
+  DisconnectRoute:
+    Type: AWS::ApiGatewayV2::Route
+    Properties:
+      ApiId: !Ref ProcessesWebSocketApi
+      RouteKey: $disconnect
+      AuthorizationType: NONE
+      OperationName: DisconnectRoute
+      Target: !Join
+        - "/"
+        - - "integrations"
+          - !Ref DisconnectIntegration
+
+  DisconnectIntegration:
+    Type: AWS::ApiGatewayV2::Integration
+    Properties:
+      ApiId: !Ref ProcessesWebSocketApi
+      Description: Disconnect Integration
+      IntegrationType: AWS_PROXY
+      IntegrationUri:
+        Fn::Sub: arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${OnDisconnectFunction.Arn}/invocations
+  
+  # ------------------------
+  # Deployment/Stages
+  # ------------------------
+  ProcessDeployment:
+    Type: AWS::ApiGatewayV2::Deployment
+    DependsOn:
+      - UpdateRoute
+      - DisconnectRoute
+    Properties:
+      ApiId: !Ref ProcessesWebSocketApi
+
+  ApiStage:
+    Type: AWS::ApiGatewayV2::Stage
+    Properties:
+      StageName: !Ref Stage
+      Description: Prod Stage
+      DeploymentId: !Ref ProcessDeployment
+      ApiId: !Ref ProcessesWebSocketApi
+
+  # ------------------------
+  # DynamoDB tables
+  # ------------------------
+
+  JobsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-Jobs"
+      AttributeDefinitions:
+        - AttributeName: JobId
+          AttributeType: S
+        - AttributeName: JobStatus
+          AttributeType: S
+        - AttributeName: ConnectionId
+          AttributeType: S
+        - AttributeName: Updated
+          AttributeType: N
+      KeySchema:
+        - AttributeName: JobId
+          KeyType: HASH
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: JobStatusIndex
+          KeySchema:
+            - AttributeName: JobStatus
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: ConnectionIdIndex
+          KeySchema:
+            - AttributeName: ConnectionId
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: UpdatedIndex
+          KeySchema:
+            - AttributeName: Updated
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+         
+  ProcessesTable:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: !Sub "${AWS::StackName}-Processes"
+      PrimaryKey:
+        Name: Id
+        Type: String
+      ProvisionedThroughput:
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
+
+  # ------------------------
+  # Roles
+  # ------------------------
+  EcsTaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${AWS::StackName}-EcsTaskExecutionRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Sid: ""
+            Effect: Allow
+            Principal:
+              Service:
+                - ecs-tasks.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: !Sub "${AWS::StackName}-OpaApiGatewayAccessPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - execute-api:Invoke
+                  - execute-api:ManageConnections
+                Resource: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProcessesWebSocketApi}/*
+        - PolicyName: !Sub "${AWS::StackName}-OpaEcrAccessPolicy"
+          PolicyDocument:
+              Version: "2012-10-17"
+              Statement:
+                -
+                  Effect: Allow
+                  Action:
+                    - s3:GetObject
+                  Resource: !GetAtt ProcessResultsBucket.Arn
+                -
+                  Effect: Allow
+                  Action:
+                    - ecr:GetAuthorizationToken
+                    - ecr:BatchCheckLayerAvailability
+                    - ecr:GetDownloadUrlForLayer
+                    - ecr:DescribeRepositories
+                    - ecr:ListImages
+                    - ecr:BatchGetImage
+                  Resource: !Sub "arn:aws:ecr:region:account-id:repository/${EcrName}"
+
+  # ------------------------
+  # Events
+  # ------------------------
+  JobCleanupFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub ${AWS::StackName}-JobCleanup
+      CodeUri: ../lambda/opa-processing/opa-processing-20250429.zip
+      Handler: opa-job-cleanup.handler
+      Description: Removes all old jobs from the database jobs table.
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref JobsTable
+      Environment:
+        Variables:
+          JOBS_TABLE: !Ref JobsTable
+          S3_BUCKET_NAME: !Ref ProcessResultsBucket
+      
+  JobCleanupScheduledEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub ${AWS::StackName}-JobCleanupScheduled
+      ScheduleExpression: rate(30 minutes)
+      State: ENABLED
+      Targets:
+        - Arn: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${JobCleanupFunction}
+          Id: LambdaTarget
+
+  JobCleanupInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${JobCleanupFunction}
+      Action: lambda:InvokeFunction
+      Principal: events.amazonaws.com
+      SourceArn: !GetAtt JobCleanupScheduledEvent.Arn
+
+ 
+
+  # ------------------------
+  # Permissions
+  # ------------------------
+  OnUpdateWsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - ProcessesWebSocketApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref UpdateJobStatusFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProcessesWebSocketApi}/*
+
+  OnDisconnectWsLambdaPermission:
+    Type: AWS::Lambda::Permission
+    DependsOn:
+      - ProcessesWebSocketApi
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref OnDisconnectFunction
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Sub arn:aws:execute-api:${AWS::Region}:${AWS::AccountId}:${ProcessesWebSocketApi}/*
+
+
+  # ------------------------
+  # Docker Code Build
+  # ------------------------
+  ProcessDockerCodeBuildRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub ${AWS::StackName}-ProcessDockerCodeBuildRole
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: codebuild.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: deployer-permissions
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ecr:GetAuthorizationToken
+                  - ecr:BatchCheckLayerAvailability
+                  - ecr:CompleteLayerUpload
+                  - ecr:InitiateLayerUpload
+                  - ecr:PutImage
+                  - ecr:UploadLayerPart
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - logs:*
+                  - s3:GetObject
+                Resource: "*"
+
+  DeployProcessDockerCodeBuild:
+    Type: AWS::CodeBuild::Project
+    Properties:
+      Name: !Sub "${AWS::StackName}-ProcessDockerCodeBuild"
+      ServiceRole: !GetAtt ProcessDockerCodeBuildRole.Arn
+      Environment:
+        Type: LINUX_CONTAINER
+        ComputeType: BUILD_GENERAL1_SMALL
+        Image: aws/codebuild/standard:7.0
+      Artifacts:
+        Type: NO_ARTIFACTS
+      Source:
+        Type: NO_SOURCE
+        BuildSpec: |
+          version: 0.2
+
+          phases:
+            pre_build:
+              commands:
+                - echo "Logging into ECR."
+                - aws ecr get-login-password | docker login --username AWS --password-stdin $ECR_REPO_URI
+
+            build:
+              commands:
+                - echo "Cloning $GITHUB_REPO"
+                - git clone -b $GITHUB_BRANCH $GITHUB_REPO process/
+                - cd process
+                - echo "Building docker image..."
+                - docker build -t $ECR_REPO_URI:$IMAGE_TAG .
+                - docker push $ECR_REPO_URI:$IMAGE_TAG
+
+Outputs:
+  WebEndpoint:
+    Description: API Gateway endpoint URL for Processes
+    Value: !Sub "https://${AWS::StackName}.execute-api.${AWS::Region}.amazonaws.com/${Stage}/"
+  EcsTaskRoleArn:
+    Description: The ECS Task Role ARN
+    Value: !GetAtt EcsTaskExecutionRole.Arn
+  ProcessInsertLambdaArn:
+    Value: !GetAtt DeployProcess.Arn
+  ProcessesTableId:
+    Value: !Ref ProcessesTable
