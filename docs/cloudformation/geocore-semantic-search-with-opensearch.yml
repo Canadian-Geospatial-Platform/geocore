@@ -21,10 +21,9 @@ Parameters:
   SecHeadersLambdaEdgeArn:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
- #Todo: change SagemakerEndpoint to a resource that can be referenced 
   SagemakerEndpoint:
     Type: String
-    Default: Copy-endpoint-name-from-SageMaker-AI-Dashboard-via-AWS-Console
+    Default: /OpenSearch/SageMaker
     Description: sagamaker endpoint for the pretrained/finetuned models 
   OSDomainName:
     Type: String
@@ -45,14 +44,13 @@ Parameters:
     NoEcho: 'true'
     Type: String
     Default: Semantic123!
-#Todo: change OSEndpoint to a resource that can be referenced 
   OSEndpoint:
     Type: String
-    Default: Copy-domain-endpoint-from-OpenSearch-Domains-via-AWS-console
-    Description: OpenSearch endpoint 
+    Default: /OpenSearch/Endpoint
+    Description: OpenSearch endpoint
   OSSecretID:
     Type: String
-    Default: dev/OpenSearch/SemanticSearch
+    Default: /OpenSearch/SSM
     Description: SSM parameter name for OpenSearch user name and password
 
 

@@ -21,6 +21,14 @@ Parameters:
   SecHeadersLambdaEdgeArn:
     Type: String
     Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+  OSEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /OpenSearch/Endpoint
+    Description: OpenSearch endpoint
+  OSSecretID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /OpenSearch/SSM
+    Description: SSM parameter name for OpenSearch user name and password
 
 Conditions:
   IsProd: !Equals [prod, !Ref Environment]
@@ -33,13 +41,38 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geolocator/geolocator-commit-15b0de5722c2362d49cdfdbdfd2cb9f97c94059e.zip
+        Key: cloudformation-templates/lambda/geolocator/geolocator-20250618-1200-43817b1.zip
       MemorySize: 3009
       Handler: index.handler
       Timeout: 900
       Environment:
         Variables:
           S3_BUCKET_NAME: !Sub 'webpresence-geolocator-${Environment}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  ForwardSortationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/forward-sortation-area-20250615-1200.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 30
+      Environment:
+        Variables:
+          INDEX_NAME: fsa-postal-code-index
+          MY_AWS_REGION: ca-central-1
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OSSecretID
       Events:
         ApiEvent:
           Type: Api
@@ -76,6 +109,25 @@ Resources:
                 Resource:
                   - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket]]
                   - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket, '/*']]
+        - PolicyName: OpenSearchAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Sub "arn:aws:secretsmanager:ca-central-1:${AWS::AccountId}:secret:OpenSearchSecret-geocore-semantic-search-with-opensearch-stage*"
+              - Effect: Allow
+                Action:
+                  - es:ESHttpGet
+                  - es:ESHttpPut
+                  - es:ESHttpPost
+                  - es:ESHttpDelete
+                  - es:DescribeDomain
+                  - es:ListDomainNames
+                  - es:ESHttpHead
+                  - es:ESHttpPatch
+                Resource: !Sub "arn:aws:es:ca-central-1:${AWS::AccountId}:domain/*/*"
 
   VerificationHeaderSecret: 
     Type: AWS::SecretsManager::Secret
@@ -194,24 +246,7 @@ Resources:
       Name: geolocator
       AccessLogSetting:
         DestinationArn: !GetAtt LogGroup.Arn
-        Format: >-
-          {
-            "requestId": "$context.requestId",
-            "ip": "$context.identity.sourceIp",
-            "caller": "$context.identity.caller",
-            "user": "$context.identity.user",
-            "requestTime": "$context.requestTime",
-            "httpMethod": "$context.httpMethod",
-            "resourcePath": "$context.resourcePath",
-            "status": "$context.status",
-            "protocol": "$context.protocol",
-            "responseLength": "$context.responseLength",
-            "errorMessage": "$context.error.message",
-            "integrationLatency": "$context.integrationLatency",
-            "apiId": "$context.apiId",
-            "stage": "$context.stage",
-            "latency": "$context.latency"
-          }
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength","errorMessage":"$context.error.message","integrationLatency":"$context.integrationLatency","apiId":"$context.apiId","stage":"$context.stage","latency":"$context.latency"}'
       EndpointConfiguration:
         Type: REGIONAL
       OpenApiVersion: '2.0'
@@ -225,11 +260,72 @@ Resources:
         paths:
           /:
             get:
-              x-amazon-apigateway-integration:
-                type: aws_proxy
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
                 httpMethod: POST
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Geolocator.Arn}/invocations'
-              responses: {}
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "key": "$input.params('key')",
+                      "keys": "$input.params('keys')",
+                      "lang": "$input.params('lang')",
+                      "table": "$input.params('table')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
+                    }
+          /fsa:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ForwardSortationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
+                    }
   geolocatorS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
