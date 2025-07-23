@@ -4315,8 +4315,16 @@ Resources:
                       responseParameters:
                         method.response.header.Access-Control-Allow-Origin: "'*'"
                   requestTemplates:
-                    application/json: "{\r\n    \"lang\" : \"$input.params('lang')\",\r\n  \
-                      \  \"id\" : \"$input.params('id')\"\r\n}"
+                    application/json: |
+                      {
+                        "lang": "$input.params('lang')",
+                        "id": "$input.params('id')",
+                        "ip_address": "$context.identity.sourceIp",
+                        "ip_address_forward": "$input.params().header.get('X-Forwarded-For')",
+                        "timestamp": "$context.requestTimeEpoch",
+                        "user_agent": "$context.identity.userAgent",
+                        "http_method": "$context.httpMethod"
+                      }
                   passthroughBehavior: "when_no_templates"
                   contentHandling: "CONVERT_TO_TEXT"
               options:
