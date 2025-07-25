@@ -33,7 +33,7 @@ Parameters:
 Conditions:
   IsProd: !Equals [prod, !Ref Environment]
 
-Resources:          
+Resources:
   Geolocator:
     Type: AWS::Serverless::Function
     Properties:
@@ -80,6 +80,34 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /*
             Method: any
+
+  NTSTwoFiftyKLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/nts-250k-20250725-1200.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 30
+      Environment:
+        Variables:
+          INDEX_NAME: nts-index
+          MY_AWS_REGION: ca-central-1
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OSSecretID
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:759472643633:layer:opensearchpy-layer:2
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python313:3
 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -312,6 +340,38 @@ Resources:
                 type: aws
                 httpMethod: POST
                 uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ForwardSortationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
+                    }
+          /nts-250k:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NTSTwoFiftyKLambda.Arn}/invocations'
                 responses: 
                   default:
                     statusCode: "200"
