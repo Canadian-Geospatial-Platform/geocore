@@ -1,0 +1,127 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys STAC datacube harvester solution + STAC to geocore translation
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
+
+Resources:  
+  GeocoreFormatTemplateBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'webpresence-geocore-template-${Environment}'
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: AES256
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      AccessControl: Private
+
+  GeocoreStacHarvestAndTransformFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.9
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20240628-1430.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20240628-1430.zip
+              - cloudformation-templates/lambda/stac-to-geocore/stac-to-geocore-20240628-1430.zip
+      MemorySize: 4096
+      Handler: app.lambda_handler
+      Timeout: 900
+      Environment:
+        Variables:
+          GEOCORE_TEMPLATE_BUCKET_NAME: !Ref GeocoreFormatTemplateBucket
+          GEOCORE_TEMPLATE_NAME: 'geocore-format-null-template.json'
+          GEOCORE_TO_PARQUET_BUCKET_NAME: !Sub 'webpresence-geocore-json-to-geojson-${Environment}'
+          STAC_API_ROOT: 'https://datacube.services.geo.ca/api'
+          ROOT_NAME: 'CCMEO Datacube API / CCCOT Cube de données API'
+          SOURCE: 'ccmeo'
+          SOURCESYSTEMNAME: 'ccmeo-datacube'
+      Layers: 
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+
+  StacHarvesterRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'stac-harvester-1day-${Environment}'
+      Description: Stac Harvester on a 1 day interval
+      State: ENABLED
+      ScheduleExpression: 'rate(1 day)'
+      Targets:
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - GeocoreStacHarvestAndTransformFunction
+              - Arn
+          Id: !Ref GeocoreStacHarvestAndTransformFunction
+
+
+  PermissionForEventsToInvokeStacHarvesterLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref GeocoreStacHarvestAndTransformFunction
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - StacHarvesterRule
+        - Arn
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess        
+      Policies:
+        - PolicyName: 'policy'
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: 'Allow'
+                Action:
+                  - 's3:*'
+                Resource:
+                  - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}  
+                  - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/stac_harvester'
+      RetentionInDays: 3653 

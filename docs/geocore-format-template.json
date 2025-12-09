@@ -1,0 +1,130 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type":"Feature",
+      "geometry": {
+        "type": null,
+        "coordinates": [
+          [
+            [null , null], [null , null], [null , null], [null , null], [null , null]
+            ]]
+      },
+      "properties": {
+        "id": null,
+        "title": {
+          "en": null,
+          "fr": null 
+        },
+        "description": {
+          "en": null,
+          "fr": null 
+        },
+        "keywords": {
+          "en": null,
+          "fr": null  
+        },
+        "topicCategory": null,
+        "parentIdentifier": null,
+        "date": {
+          "published": {
+            "text": null,
+            "date": null 
+          },
+          "created": {
+            "text": null,
+            "date": null 
+          },
+          "revision": {
+            "text": null,
+            "date": null 
+          },
+          "notavailable": {
+            "text": null,
+            "date": null 
+          },
+          "inforce": {
+            "text": null,
+            "date": null 
+          },
+          "adopted": {
+            "text": null,
+            "date": null 
+          },
+          "deprecated": {
+            "text": null,
+            "date": null 
+          },
+          "superceded": {
+            "text": null,
+            "date": null 
+          }
+        },
+        "spatialRepresentation": null,
+        "type": null,
+        "geometry": null,
+        "temporalExtent": {
+          "begin": null ,
+          "end": null 
+        },
+        "refSys": null,
+        "refSys_version": null,
+        "status": null,
+        "maintenance": null,
+        "metadataStandard": {
+          "en": null,
+          "fr": null 
+        },
+        "metadataStandardVersion": null,
+		"graphicOverview": [
+		{
+			"overviewFileName": null,
+			"overviewFileDescription": null,
+			"overviewFileTupe": null
+		}],
+        "distributionFormat_name": null,
+        "distributionFormat_format": null ,
+        "useLimits": {
+          "en": null,
+          "fr": null 
+        },
+        "accessConstraints": null,
+        "otherConstraints": {
+          "en": null,
+          "fr": null 
+        },
+        "dateStamp": null,
+        "dataSetURI": null,
+        "locale": {
+          "language": null,
+          "country": null,
+          "encoding": null 
+        },
+        "language": null,
+        "characterSet": null,
+        "environmentDescription": null,
+        "supplementalInformation": {
+          "en": null,
+          "fr": null 
+        },
+        "contact": [null],
+        "credits": [null],
+        "cited": [null],
+        "distributor": [null],
+        "options": [
+		{
+			"url":null,
+			"protocol":null,
+			"name": {
+				"en":null,
+				"fr":null
+				}
+	    }],
+        "sourceSystemName":null,
+		"eoCollection": null, 
+		"eoFilters":[null]		
+      }
+    }]
+  }
+  
+ 

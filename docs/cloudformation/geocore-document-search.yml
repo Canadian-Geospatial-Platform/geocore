@@ -1,0 +1,305 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: patterns-s3-docrepo
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: String
+    Default: document-parser-code
+  MetadataBucket:
+    Type: String
+    Default: webpresence-geocore-json-to-geojson-${Environment}
+  DocumentsBucketName:
+    Type: String
+    Default: 's3-documentparser-documents-${Environment}'
+  StagingBucketName:
+    Type: String
+    Default: 's3-documentparser-staging-${Environment}'
+  QueuedBucketName:
+    Type: String
+    Default: 's3-documentparser-queued-${Environment}'
+  OSdomain:
+    Type: String
+    Default: 'https://search-search-m6agsr5kq5tlt7z6tbe7axm5gy.ca-central-1.es.amazonaws.com'
+
+Globals:
+  Function:
+    Timeout: 15
+    Environment:
+      Variables:
+        language: en
+
+Resources:
+  DocumentsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: DocumentsBucketName
+  StagingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: StagingBucketName
+  QueuedBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName:
+        Ref: QueuedBucketName
+
+  MySqsQueue:
+    Type: AWS::SQS::Queue
+  queryOSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: queryOSindex.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Timeout: 10
+      ReservedConcurrentExecutions: 1
+      Environment:
+        Variables:
+          domain:
+            Ref: OSdomain
+      Events:
+        HttpApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /
+            Method: GET
+  AddToOSFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: addToOSindex.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Timeout: 10
+      ReservedConcurrentExecutions: 1
+      Environment:
+        Variables:
+          domain:
+            Ref: OSdomain
+      Policies:
+      - S3ReadPolicy:
+          BucketName:
+            Ref: QueuedBucketName
+      - Statement:
+        - Effect: Allow
+          Resource: '*'
+          Action:
+          - comprehend:*
+      Events:
+        MySQSEvent:
+          Type: SQS
+          Properties:
+            Queue:
+              Fn::GetAtt:
+              - MySqsQueue
+              - Arn
+            BatchSize: 1
+
+  BatchingFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: batchingFunction.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Environment:
+        Variables:
+          OutputBucket:
+            Ref: QueuedBucketName
+      Policies:
+      - S3CrudPolicy:
+          BucketName:
+            Ref: QueuedBucketName
+      - S3ReadPolicy:
+          BucketName:
+            Ref: StagingBucketName
+      Events:
+        OriginalTextUpload:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: StagingBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: suffix
+                  Value: .txt
+  AddToQueueFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: addToQueueFunction.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      Timeout: 15
+      MemorySize: 512
+      Environment:
+        Variables:
+          SQSqueueName:
+            Ref: MySqsQueue
+      Policies:
+      - SQSSendMessagePolicy:
+          QueueName:
+            Fn::GetAtt:
+            - MySqsQueue
+            - QueueName
+      - S3ReadPolicy:
+          BucketName:
+            Ref: QueuedBucketName
+      Events:
+        FileUpload:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: QueuedBucket
+            Events: s3:ObjectCreated:*
+  ProcessJPGFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: processJPG.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Environment:
+        Variables:
+          OutputBucket:
+            Ref: QueuedBucketName
+          MaxLabels: 5
+          MinConfidence: 60
+      Policies:
+      - S3CrudPolicy:
+          BucketName:
+            Ref: QueuedBucketName
+      - S3ReadPolicy:
+          BucketName:
+            Ref: DocumentsBucketName
+      - Statement:
+        - Effect: Allow
+          Resource: '*'
+          Action:
+          - rekognition:*
+      Events:
+        Upload:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: DocumentsBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: suffix
+                  Value: .jpg
+  ProcessDOCXFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: processDOCX.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Environment:
+        Variables:
+          OutputBucket:
+            Ref: StagingBucketName
+      Policies:
+      - S3CrudPolicy:
+          BucketName:
+            Ref: StagingBucketName
+      - S3ReadPolicy:
+          BucketName:
+            Ref: DocumentsBucketName
+      Events:
+        Upload:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: DocumentsBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: suffix
+                  Value: .docx
+  ProcessPDFFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: 
+        Bucket: !Ref DeploymentBucket
+        Key: processPDF.zip
+      Handler: app.handler
+      Runtime: nodejs16.x
+      MemorySize: 512
+      Environment:
+        Variables:
+          OutputBucket:
+            Ref: StagingBucketName
+      Policies:
+      - S3CrudPolicy:
+          BucketName:
+            Ref: StagingBucketName
+      - S3ReadPolicy:
+          BucketName:
+            Ref: DocumentsBucketName
+      Events:
+        Upload:
+          Type: S3
+          Properties:
+            Bucket:
+              Ref: DocumentsBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                - Name: suffix
+                  Value: .pdf
+Outputs:
+  DocumentsBucketName:
+    Description: Documents Bucket Name
+    Value:
+      Ref: DocumentsBucket
+  StagingBucketName:
+    Description: Staging Bucket Name
+    Value:
+      Ref: StagingBucket
+  QueuedBucketName:
+    Description: Queued Bucket Name
+    Value:
+      Ref: QueuedBucket
+  AddToOSFunctionARN:
+    Description: This AddToOSFunction function ARN.
+    Value:
+      Fn::GetAtt:
+      - AddToOSFunction
+      - Arn
+  AddToOSFunctionRoleARN:
+    Description: This ARN needs permission in the Opensearch configuration.
+    Value:
+      Fn::GetAtt:
+      - AddToOSFunctionRole
+      - Arn
+  queryOSFunctionARN:
+    Description: This ARN needs permission in the Opensearch configuration.
+    Value:
+      Fn::GetAtt:
+      - queryOSFunction
+      - Arn

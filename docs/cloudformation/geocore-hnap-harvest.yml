@@ -25,6 +25,8 @@ Parameters:
 
 Conditions:
   IsProd: !Equals [prod, !Ref Environment]
+  IsStage: !Equals [stage, !Ref Environment]
+  IsDev: !Equals [dev, !Ref Environment]
 
 Resources:
   GeocoreHnapJsonHarvestBucket:
@@ -75,17 +77,28 @@ Resources:
   HnapJsonHarvester2:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.8
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest.zip
-      MemorySize: 1024
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20241212-1100.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20241212-1100.zip
+              - cloudformation-templates/lambda/geocore-hnap-harvest/geocore-hnap-harvest-20241212-1100.zip
+      MemorySize: 3009
       Handler: app.lambda_handler
       Timeout: 900
       Environment:
         Variables:
           BUCKET_NAME: !Ref GeocoreHnapJsonHarvestBucket
+          GEOJSON_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
+          BASE_URL: 'https://maps.canada.ca'
+          GN_JSON_RECORD_URL_START: 'https://maps.canada.ca/geonetwork/srv/api/0.1/records/'
+          RUN_INTERVAL_MINUTES: 11
       Events:
         ApiEvent:
           Type: Api
@@ -93,6 +106,33 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /hnap_json_harvest
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:8
+
+  HnapJsonHarvesterRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'harvester-10mins-${Environment}'
+      Description: Harvester on a 10 minute interval
+      State: DISABLED
+      ScheduleExpression: 'rate(10 minutes)'
+      Targets:
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - HnapJsonHarvester2
+              - Arn
+          Id: !Ref HnapJsonHarvester2
+
+  PermissionForEventsToInvokeHarvesterLambda: 
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref HnapJsonHarvester2
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - HnapJsonHarvesterRule
+        - Arn
 
   GeocoreTransform:
     Type: AWS::Serverless::Function
@@ -100,7 +140,14 @@ Resources:
       Runtime: nodejs14.x
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geocore-transform/geocore-transform.zip
+        Key: 
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-transform/geocore-transform-20221114-1700.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-transform/geocore-transform-20221114-1700.zip
+              - cloudformation-templates/lambda/geocore-transform/geocore-transform-20221114-1700.zip
       Handler: index.handler
       MemorySize: 512
       Timeout: 60
@@ -114,22 +161,57 @@ Resources:
           Properties:
             Bucket: !Ref GeocoreHnapJsonHarvestBucket
             Events: s3:ObjectCreated:*
-            
+
+  GeocoretoParquetRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Name: !Sub 'parquet-60mins-${Environment}'
+      Description: GeocoretoParquet on a 60 minute interval
+      State: DISABLED
+      ScheduleExpression: 'rate(60 minutes)'
+      Targets:
+        - 
+          Arn: 
+            Fn::GetAtt: 
+              - GeocoretoParquet
+              - Arn
+          Id: !Ref GeocoretoParquet
+
+  PermissionForEventsToInvokeGeocoretoParquetLambda:
+    Type: AWS::Lambda::Permission
+    Properties: 
+      FunctionName: !Ref GeocoretoParquet
+      Action: 'lambda:InvokeFunction'
+      Principal: 'events.amazonaws.com'
+      SourceArn: !GetAtt 
+        - GeocoretoParquetRule
+        - Arn
+        
   GeocoretoParquet:
     Type: AWS::Serverless::Function
     Properties:
-      Runtime: python3.7
+      Runtime: python3.9
       Role: !GetAtt LambdaExecutionRole.Arn
       CodeUri:
         Bucket: !Ref DeploymentBucket
-        Key: cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet.zip
-      MemorySize: 1024
+        Key:
+          Fn::If:
+            - IsProd
+            - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+            - Fn::If:
+              - IsStage
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+              - cloudformation-templates/lambda/geocore-to-parquet/geocore-to-parquet-20240610-1500.zip
+      MemorySize: 4096
       Handler: app.lambda_handler
       Timeout: 900
       Environment:
         Variables:
           GEOJSON_BUCKET_NAME: !Ref GeocoreHnapJsontoGeojsonBucket
           PARQUET_BUCKET_NAME: !Ref GeocoreGeojsontoParquetBucket
+          DYNAMODB_TABLE: 'analytics_popularity'
+          REGION_NAME: 'ca-central-1'
+          PARQUET_FILENAME: 'records.parquet'
       Events:
         ApiEvent:
           Type: Api
@@ -137,7 +219,10 @@ Resources:
             RestApiId: !Ref RestApi
             Path: /geocore_to_parquet
             Method: any
+      Layers:
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python39:12
 
+ 
   LambdaExecutionRole:
     Type: AWS::IAM::Role
     Properties:
@@ -152,6 +237,7 @@ Resources:
               - sts:AssumeRole
       ManagedPolicyArns:
         - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess        
       Policies:
         - PolicyName: 'policy'
           PolicyDocument:
@@ -167,7 +253,9 @@ Resources:
                   - !Sub arn:aws:s3:::webpresence-geocore-json-to-geojson-${Environment}
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}/*
                   - !Sub arn:aws:s3:::webpresence-geocore-geojson-to-parquet-${Environment}
-
+                  - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}/*
+                  - !Sub arn:aws:s3:::webpresence-geocore-template-${Environment}  
+            
   VerificationHeaderSecret: 
     Type: AWS::SecretsManager::Secret
     Properties: 

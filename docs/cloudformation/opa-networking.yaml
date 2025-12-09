@@ -1,0 +1,247 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  OPA Networking Resources
+Transform:
+- AWS::Serverless-2016-10-31
+
+Parameters:
+  EcrPrefix:
+    Type: String
+    Default: "opa"
+  UseNatGW:
+    Type: String
+    AllowedValues: ["true","false"]
+  InternetGatewayId:
+   Type: String
+   Default: ""
+  TransitGatewayId:
+    Type: String
+    Default: ""
+
+Conditions:
+  UsingTransitGateway: !Not 
+    - !Equals [!Ref TransitGatewayId, "" ]
+  ## If using TransitGateway, don't create an internet or nat gateway
+  UsingInternetGateway: !Not [!Condition UsingTransitGateway]
+  CreateInternetGateway: !And 
+    - !Condition UsingInternetGateway
+    - !Equals [!Ref InternetGatewayId, "" ]
+  UsingNatGateway: !And 
+    - !Condition UsingInternetGateway
+    - !Equals [!Ref UseNatGW, "true"]
+
+# ------------------------
+# VPC & Networking Setup
+# ------------------------
+Resources:
+  OpaVpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.8.0/22
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaVpc
+
+  OpaPrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Condition: UsingNatGateway
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.8.0/26
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPrivateSubnet1
+
+  OpaPrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Condition: UsingNatGateway
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.8.64/26
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPrivateSubnet2
+
+  OpaPublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.9.0/26
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPublicSubnet1
+
+  OpaPublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref OpaVpc
+      CidrBlock: 10.0.9.64/26
+      AvailabilityZone: !Select [ 1, !GetAZs '' ]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaPublicSubnet2
+
+  # Create Internet Gateway for Public Subnets
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Condition: CreateInternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaInternetGateway
+
+  # Attach Internet Gateway to VPC
+  AttachInternetGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Condition: UsingInternetGateway
+    Properties:
+      VpcId: !Ref OpaVpc
+      InternetGatewayId: !If 
+        - CreateInternetGateway
+        - !Ref InternetGateway
+        - !Ref InternetGatewayId
+
+  # Allocate an Elastic IP for the NAT Gateway
+  NatElasticIP:
+    Type: AWS::EC2::EIP
+    Condition: UsingNatGateway
+
+  # Create a NAT Gateway in the Public Subnet
+  OpaNATGateway:
+    Type: AWS::EC2::NatGateway
+    Condition: UsingNatGateway
+    Properties:
+      SubnetId: !Ref OpaPublicSubnet1  # The NAT must be in a Public Subnet
+      AllocationId: !GetAtt NatElasticIP.AllocationId
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-OpaNatGateway
+    DependsOn: AttachInternetGateway
+
+  # Route Tables
+  OpaPrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Condition: UsingNatGateway
+    Properties:
+      VpcId: !Ref OpaVpc
+
+  OpaPublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref OpaVpc
+
+  # Routes
+  PrivateRoute:
+    Type: AWS::EC2::Route
+    Condition: UsingNatGateway
+    Properties:
+      RouteTableId: !Ref OpaPrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0 
+      NatGatewayId: !Ref OpaNATGateway
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    Condition: UsingInternetGateway
+    Properties:
+      RouteTableId: !Ref OpaPublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0 
+      GatewayId: !If 
+        - CreateInternetGateway
+        - !Ref InternetGateway
+        - !Ref InternetGatewayId
+
+  # Route Associations
+  OpaPrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: UsingNatGateway
+    Properties:
+      SubnetId: !Ref OpaPrivateSubnet1
+      RouteTableId: !Ref OpaPrivateRouteTable
+
+  OpaPrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Condition: UsingNatGateway
+    Properties:
+      SubnetId: !Ref OpaPrivateSubnet2
+      RouteTableId: !Ref OpaPrivateRouteTable
+
+  OpaPublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref OpaPublicSubnet1
+      RouteTableId: !Ref OpaPublicRouteTable
+
+  OpaPublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref OpaPublicSubnet2
+      RouteTableId: !Ref OpaPublicRouteTable
+
+  # ------------------------
+  # TransitGatewayAttachments
+  # ------------------------
+  TransitGatewayAttachment:
+    Type: AWS::EC2::TransitGatewayVpcAttachment
+    Condition: UsingTransitGateway
+    Properties:
+      TransitGatewayId: !Ref TransitGatewayId
+      VpcId: !Ref OpaVpc
+      SubnetIds:
+        - !If
+          - UsingNatGateway
+          - !Ref OpaPrivateSubnet1
+          - !Ref OpaPublicSubnet1
+        - !If
+          - UsingNatGateway
+          - !Ref OpaPrivateSubnet2
+          - !Ref OpaPublicSubnet2
+      Tags:
+        - Key: Name
+          Value: !Sub ${AWS::StackName}-opa-tgw-attachment
+
+  # ------------------------
+  # Security Group for ECS
+  # ------------------------
+  EcsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: "Security Group for ECS Fargate tasks which need internet access"
+      VpcId: !Ref OpaVpc
+      SecurityGroupIngress: [] # No inbound traffic allowed
+      SecurityGroupEgress:
+        - IpProtocol: -1
+          CidrIp: 0.0.0.0/0  # Allowing outbound traffic
+
+  # ------------------------
+  # ECR Repository
+  # ------------------------
+  OpaRepository:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub ${EcrPrefix}-ecr
+
+Outputs:
+  EcsSecurityGroupId:
+    Description: The OPA Security Group for ECS Fargate tasks
+    Value: !Ref EcsSecurityGroup
+  VpcId:
+    Description: The OPA VPC
+    Value: !Ref OpaVpc
+  SubnetIds:
+    Description: Comma-separated list of Subnet IDs
+    Value: !If
+      - UsingNatGateway
+      - !Join [",", [!Ref OpaPrivateSubnet1, !Ref OpaPrivateSubnet2]]
+      - !Join [",", [!Ref OpaPublicSubnet1, !Ref OpaPublicSubnet2]]
+  EcrId:
+    Description: The OPA Docker Repository
+    Value: !Ref OpaRepository

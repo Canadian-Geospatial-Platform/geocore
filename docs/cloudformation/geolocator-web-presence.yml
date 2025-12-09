@@ -1,0 +1,640 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: Deploys geolocator for web presence
+
+Parameters:
+  Environment:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/environment
+    Description: SSM parameter name for environment
+  DeploymentBucket:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/deployment-bucket
+    Description: S3 bucket where all deployment files are stored
+  SslCertArn:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /webpresence/geolocator/ssl-cert-arn
+    Description: SSM parameter name for geolocator ACM SSL Cert ARN
+  WebAclArn:
+    Type: String
+    Description: ARN of the WAF web ACL to use for CloudFront
+  SecHeadersLambdaEdgeArn:
+    Type: String
+    Description: ARN of the Lambda@Edge function for injecting security headers to CloudFront
+  OSEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /OpenSearch/Endpoint
+    Description: OpenSearch endpoint
+  OSSecretID:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: /OpenSearch/SSM
+    Description: SSM parameter name for OpenSearch user name and password
+
+Conditions:
+  IsProd: !Equals [prod, !Ref Environment]
+
+Resources:
+  Geolocator:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.7
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/geolocator-20250618-1200-43817b1.zip
+      MemorySize: 3009
+      Handler: index.handler
+      Timeout: 900
+      Environment:
+        Variables:
+          S3_BUCKET_NAME: !Sub 'webpresence-geolocator-${Environment}'
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  ForwardSortationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.12
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/forward-sortation-area-20250615-1200.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 30
+      Environment:
+        Variables:
+          INDEX_NAME: fsa-postal-code-index
+          MY_AWS_REGION: ca-central-1
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OSSecretID
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+
+  NTSTwoFiftyKLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/nts-250k-20250725-1200.zip
+      MemorySize: 3009
+      Handler: app.lambda_handler
+      Timeout: 30
+      Environment:
+        Variables:
+          INDEX_NAME: nts-index
+          MY_AWS_REGION: ca-central-1
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OSSecretID
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+      Layers:
+        - !Sub "arn:aws:lambda:ca-central-1:${AWS::AccountId}:layer:opensearchpy-layer:3"
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python313:3
+
+  NRCanGeoLocationLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: python3.13
+      Role: !GetAtt LambdaExecutionRole.Arn
+      CodeUri:
+        Bucket: !Ref DeploymentBucket
+        Key: cloudformation-templates/lambda/geolocator/nrcan-geolocation-api-20251208-1200.zip
+      MemorySize: 3009
+      Handler: lambda_function.lambda_handler
+      Timeout: 30
+      Environment:
+        Variables:
+          ADDRESS_RANGE_INDEX: geolocation-index-address-range
+          ANALYTICS_TABLE_NAME: geolocation-analytics-table
+          INDEX_NAME: geolocation-index
+          MY_AWS_REGION: ca-central-1
+          OS_ENDPOINT: !Ref OSEndpoint
+          OS_SECRET_ID: !Ref OSSecretID
+      Events:
+        ApiEvent:
+          Type: Api
+          Properties:
+            RestApiId: !Ref RestApi
+            Path: /*
+            Method: any
+      Layers:
+        - !Sub "arn:aws:lambda:ca-central-1:${AWS::AccountId}:layer:opensearchpy-layer:3"
+        - arn:aws:lambda:ca-central-1:336392948345:layer:AWSSDKPandas-Python313:3
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+      Policies:
+        - PolicyName: GeolocatorS3AccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:ListBucket
+                Resource:
+                  - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket]]
+                  - !Join ['', ['arn:aws:s3:::', !Ref geolocatorS3Bucket, '/*']]
+        - PolicyName: OpenSearchAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - secretsmanager:GetSecretValue
+                Resource: !Sub "arn:aws:secretsmanager:ca-central-1:${AWS::AccountId}:secret:OpenSearchSecret-geocore-semantic-search-with-opensearch-${Environment}*"
+              - Effect: Allow
+                Action:
+                  - es:ESHttpGet
+                  - es:ESHttpPut
+                  - es:ESHttpPost
+                  - es:ESHttpDelete
+                  - es:DescribeDomain
+                  - es:ListDomainNames
+                  - es:ESHttpHead
+                  - es:ESHttpPatch
+                Resource: !Sub "arn:aws:es:ca-central-1:${AWS::AccountId}:domain/*/*"
+
+  VerificationHeaderSecret: 
+    Type: AWS::SecretsManager::Secret
+    Properties: 
+      Description: Verification header secret value used to identify request coming from CloudFront to API Gateway
+      Name: /webpresence/geolocator/verification-header-secret
+      GenerateSecretString: 
+        ExcludePunctuation: true
+        PasswordLength: 32
+
+  OriginRequestPolicy: 
+    Type: AWS::CloudFront::OriginRequestPolicy
+    Properties: 
+      OriginRequestPolicyConfig: 
+        CookiesConfig: 
+          CookieBehavior: none 
+        HeadersConfig: 
+          HeaderBehavior: whitelist
+          Headers: ["Accept"]
+        Name: geolocator-cloudfront-to-api-gateway
+        QueryStringsConfig: 
+          QueryStringBehavior: all
+
+  GeolocatorDistribution:
+    Type: AWS::CloudFront::Distribution
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      DistributionConfig:
+        Enabled: 'true'
+        Origins:
+        - Id: ApiOrigin
+          DomainName: !Sub ${RestApi}.execute-api.${AWS::Region}.amazonaws.com
+          CustomOriginConfig:
+            HTTPSPort: 443
+            OriginProtocolPolicy: https-only    
+            OriginSSLProtocols: 
+              - TLSv1.2  
+          OriginPath: /live   
+          OriginCustomHeaders:
+            - HeaderName: x-origin-verify
+              HeaderValue: '{{resolve:secretsmanager:/webpresence/geolocator/verification-header-secret}}'   
+        DefaultCacheBehavior:
+          AllowedMethods: [GET, HEAD, OPTIONS, PUT, PATCH, POST, DELETE]
+          ViewerProtocolPolicy: redirect-to-https
+          TargetOriginId: ApiOrigin
+          CachePolicyId: 4135ea2d-6df8-44a3-9df3-4b5a84be39ad # https://docs.amazonaws.cn/en_us/AmazonCloudFront/latest/DeveloperGuide/using-managed-cache-policies.html
+          OriginRequestPolicyId: !GetAtt OriginRequestPolicy.Id
+          LambdaFunctionAssociations:
+            - EventType: origin-response
+              LambdaFunctionARN: !Ref SecHeadersLambdaEdgeArn
+        HttpVersion: http2
+        WebACLId: !Ref WebAclArn
+        Logging:
+          Bucket: !Sub 'webpresence-cloudfront-access-logs-${Environment}.s3.amazonaws.com'
+          IncludeCookies: true
+          Prefix: geolocator
+        Aliases:
+          - !If 
+            - IsProd
+            - geolocator.api.geo.ca
+            - !Sub 'geolocator-${Environment}.api.geo.ca'
+          - !If 
+            - IsProd
+            - www.geolocator.api.geo.ca
+            - !Sub 'www.geolocator-${Environment}.api.geo.ca'
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SslCertArn
+          SslSupportMethod: sni-only
+          MinimumProtocolVersion: TLSv1.2_2021 
+
+  RestApiWebAcl:
+    Type: AWS::WAFv2::WebACL
+    DependsOn: VerificationHeaderSecret
+    Properties:
+      Name: webpresence-geolocator-cloudfront
+      Scope: REGIONAL
+      Description: "Restrict access to CloudFront"
+      DefaultAction: 
+        Block: {}
+      VisibilityConfig:
+        SampledRequestsEnabled: true
+        CloudWatchMetricsEnabled: true
+        MetricName: webpresence-geolocator-cloudfront    
+      Rules: 
+        - Name: webpresence-geolocator-cloudfront-header-verification
+          Priority: 0
+          Action:
+            Allow: {}
+          VisibilityConfig:
+            SampledRequestsEnabled: true
+            CloudWatchMetricsEnabled: true
+            MetricName: webpresence-geolocator-cloudfront-header-verification
+          Statement:
+            ByteMatchStatement:
+              FieldToMatch:
+                SingleHeader:
+                  Name: x-origin-verify
+              PositionalConstraint: EXACTLY
+              SearchString: '{{resolve:secretsmanager:/webpresence/geolocator/verification-header-secret}}'
+              TextTransformations:
+                - Priority: 0
+                  Type: NONE
+
+  RestApiWebAclAssociations:
+    Type: AWS::WAFv2::WebACLAssociation
+    DependsOn:
+      - RestApiliveStage
+    Properties:
+      ResourceArn: !Sub 'arn:aws:apigateway:${AWS::Region}::/restapis/${RestApi}/stages/live'
+      WebACLArn: !GetAtt RestApiWebAcl.Arn
+
+  RestApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: geolocator
+      AccessLogSetting:
+        DestinationArn: !GetAtt LogGroup.Arn
+        Format: '{"requestId":"$context.requestId","ip":"$context.identity.sourceIp","caller":"$context.identity.caller","user":"$context.identity.user","requestTime":"$context.requestTime","httpMethod":"$context.httpMethod","resourcePath":"$context.resourcePath","status":"$context.status","protocol":"$context.protocol","responseLength":"$context.responseLength","errorMessage":"$context.error.message","integrationLatency":"$context.integrationLatency","apiId":"$context.apiId","stage":"$context.stage","latency":"$context.latency"}'
+      EndpointConfiguration:
+        Type: REGIONAL
+      OpenApiVersion: '2.0'
+      StageName: live
+      DefinitionBody:
+        swagger: '2.0'
+        info:
+          title: 'geolocator'
+        schemes:
+          - 'https'
+        paths:
+          /:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${Geolocator.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "key": "$input.params('key')",
+                      "keys": "$input.params('keys')",
+                      "lang": "$input.params('lang')",
+                      "table": "$input.params('table')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
+                    }
+          /fsa:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${ForwardSortationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
+                    }
+          /nts-250k:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NTSTwoFiftyKLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
+                    }
+          /geolocation/en/locate:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NRCanGeoLocationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "bbox": "$input.params('bbox')",
+                      "referrer": "$input.params('referrer')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod",
+                      "path": "$context.path"
+                    }
+          /geolocation/en/autocomplete:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NRCanGeoLocationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "bbox": "$input.params('bbox')",
+                      "referrer": "$input.params('referrer')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod",
+                      "path": "$context.path"
+                    }
+          /geolocation/en/suggest:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NRCanGeoLocationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "bbox": "$input.params('bbox')",
+                      "referrer": "$input.params('referrer')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod",
+                      "path": "$context.path"
+                    }
+          /geolocation/fr/locate:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NRCanGeoLocationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "bbox": "$input.params('bbox')",
+                      "referrer": "$input.params('referrer')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod",
+                      "path": "$context.path"
+                    }
+          /geolocation/fr/autocomplete:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NRCanGeoLocationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "bbox": "$input.params('bbox')",
+                      "referrer": "$input.params('referrer')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod",
+                      "path": "$context.path"
+                    }
+          /geolocation/fr/suggest:
+            get:
+              consumes:
+              - "application/json"
+              produces:
+              - "application/json"
+              responses: #Method response:https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-apigateway-method-methodresponse.html
+                "200":
+                  description: "200 response"
+                  # schema:
+                  #   $ref: "#/definitions/Empty"
+                  headers:
+                    Access-Control-Allow-Origin:
+                      type: "string"
+              x-amazon-apigateway-integration: #Integration response:https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/sam-specification-api-gateway-extensions.html
+                type: aws
+                httpMethod: POST
+                uri: !Sub 'arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NRCanGeoLocationLambda.Arn}/invocations'
+                responses: 
+                  default:
+                    statusCode: "200"
+                    responseParameters:
+                      method.response.header.Access-Control-Allow-Origin: "'*'" 
+                requestTemplates:
+                  application/json: |
+                    {
+                      "q": "$input.params('q')",
+                      "bbox": "$input.params('bbox')",
+                      "referrer": "$input.params('referrer')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod",
+                      "path": "$context.path"
+                    }
+
+  geolocatorS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "webpresence-geolocator-${Environment}"
+
+  LogGroup:
+    Type: Custom::LogGroup
+    Properties:
+      ServiceToken: !ImportValue LogGroupHelperLambdaArn
+      LogGroupName: !Sub '/${Environment}/webpresence/geolocator'
+      RetentionInDays: 3653
