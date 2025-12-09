@@ -577,7 +577,10 @@ Resources:
                       "end": "$input.params('end')",
                       "org": "$input.params('org')",
                       "type": "$input.params('type')",
+                      "protocol": "$input.params('protocol')",
+                      "mappable": "$input.params('mappable')",
                       "theme": "$input.params('theme')",
+                      "topic_category": "$input.params('topic_category')",
                       "foundational": "$input.params('foundational')",
                       "source_system": "$input.params('source_system')",
                       "eo_collection": "$input.params('eo_collection')",
@@ -588,7 +591,11 @@ Resources:
                       "order": "$input.params('order')",
                       "size": "$input.params('size')",
                       "from": "$input.params('from')",
-                      "userAgent": "$input.params().header.get('User-Agent')"
+                      "ip_address_forward": "$input.params().header.get('X-Forwarded-For')",
+                      "ip_address": "$context.identity.sourceIp",
+                      "timestamp": "$context.requestTimeEpoch",
+                      "user_agent": "$context.identity.userAgent",
+                      "http_method": "$context.httpMethod"
                     }
             options:
               consumes:
