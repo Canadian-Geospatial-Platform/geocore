@@ -12,54 +12,44 @@
             "q": "q"
         },
         "out": {
-            "structure" : {
+            "structure": {
                 "type": "list"
-                },
+            },
             "data": {
                 "name": {
-                    "field": "component.name",
-                    "lookup": {
-                        "type": "type",
-                        "field": "name"
-                    }
+                    "field": "title",
+                    "lookup": ""
                 },
                 "province": {
-                    "field": "component.province",
-                    "lookup": {
-                        "type": "table",
-                        "field": "description"
-                    }
+                    "field": "province",
+                    "lookup": ""
                 },
                 "category": {
-                    "field": "component.generic",
-                    "lookup": {
-                        "type": "type",
-                        "field": "category"
-                    }
+                    "field": "category",
+                    "lookup": ""
                 },
                 "lat": {
-                    "field":"geometry.coordinates",
+                    "field": "geometry.coordinates",
                     "lookup": {
                         "type": "array",
-                        "field":"1"
+                        "field": "1"
                     }
                 },
                 "lng": {
                     "field": "geometry.coordinates",
                     "lookup": {
                         "type": "array",
-                        "field":"0"
+                        "field": "0"
                     }
                 },
                 "bbox": {
                     "field": "bbox",
                     "lookup": ""
                 },
-                "tag": [
-                    {
-                    "field": "component.location",
-                    "lookup": ""
-                   }
+                "tag": [{
+                        "field": "qualifier",
+                        "lookup": ""
+                    }
                 ]
             }
         }
